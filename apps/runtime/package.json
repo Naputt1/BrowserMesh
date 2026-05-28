@@ -1,0 +1,21 @@
+{
+  "name": "@browsermesh/runtime",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@browsermesh/workflow": "workspace:*",
+    "@grpc/grpc-js": "^1.13.0",
+    "@grpc/proto-loader": "^0.7.0",
+    "playwright": "^1.52.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
+}
+
