@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.turbo/
+*.tsbuildinfo
+.git/
+.DS_Store
+.gitignore
+.gitattributes
+*.md
