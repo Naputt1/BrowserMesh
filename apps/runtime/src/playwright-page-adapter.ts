@@ -1,5 +1,5 @@
 import type { Page as PlaywrightPage } from "playwright-core";
-import type { Page, Locator } from "./interpreter/types";
+import type { Page, Locator } from "./interpreter/types.js";
 
 export class PlaywrightPageAdapter implements Page {
   constructor(private readonly pwPage: PlaywrightPage) {}

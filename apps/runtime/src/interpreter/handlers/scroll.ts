@@ -1,4 +1,4 @@
-import type { NodeHandler } from "../types";
+import type { NodeHandler } from "../types.js";
 
 export const scrollHandler: NodeHandler = async function* (node, context) {
   const config = node.config ?? {};

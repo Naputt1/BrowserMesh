@@ -1,14 +1,14 @@
-import type { NodeHandler } from "../types";
-import { navigateHandler } from "./navigate";
-import { clickHandler } from "./click";
-import { typeHandler } from "./type";
-import { waitHandler } from "./wait";
-import { scrollHandler } from "./scroll";
-import { extractHandler } from "./extract";
-import { loopHandler } from "./loop";
-import { customHandler } from "./custom";
+import type { NodeHandler } from "../types.js";
+import { navigateHandler } from "./navigate.js";
+import { clickHandler } from "./click.js";
+import { typeHandler } from "./type.js";
+import { waitHandler } from "./wait.js";
+import { scrollHandler } from "./scroll.js";
+import { extractHandler } from "./extract.js";
+import { loopHandler } from "./loop.js";
+import { customHandler } from "./custom.js";
 
-export type { NodeHandler } from "../types";
+export type { NodeHandler } from "../types.js";
 
 export const defaultHandlerRegistry: ReadonlyMap<string, NodeHandler> = new Map([
   ["navigate", navigateHandler],

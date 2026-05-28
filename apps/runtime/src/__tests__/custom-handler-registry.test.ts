@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { CustomHandlerRegistry } from "../custom-handler-registry";
-import type { CustomHandler } from "../interpreter/types";
+import { CustomHandlerRegistry } from "../custom-handler-registry.js";
+import type { CustomHandler } from "../interpreter/types.js";
 
 describe("CustomHandlerRegistry", () => {
   const handlerA: CustomHandler = async (config) => config;

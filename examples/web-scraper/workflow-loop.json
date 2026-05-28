@@ -1,0 +1,47 @@
+{
+  "id": "web-scraper-loop",
+  "name": "Books to Scrape - Loop Demo",
+  "nodes": [
+    {
+      "id": "nav",
+      "type": "navigate",
+      "label": "Navigate to book list",
+      "config": {
+        "url": "https://books.toscrape.com/"
+      }
+    },
+    {
+      "id": "loop_books",
+      "type": "loop",
+      "label": "Loop through books",
+      "config": {
+        "selector": "article.product_pod",
+        "childNodeIds": ["extract_book_title", "extract_book_price"]
+      }
+    },
+    {
+      "id": "extract_book_title",
+      "type": "extract",
+      "label": "Extract title",
+      "config": {
+        "selector": "h3 a",
+        "property": "attribute",
+        "attribute": "title",
+        "name": "title"
+      }
+    },
+    {
+      "id": "extract_book_price",
+      "type": "extract",
+      "label": "Extract price",
+      "config": {
+        "selector": ".price_color",
+        "property": "text",
+        "name": "price"
+      }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "source": "nav", "target": "loop_books" }
+  ]
+}

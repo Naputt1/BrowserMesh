@@ -1,5 +1,5 @@
 import type { WorkflowEvent } from "@browsermesh/workflow";
-import type { NodeHandler } from "../types";
+import type { NodeHandler } from "../types.js";
 
 export const extractHandler: NodeHandler = async function* (node, context) {
   const config = node.config ?? {};

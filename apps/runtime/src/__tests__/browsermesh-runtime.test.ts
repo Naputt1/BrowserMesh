@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { WorkflowDefinition } from "@browsermesh/workflow";
-import { BrowserMeshRuntime } from "../browsermesh-runtime";
-import type { Page, Locator } from "../interpreter/types";
+import { BrowserMeshRuntime } from "../browsermesh-runtime.js";
+import type { Page, Locator } from "../interpreter/types.js";
 
 function mockLocator(): Locator {
   return {

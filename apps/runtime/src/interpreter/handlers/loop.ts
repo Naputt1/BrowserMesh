@@ -1,5 +1,5 @@
 import type { WorkflowEvent } from "@browsermesh/workflow";
-import type { NodeHandler, Locator } from "../types";
+import type { NodeHandler, Locator } from "../types.js";
 
 export const loopHandler: NodeHandler = async function* (node, context, executeChildren) {
   const config = node.config ?? {};
