@@ -72,13 +72,23 @@ describe("BrowserMeshRuntime", () => {
     const runtime = new BrowserMeshRuntime({ host: "0.0.0.0", port: 50051 }, pool as any);
 
     const workflow = wf({
-      nodes: [{ id: "n1", type: "navigate", config: { url: "https://example.com" } }],
+      nodes: [
+        { id: "s", type: "start" },
+        { id: "n1", type: "navigate", config: { url: "https://example.com" } },
+        { id: "e", type: "end" },
+      ],
+      edges: [
+        { id: "e1", source: "s", sourceHandle: "flow", target: "n1", targetHandle: "flow" },
+        { id: "e2", source: "n1", sourceHandle: "flow", target: "e", targetHandle: "flow" },
+      ],
     });
 
     const events = await collect(runtime.executeWorkflow({ workflow }));
 
     expect(events.map((e: any) => e.type)).toEqual([
       "task_started",
+      "step_started",
+      "step_completed",
       "step_started",
       "step_completed",
       "task_completed",
@@ -154,7 +164,15 @@ describe("BrowserMeshRuntime", () => {
     runtime.customHandlers.register("my-action", handlerFn);
 
     const workflow = wf({
-      nodes: [{ id: "c1", type: "custom", config: { handlerName: "my-action", payload: 42 } }],
+      nodes: [
+        { id: "s", type: "start" },
+        { id: "c1", type: "custom", config: { handlerName: "my-action", payload: 42 } },
+        { id: "e", type: "end" },
+      ],
+      edges: [
+        { id: "e1", source: "s", sourceHandle: "flow", target: "c1", targetHandle: "flow" },
+        { id: "e2", source: "c1", sourceHandle: "flow", target: "e", targetHandle: "flow" },
+      ],
     });
 
     await collect(runtime.executeWorkflow({ workflow }));

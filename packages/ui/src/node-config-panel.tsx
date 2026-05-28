@@ -1,8 +1,9 @@
 import { useState } from "react";
-import type { WorkflowNode } from "@browsermesh/workflow";
+import type { NodeType } from "@browsermesh/workflow";
+import { NODE_DEFINITIONS } from "@browsermesh/workflow";
 
 export type NodeConfigPanelProps = {
-  node: { id: string; label: string; type: WorkflowNode["type"]; config: Record<string, unknown> } | null;
+  node: { id: string; label: string; type: NodeType; config: Record<string, unknown> } | null;
   onUpdate: (id: string, updates: { label?: string; config?: Record<string, unknown> }) => void;
   onDelete: (id: string) => void;
 };
@@ -15,6 +16,8 @@ export function NodeConfigPanel({ node, onUpdate, onDelete }: NodeConfigPanelPro
       </div>
     );
   }
+
+  const def = NODE_DEFINITIONS[node.type];
 
   return (
     <div className="w-72 border-l bg-white p-4 shrink-0 overflow-y-auto">
@@ -34,6 +37,13 @@ export function NodeConfigPanel({ node, onUpdate, onDelete }: NodeConfigPanelPro
           <label className="text-xs font-medium text-gray-600">Type</label>
           <div className="mt-1 text-sm text-gray-800 font-mono">{node.type}</div>
         </div>
+
+        {def?.category && (
+          <div>
+            <label className="text-xs font-medium text-gray-600">Category</label>
+            <div className="mt-1 text-sm text-gray-500">{def.category}</div>
+          </div>
+        )}
 
         <Separator />
 
@@ -57,36 +67,57 @@ function Separator() {
 }
 
 type ConfigFieldsProps = {
-  type: WorkflowNode["type"];
+  type: NodeType;
   config: Record<string, unknown>;
   onUpdate: (config: Record<string, unknown>) => void;
 };
 
 function ConfigFields({ type, config, onUpdate }: ConfigFieldsProps) {
   switch (type) {
+    case "start":
+    case "end":
+      return <p className="text-xs text-gray-500 italic">No configuration needed</p>;
+
     case "navigate":
       return (
-        <div>
-          <label className="text-xs font-medium text-gray-600">URL</label>
-          <input
-            className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
-            placeholder="https://example.com"
-            value={(config.url as string) ?? ""}
-            onChange={(e) => onUpdate({ ...config, url: e.target.value })}
-          />
-        </div>
+        <>
+          <div>
+            <label className="text-xs font-medium text-gray-600">URL</label>
+            <input
+              className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
+              placeholder="https://example.com"
+              value={(config.url as string) ?? ""}
+              onChange={(e) => onUpdate({ ...config, url: e.target.value })}
+            />
+          </div>
+          <div className="mt-2">
+            <label className="text-xs font-medium text-gray-600">Wait Until</label>
+            <select
+              className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
+              value={(config.waitUntil as string) ?? ""}
+              onChange={(e) => onUpdate({ ...config, waitUntil: e.target.value || undefined })}
+            >
+              <option value="">Default</option>
+              <option value="load">Load</option>
+              <option value="domcontentloaded">DOM Content Loaded</option>
+              <option value="networkidle">Network Idle</option>
+              <option value="commit">Commit</option>
+            </select>
+          </div>
+        </>
       );
 
     case "click":
       return (
         <div>
-          <label className="text-xs font-medium text-gray-600">Selector</label>
+          <label className="text-xs font-medium text-gray-600">Selector (fallback)</label>
           <input
             className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
-            placeholder=".btn, #submit, button"
+            placeholder=".btn, #submit"
             value={(config.selector as string) ?? ""}
             onChange={(e) => onUpdate({ ...config, selector: e.target.value })}
           />
+          <p className="text-[10px] text-gray-400 mt-1">Optional if element pin is connected</p>
         </div>
       );
 
@@ -94,13 +125,14 @@ function ConfigFields({ type, config, onUpdate }: ConfigFieldsProps) {
       return (
         <>
           <div>
-            <label className="text-xs font-medium text-gray-600">Selector</label>
+            <label className="text-xs font-medium text-gray-600">Selector (fallback)</label>
             <input
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
-              placeholder="#search, .input"
+              placeholder="#search"
               value={(config.selector as string) ?? ""}
               onChange={(e) => onUpdate({ ...config, selector: e.target.value })}
             />
+            <p className="text-[10px] text-gray-400 mt-1">Optional if element pin is connected</p>
           </div>
           <div className="mt-2">
             <label className="text-xs font-medium text-gray-600">Value</label>
@@ -116,15 +148,26 @@ function ConfigFields({ type, config, onUpdate }: ConfigFieldsProps) {
 
     case "wait":
       return (
-        <div>
-          <label className="text-xs font-medium text-gray-600">Duration (ms)</label>
-          <input
-            type="number"
-            className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
-            value={(config.durationMs as number) ?? 1000}
-            onChange={(e) => onUpdate({ ...config, durationMs: parseInt(e.target.value, 10) })}
-          />
-        </div>
+        <>
+          <div>
+            <label className="text-xs font-medium text-gray-600">Duration (ms)</label>
+            <input
+              type="number"
+              className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
+              value={(config.durationMs as number) ?? 1000}
+              onChange={(e) => onUpdate({ ...config, durationMs: parseInt(e.target.value, 10) || undefined })}
+            />
+          </div>
+          <div className="mt-2">
+            <label className="text-xs font-medium text-gray-600">Or wait for selector</label>
+            <input
+              className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
+              placeholder=".loaded"
+              value={(config.selector as string) ?? ""}
+              onChange={(e) => onUpdate({ ...config, selector: e.target.value })}
+            />
+          </div>
+        </>
       );
 
     case "scroll":
@@ -155,26 +198,92 @@ function ConfigFields({ type, config, onUpdate }: ConfigFieldsProps) {
         </>
       );
 
+    case "select":
+      return (
+        <>
+          <div>
+            <label className="text-xs font-medium text-gray-600">Selector</label>
+            <input
+              className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
+              placeholder=".item, h1, a"
+              value={(config.selector as string) ?? ""}
+              onChange={(e) => onUpdate({ ...config, selector: e.target.value })}
+            />
+          </div>
+          <div className="mt-2">
+            <label className="text-xs font-medium text-gray-600">Mode</label>
+            <select
+              className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
+              value={(config.mode as string) ?? "one"}
+              onChange={(e) => onUpdate({ ...config, mode: e.target.value })}
+            >
+              <option value="one">Select One (single element)</option>
+              <option value="all">Select All (multiple elements)</option>
+            </select>
+          </div>
+          {(!config.mode || config.mode === "one") && (
+            <div className="mt-2">
+              <label className="text-xs font-medium text-gray-600">Index</label>
+              <input
+                type="number"
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
+                value={(config.index as number) ?? 0}
+                onChange={(e) => onUpdate({ ...config, index: parseInt(e.target.value, 10) || 0 })}
+              />
+              <p className="text-[10px] text-gray-400 mt-1">Which matching element to pick (0-based)</p>
+            </div>
+          )}
+        </>
+      );
+
     case "extract":
       return (
         <>
           <div>
-            <label className="text-xs font-medium text-gray-600">Type Name</label>
+            <label className="text-xs font-medium text-gray-600">Property</label>
+            <select
+              className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
+              value={(config.property as string) ?? "text"}
+              onChange={(e) => onUpdate({ ...config, property: e.target.value })}
+            >
+              <option value="text">Text Content</option>
+              <option value="attribute">Attribute</option>
+              <option value="value">Input Value</option>
+            </select>
+          </div>
+          {config.property === "attribute" && (
+            <div className="mt-2">
+              <label className="text-xs font-medium text-gray-600">Attribute Name</label>
+              <input
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
+                placeholder="href, src, title"
+                value={(config.attribute as string) ?? ""}
+                onChange={(e) => onUpdate({ ...config, attribute: e.target.value })}
+              />
+            </div>
+          )}
+          <p className="text-[10px] text-gray-400 mt-2">Element input is required (connect from Select)</p>
+        </>
+      );
+
+    case "output":
+      return (
+        <>
+          <div>
+            <label className="text-xs font-medium text-gray-600">Property Path</label>
             <input
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
-              placeholder="Article, Product, etc."
-              value={(config.typeName as string) ?? ""}
-              onChange={(e) => onUpdate({ ...config, typeName: e.target.value })}
+              placeholder="pageTitle, items.title"
+              value={(config.propertyPath as string) ?? ""}
+              onChange={(e) => onUpdate({ ...config, propertyPath: e.target.value })}
             />
+            <p className="text-[10px] text-gray-400 mt-1">
+              Dot-path in result object. Use <code>[]</code> for array indexing with index pin.
+            </p>
           </div>
           <div className="mt-2">
-            <label className="text-xs font-medium text-gray-600">Fields (JSON)</label>
-            <textarea
-              className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
-              rows={4}
-              value={(config.fieldsJson as string) ?? ""}
-              onChange={(e) => onUpdate({ ...config, fieldsJson: e.target.value })}
-            />
+            <label className="text-xs font-medium text-gray-600">Value Input</label>
+            <p className="text-xs text-gray-500 mt-1">Connect a data pin to provide the value</p>
           </div>
         </>
       );
@@ -188,17 +297,13 @@ function ConfigFields({ type, config, onUpdate }: ConfigFieldsProps) {
               type="number"
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
               value={(config.maxIterations as number) ?? 10}
-              onChange={(e) => onUpdate({ ...config, maxIterations: parseInt(e.target.value, 10) })}
+              onChange={(e) => onUpdate({ ...config, maxIterations: parseInt(e.target.value, 10) || undefined })}
             />
+            <p className="text-[10px] text-gray-400 mt-1">Leave empty for unlimited</p>
           </div>
           <div className="mt-2">
-            <label className="text-xs font-medium text-gray-600">Selector</label>
-            <input
-              className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
-              placeholder=".pagination .next"
-              value={(config.selector as string) ?? ""}
-              onChange={(e) => onUpdate({ ...config, selector: e.target.value })}
-            />
+            <label className="text-xs font-medium text-gray-600">Items Input</label>
+            <p className="text-xs text-gray-500 mt-1">Connect a Select (mode: all) to the items pin</p>
           </div>
         </>
       );

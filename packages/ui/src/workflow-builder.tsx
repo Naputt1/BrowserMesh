@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import type { ReactFlowInstance } from "@xyflow/react";
-import type { WorkflowDefinition, WorkflowEvent } from "@browsermesh/workflow";
+import type { WorkflowDefinition, NodeType, GlobalSettings, WorkflowEvent } from "@browsermesh/workflow";
 import { WorkflowCanvas } from "./workflow-canvas";
 import { Toolbar } from "./toolbar";
 import { NodeConfigPanel } from "./node-config-panel";
+import { GlobalSettingsPanel } from "./global-settings-panel";
 import type { RFNode, RFEdge } from "./lib/workflow-converter";
 
 export type WorkflowBuilderProps = {
@@ -14,10 +15,38 @@ export type WorkflowBuilderProps = {
 
 let nodeCounter = 0;
 
+const DEFAULT_WORKFLOW: WorkflowDefinition = {
+  id: crypto.randomUUID(),
+  nodes: [{ id: "start_auto", type: "start", label: "Start", config: {} }],
+  edges: [],
+};
+
+const MAX_HISTORY = 50;
+
 export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [workflowState, setWorkflowState] = useState<WorkflowDefinition | undefined>(workflow);
+  const [workflowState, setWorkflowState] = useState<WorkflowDefinition | undefined>(workflow ?? DEFAULT_WORKFLOW);
+  const [showSettings, setShowSettings] = useState(false);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
   const reactFlowRef = useRef<ReactFlowInstance<RFNode, RFEdge> | null>(null);
+
+  const historyRef = useRef<WorkflowDefinition[]>([]);
+  const historyIndexRef = useRef(-1);
+  const isUndoRedoRef = useRef(false);
+
+  const initHistory = useCallback((wf: WorkflowDefinition) => {
+    historyRef.current = [JSON.parse(JSON.stringify(wf))];
+    historyIndexRef.current = 0;
+    setCanUndo(false);
+    setCanRedo(false);
+  }, []);
+
+  useEffect(() => {
+    if (workflowState && historyRef.current.length === 0) {
+      initHistory(workflowState);
+    }
+  }, [workflowState, initHistory]);
 
   useEffect(() => {
     if (workflow !== undefined) {
@@ -25,25 +54,74 @@ export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderP
     }
   }, [workflow]);
 
+  const updateUndoRedoState = useCallback(() => {
+    setCanUndo(historyIndexRef.current > 0);
+    setCanRedo(historyIndexRef.current < historyRef.current.length - 1);
+  }, []);
+
+  const pushHistory = useCallback((wf: WorkflowDefinition) => {
+    const idx = historyIndexRef.current;
+    historyRef.current = historyRef.current.slice(0, idx + 1);
+    historyRef.current.push(JSON.parse(JSON.stringify(wf)));
+    if (historyRef.current.length > MAX_HISTORY) {
+      historyRef.current.shift();
+    }
+    historyIndexRef.current = historyRef.current.length - 1;
+    updateUndoRedoState();
+  }, [updateUndoRedoState]);
+
   const handleChange = useCallback((wf: WorkflowDefinition) => {
     setWorkflowState(wf);
     onWorkflowChange?.(wf);
-  }, [onWorkflowChange]);
+    if (!isUndoRedoRef.current) {
+      pushHistory(wf);
+    }
+  }, [onWorkflowChange, pushHistory]);
 
-  const handleAddNode = useCallback((type: string) => {
-    const id = `node_${++nodeCounter}`;
+  const handleUndo = useCallback(() => {
+    if (historyIndexRef.current <= 0) return;
+    isUndoRedoRef.current = true;
+    historyIndexRef.current--;
+    const state = JSON.parse(JSON.stringify(historyRef.current[historyIndexRef.current])) as WorkflowDefinition;
+    setWorkflowState(state);
+    onWorkflowChange?.(state);
+    updateUndoRedoState();
+    queueMicrotask(() => { isUndoRedoRef.current = false; });
+  }, [onWorkflowChange, updateUndoRedoState]);
+
+  const handleRedo = useCallback(() => {
+    if (historyIndexRef.current >= historyRef.current.length - 1) return;
+    isUndoRedoRef.current = true;
+    historyIndexRef.current++;
+    const state = JSON.parse(JSON.stringify(historyRef.current[historyIndexRef.current])) as WorkflowDefinition;
+    setWorkflowState(state);
+    onWorkflowChange?.(state);
+    updateUndoRedoState();
+    queueMicrotask(() => { isUndoRedoRef.current = false; });
+  }, [onWorkflowChange, updateUndoRedoState]);
+
+  const handleAddNode = useCallback((type: NodeType) => {
+    if (type === "start") return;
+
     const existing = workflowState ?? { id: crypto.randomUUID(), nodes: [], edges: [] };
+    const hasStart = existing.nodes.some((n) => n.type === "start");
+
+    const id = `node_${++nodeCounter}`;
     const newNode = {
       id,
-      type: type as WorkflowDefinition["nodes"][number]["type"],
+      type,
       label: type.charAt(0).toUpperCase() + type.slice(1),
       config: {},
     };
     const updated = {
       ...existing,
-      nodes: [...existing.nodes, newNode],
+      nodes: hasStart ? [...existing.nodes, newNode] : [
+        { id: "start_auto", type: "start", label: "Start", config: {} },
+        newNode,
+      ],
     };
-    handleChange(updated);
+
+    handleChange(updated as WorkflowDefinition);
   }, [workflowState, handleChange]);
 
   const handleUpdateNode = useCallback((id: string, updates: { label?: string; config?: Record<string, unknown> }) => {
@@ -86,6 +164,11 @@ export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderP
     URL.revokeObjectURL(url);
   }, [workflowState]);
 
+  const handleSettingsChange = useCallback((settings: GlobalSettings) => {
+    if (!workflowState) return;
+    handleChange({ ...workflowState, settings });
+  }, [workflowState, handleChange]);
+
   const handleImport = useCallback(() => {
     const input = document.createElement("input");
     input.type = "file";
@@ -108,26 +191,41 @@ export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderP
     <div className="flex flex-col h-full">
       <Toolbar
         onAddNode={handleAddNode}
+        onToggleSettings={() => setShowSettings((v) => !v)}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        canUndo={canUndo}
+        canRedo={canRedo}
         onZoomIn={() => reactFlowRef.current?.zoomIn()}
         onZoomOut={() => reactFlowRef.current?.zoomOut()}
         onFitView={() => reactFlowRef.current?.fitView({ duration: 200 })}
         onExport={handleExport}
         onImport={handleImport}
       />
-        <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 relative">
           <WorkflowCanvas
             workflow={workflowState}
             onChange={handleChange}
             onInit={(instance) => { reactFlowRef.current = instance; }}
             onSelectNode={setSelectedNodeId}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
           />
         </div>
-        <NodeConfigPanel
-          node={selectedNode}
-          onUpdate={handleUpdateNode}
-          onDelete={handleDeleteNode}
-        />
+        {showSettings ? (
+          <GlobalSettingsPanel
+            settings={workflowState?.settings}
+            onChange={handleSettingsChange}
+            onClose={() => setShowSettings(false)}
+          />
+        ) : (
+          <NodeConfigPanel
+            node={selectedNode}
+            onUpdate={handleUpdateNode}
+            onDelete={handleDeleteNode}
+          />
+        )}
       </div>
     </div>
   );
