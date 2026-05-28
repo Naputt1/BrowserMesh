@@ -24,3 +24,6 @@ export type { ToolbarProps } from "./toolbar";
 
 export { NodeConfigPanel } from "./node-config-panel";
 export type { NodeConfigPanelProps } from "./node-config-panel";
+
+export { GlobalSettingsPanel } from "./global-settings-panel";
+export type { GlobalSettingsPanelProps } from "./global-settings-panel";

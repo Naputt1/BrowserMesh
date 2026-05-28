@@ -1,47 +1,76 @@
 {
   "id": "web-scraper-basic",
   "name": "Wikipedia - Basic Web Scraper",
-  "nodes": [
-    {
-      "id": "nav",
-      "type": "navigate",
-      "label": "Navigate to Wikipedia",
-      "config": {
-        "url": "https://en.wikipedia.org/wiki/Web_scraping"
-      }
+  "settings": {
+    "timing": {
+      "minDelayMs": 100,
+      "maxDelayMs": 500
     },
-    {
-      "id": "extract_title",
-      "type": "extract",
-      "label": "Extract page title",
-      "config": {
-        "selector": "h1",
-        "property": "text",
-        "name": "pageTitle"
-      }
-    },
-    {
-      "id": "extract_paragraph",
-      "type": "extract",
-      "label": "Extract first paragraph",
-      "config": {
-        "selector": "#mw-content-text p",
-        "property": "text",
-        "name": "firstParagraph"
-      }
-    },
-    {
-      "id": "wait",
-      "type": "wait",
-      "label": "Wait 2 seconds",
-      "config": {
-        "durationMs": 2000
-      }
+    "outputType": {
+      "rootTypeName": "ScrapeResult",
+      "fields": [
+        { "name": "pageTitle", "valueType": "string" },
+        { "name": "firstParagraph", "valueType": "string" }
+      ]
     }
+  },
+  "nodes": [
+    { "id": "s", "type": "start", "label": "Start" },
+    {
+      "id": "nav", "type": "navigate",
+      "label": "Navigate to Wikipedia",
+      "config": { "url": "https://en.wikipedia.org/wiki/Web_scraping" }
+    },
+    {
+      "id": "sel_title", "type": "select",
+      "label": "Select page title",
+      "config": { "mode": "one", "selector": "h1" }
+    },
+    {
+      "id": "ext_title", "type": "extract",
+      "label": "Extract page title",
+      "config": { "property": "text" }
+    },
+    {
+      "id": "out_title", "type": "output",
+      "label": "Output title",
+      "config": { "propertyPath": "pageTitle" }
+    },
+    {
+      "id": "sel_para", "type": "select",
+      "label": "Select first paragraph",
+      "config": { "mode": "one", "selector": "#mw-content-text p" }
+    },
+    {
+      "id": "ext_para", "type": "extract",
+      "label": "Extract first paragraph",
+      "config": { "property": "text" }
+    },
+    {
+      "id": "out_para", "type": "output",
+      "label": "Output paragraph",
+      "config": { "propertyPath": "firstParagraph" }
+    },
+    {
+      "id": "wait", "type": "wait",
+      "label": "Wait 2 seconds",
+      "config": { "durationMs": 2000 }
+    },
+    { "id": "e", "type": "end", "label": "End" }
   ],
   "edges": [
-    { "id": "e1", "source": "nav", "target": "extract_title" },
-    { "id": "e2", "source": "extract_title", "target": "extract_paragraph" },
-    { "id": "e3", "source": "extract_paragraph", "target": "wait" }
+    { "id": "e1", "source": "s", "sourceHandle": "flow", "target": "nav", "targetHandle": "flow" },
+    { "id": "e2", "source": "nav", "sourceHandle": "flow", "target": "sel_title", "targetHandle": "flow" },
+    { "id": "e3", "source": "sel_title", "sourceHandle": "flow", "target": "ext_title", "targetHandle": "flow" },
+    { "id": "e4", "source": "sel_title", "sourceHandle": "element", "target": "ext_title", "targetHandle": "element" },
+    { "id": "e5", "source": "ext_title", "sourceHandle": "flow", "target": "out_title", "targetHandle": "flow" },
+    { "id": "e6", "source": "ext_title", "sourceHandle": "value", "target": "out_title", "targetHandle": "value" },
+    { "id": "e7", "source": "out_title", "sourceHandle": "flow", "target": "sel_para", "targetHandle": "flow" },
+    { "id": "e8", "source": "sel_para", "sourceHandle": "flow", "target": "ext_para", "targetHandle": "flow" },
+    { "id": "e9", "source": "sel_para", "sourceHandle": "element", "target": "ext_para", "targetHandle": "element" },
+    { "id": "e10", "source": "ext_para", "sourceHandle": "flow", "target": "out_para", "targetHandle": "flow" },
+    { "id": "e11", "source": "ext_para", "sourceHandle": "value", "target": "out_para", "targetHandle": "value" },
+    { "id": "e12", "source": "out_para", "sourceHandle": "flow", "target": "wait", "targetHandle": "flow" },
+    { "id": "e13", "source": "wait", "sourceHandle": "flow", "target": "e", "targetHandle": "flow" }
   ]
 }

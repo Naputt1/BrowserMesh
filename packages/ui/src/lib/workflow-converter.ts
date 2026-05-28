@@ -1,60 +1,85 @@
-import type { WorkflowDefinition, WorkflowNode, WorkflowEdge } from "@browsermesh/workflow";
+import type { WorkflowDefinition, WorkflowNode, WorkflowEdge, NodeType, GlobalSettings } from "@browsermesh/workflow";
+import { NODE_DEFINITIONS } from "@browsermesh/workflow";
 import type { Node, Edge } from "@xyflow/react";
 
-export type RFNode = Node<{ label: string; nodeType: WorkflowNode["type"]; config: Record<string, unknown> }>;
+export type RFNode = Node<{ label: string; nodeType: NodeType; config: Record<string, unknown> }>;
 export type RFEdge = Edge;
 
-const nodeTypeColors: Record<WorkflowNode["type"], string> = {
-  navigate: "#3b82f6",
-  click: "#22c55e",
-  type: "#f59e0b",
-  wait: "#a855f7",
-  scroll: "#64748b",
-  extract: "#14b8a6",
-  loop: "#f97316",
-  custom: "#6b7280",
-};
+const GRID = 20;
 
-export function workflowToReactFlow(wf: WorkflowDefinition): { nodes: RFNode[]; edges: RFEdge[] } {
+function snap(pos: { x: number; y: number }): { x: number; y: number } {
+  return {
+    x: Math.round(pos.x / GRID) * GRID,
+    y: Math.round(pos.y / GRID) * GRID,
+  };
+}
+
+export function workflowToReactFlow(
+  wf: WorkflowDefinition,
+  existingNodes?: RFNode[],
+): { nodes: RFNode[]; edges: RFEdge[] } {
+  const existingPositions = new Map(existingNodes?.map((n) => [n.id, n.position]));
+
   const nodes: RFNode[] = wf.nodes.map((n, i) => ({
     id: n.id,
     type: "workflowNode",
-    position: { x: 250, y: i * 120 + 50 },
+    position: n.position ? snap(n.position) : existingPositions.get(n.id) ?? { x: i * 280 + 60, y: 200 },
     data: { label: n.label ?? n.type, nodeType: n.type, config: n.config ?? {} },
   }));
 
   const edges: RFEdge[] = wf.edges.map((e) => ({
     id: e.id,
     source: e.source,
+    sourceHandle: e.sourceHandle,
     target: e.target,
+    targetHandle: e.targetHandle,
     type: "smoothstep",
   }));
 
   return { nodes, edges };
 }
 
-export function reactFlowToWorkflow(nodes: RFNode[], edges: RFEdge[], id?: string, name?: string): WorkflowDefinition {
+export function reactFlowToWorkflow(
+  nodes: RFNode[],
+  edges: RFEdge[],
+  id?: string,
+  name?: string,
+  settings?: GlobalSettings,
+): WorkflowDefinition {
   const wfNodes: WorkflowNode[] = nodes.map((n) => ({
     id: n.id,
     type: n.data.nodeType,
     label: n.data.label,
+    position: snap(n.position),
     config: n.data.config,
   }));
 
   const wfEdges: WorkflowEdge[] = edges.map((e) => ({
     id: e.id,
     source: e.source,
+    sourceHandle: e.sourceHandle ?? "flow",
     target: e.target,
+    targetHandle: e.targetHandle ?? "flow",
   }));
 
   return {
     id: id ?? crypto.randomUUID(),
     ...(name ? { name } : {}),
+    ...(settings ? { settings } : {}),
     nodes: wfNodes,
     edges: wfEdges,
   };
 }
 
-export function getNodeColor(nodeType: WorkflowNode["type"]): string {
-  return nodeTypeColors[nodeType] ?? "#6b7280";
+export function getNodeColor(nodeType: NodeType): string {
+  return NODE_DEFINITIONS[nodeType]?.color ?? "#6b7280";
+}
+
+export function getPinColor(type: string): string {
+  if (type === "flow") return "#9ca3af";
+  return "#3b82f6";
+}
+
+export function getNodeDef(type: NodeType) {
+  return NODE_DEFINITIONS[type];
 }

@@ -1,4 +1,4 @@
-import type { WorkflowEvent } from "@browsermesh/workflow";
+import type { WorkflowEvent, WorkflowNode } from "@browsermesh/workflow";
 import type { PauseController } from "../pause-controller.js";
 
 export interface Locator {
@@ -28,8 +28,10 @@ export interface ExecutionContext {
   readonly signal: AbortSignal;
   readonly page: Page;
   readonly currentElement?: Locator;
+  readonly loopIndex?: number;
   readonly getCustomHandler: (name: string) => CustomHandler | undefined;
   readonly pauseController?: PauseController;
+  setOutput(pin: string, value: unknown): void;
 }
 
 export type CustomHandler = (
@@ -38,10 +40,11 @@ export type CustomHandler = (
 ) => Promise<unknown>;
 
 export type NodeHandler = (
-  node: { id: string; type: string; config?: Record<string, unknown> },
+  node: WorkflowNode,
   context: ExecutionContext,
-  executeChildren: (
-    nodeIds: string[],
+  inputs: Record<string, unknown>,
+  executeSubgraph?: (
+    startHandle: string,
     contextOverride?: Partial<ExecutionContext>,
   ) => AsyncGenerator<WorkflowEvent>,
 ) => AsyncGenerator<WorkflowEvent>;
