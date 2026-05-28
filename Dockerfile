@@ -44,8 +44,11 @@ COPY --from=build /app/packages/proto/browsermesh /app/packages/proto/browsermes
 COPY --from=build /app/packages/workflow/dist /app/packages/workflow/dist
 COPY --from=build /app/apps/runtime/dist /app/apps/runtime/dist
 
-# Install Playwright Chromium with system deps
-RUN npx playwright install --with-deps chromium
+# Install Chromium system dependencies
+RUN npx playwright install-deps chromium 2>/dev/null; true
+
+# Pre-download CloakBrowser's stealth Chromium binary
+RUN node -e "import('cloakbrowser').then(c => c.ensureBinary()).then(() => process.exit(0))"
 
 EXPOSE 50051
 CMD ["node", "apps/runtime/dist/cli.js"]

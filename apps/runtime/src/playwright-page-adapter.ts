@@ -1,4 +1,4 @@
-import type { Page as PlaywrightPage } from "playwright";
+import type { Page as PlaywrightPage } from "playwright-core";
 import type { Page, Locator } from "./interpreter/types";
 
 export class PlaywrightPageAdapter implements Page {

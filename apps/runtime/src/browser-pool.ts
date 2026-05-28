@@ -1,5 +1,5 @@
-import { chromium } from "playwright";
-import type { Browser, BrowserContext } from "playwright";
+import { launch } from "cloakbrowser";
+import type { Browser, BrowserContext } from "playwright-core";
 import type { Page } from "./interpreter/types";
 import { PlaywrightPageAdapter } from "./playwright-page-adapter";
 
@@ -17,7 +17,7 @@ export class BrowserPool {
 
   async start(): Promise<void> {
     if (this.started) return;
-    this.browser = await chromium.launch({
+    this.browser = await launch({
       headless: this.options.headless ?? true,
       ...(this.options.chromiumPath ? { executablePath: this.options.chromiumPath } : {}),
     });
