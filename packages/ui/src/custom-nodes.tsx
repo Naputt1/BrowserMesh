@@ -1,19 +1,45 @@
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import type { NodeType, PinDescriptor } from "@browsermesh/workflow";
+import type { NodeType, PinDescriptor, DataType } from "@browsermesh/workflow";
 import { NODE_DEFINITIONS } from "@browsermesh/workflow";
 import { cn } from "./lib/cn";
 import { getNodeColor, getPinColor, type RFNode } from "./lib/workflow-converter";
 
+const TYPE_BADGE: Record<string, string> = {
+  string: "str",
+  number: "num",
+  boolean: "bool",
+  object: "obj",
+  array: "arr",
+};
+
 function PinLabel({ pin, side, top }: { pin: PinDescriptor; side: "left" | "right"; top: number }) {
+  const badge = pin.dataType?.kind ? TYPE_BADGE[pin.dataType.kind] : undefined;
   return (
     <span
-      className="absolute text-[9px] text-gray-400 pointer-events-none select-none whitespace-nowrap leading-none"
+      className="absolute text-[9px] text-gray-400 pointer-events-none select-none whitespace-nowrap leading-none flex items-center gap-1"
       style={{
         [side === "left" ? "left" : "right"]: "8px",
         top: `${top}px`,
       }}
     >
+      {side === "left" && badge && <TypeBadge kind={pin.dataType!.kind} />}
       {pin.label}
+      {side === "right" && badge && <TypeBadge kind={pin.dataType!.kind} />}
+    </span>
+  );
+}
+
+function TypeBadge({ kind }: { kind: DataType["kind"] }) {
+  const colors: Record<string, string> = {
+    string: "bg-blue-100 text-blue-700",
+    number: "bg-green-100 text-green-700",
+    boolean: "bg-purple-100 text-purple-700",
+    object: "bg-amber-100 text-amber-700",
+    array: "bg-rose-100 text-rose-700",
+  };
+  return (
+    <span className={`inline-block text-[8px] px-1 py-[1px] rounded font-medium leading-none ${colors[kind] ?? "bg-gray-100 text-gray-500"}`}>
+      {TYPE_BADGE[kind] ?? kind}
     </span>
   );
 }

@@ -224,6 +224,7 @@ export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderP
             node={selectedNode}
             onUpdate={handleUpdateNode}
             onDelete={handleDeleteNode}
+            outputType={workflowState?.settings?.outputType}
           />
         )}
       </div>

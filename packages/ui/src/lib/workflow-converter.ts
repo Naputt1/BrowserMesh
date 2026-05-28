@@ -1,8 +1,8 @@
-import type { WorkflowDefinition, WorkflowNode, WorkflowEdge, NodeType, GlobalSettings } from "@browsermesh/workflow";
+import type { WorkflowDefinition, WorkflowNode, WorkflowEdge, NodeType, GlobalSettings, DataType, PinDescriptor } from "@browsermesh/workflow";
 import { NODE_DEFINITIONS } from "@browsermesh/workflow";
 import type { Node, Edge } from "@xyflow/react";
 
-export type RFNode = Node<{ label: string; nodeType: NodeType; config: Record<string, unknown> }>;
+export type RFNode = Node<{ label: string; nodeType: NodeType; config: Record<string, unknown>; pinDataTypes?: Record<string, DataType> }>;
 export type RFEdge = Edge;
 
 const GRID = 20;
@@ -12,6 +12,13 @@ function snap(pos: { x: number; y: number }): { x: number; y: number } {
     x: Math.round(pos.x / GRID) * GRID,
     y: Math.round(pos.y / GRID) * GRID,
   };
+}
+
+function getPinDataTypes(nodeType: NodeType, config: Record<string, unknown>): Record<string, DataType> | undefined {
+  if (nodeType === "select" && config.mode === "all") {
+    return { element: { kind: "array" } };
+  }
+  return undefined;
 }
 
 export function workflowToReactFlow(
@@ -24,7 +31,7 @@ export function workflowToReactFlow(
     id: n.id,
     type: "workflowNode",
     position: n.position ? snap(n.position) : existingPositions.get(n.id) ?? { x: i * 280 + 60, y: 200 },
-    data: { label: n.label ?? n.type, nodeType: n.type, config: n.config ?? {} },
+    data: { label: n.label ?? n.type, nodeType: n.type, config: n.config ?? {}, pinDataTypes: getPinDataTypes(n.type, n.config ?? {}) },
   }));
 
   const edges: RFEdge[] = wf.edges.map((e) => ({
@@ -82,4 +89,30 @@ export function getPinColor(type: string): string {
 
 export function getNodeDef(type: NodeType) {
   return NODE_DEFINITIONS[type];
+}
+
+export function getPinDataType(
+  node: RFNode | undefined,
+  pin: PinDescriptor | undefined,
+  handle: string,
+): DataType | undefined {
+  return node?.data.pinDataTypes?.[handle] ?? pin?.dataType;
+}
+
+export function isDataTypeAssignable(source?: DataType, target?: DataType): boolean {
+  if (!target) return true;
+  if (!source) return false;
+  if (source.kind !== target.kind) return false;
+  if (source.kind === "array" && target.kind === "array") {
+    return isDataTypeAssignable(source.elementType, target.elementType);
+  }
+  if (source.kind === "object" && target.kind === "object") {
+    if (!target.fields || target.fields.length === 0) return true;
+    if (!source.fields) return false;
+    return target.fields.every((tf) => {
+      const sf = source.fields!.find((f) => f.name === tf.name);
+      return sf && isDataTypeAssignable(sf.type, tf.type);
+    });
+  }
+  return true;
 }

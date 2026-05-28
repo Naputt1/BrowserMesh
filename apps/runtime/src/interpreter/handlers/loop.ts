@@ -14,6 +14,7 @@ export const loopHandler: NodeHandler = async function* (node, context, inputs, 
   for (let i = 0; i < Math.min(items.length, limit); i++) {
     context.setOutput("index", i);
     const item = items[i];
+    context.setOutput("item", item);
     if (executeSubgraph) {
       yield* executeSubgraph("body", { currentElement: item, loopIndex: i });
     }

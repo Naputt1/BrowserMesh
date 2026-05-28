@@ -19,6 +19,7 @@ export type PinDescriptor = {
   readonly type: PinType;
   readonly label?: string;
   readonly required?: boolean;
+  readonly dataType?: DataType;
 };
 
 export type WorkflowNode = {
@@ -47,21 +48,21 @@ export type TimingControls = {
   readonly idleWaits?: boolean;
 };
 
-export type ExtractionSchema = {
-  readonly rootTypeName: string;
-  readonly fields: readonly ExtractionField[];
+export type DataType = {
+  readonly kind: "string" | "number" | "boolean" | "object" | "array";
+  readonly name?: string;
+  readonly fields?: readonly DataTypeField[];
+  readonly elementType?: DataType;
 };
 
-export type ExtractionField = {
+export type DataTypeField = {
   readonly name: string;
-  readonly valueType: "string" | "number" | "boolean" | "object" | "array";
-  readonly selector?: string;
-  readonly children?: readonly ExtractionField[];
+  readonly type: DataType;
 };
 
 export type GlobalSettings = {
   readonly timing?: TimingControls;
-  readonly outputType?: ExtractionSchema;
+  readonly outputType?: DataType;
 };
 
 export type WorkflowDefinition = {
@@ -202,12 +203,13 @@ export const NODE_DEFINITIONS: Record<NodeType, NodeTypeDefinition> = {
     category: "flow",
     inputs: [
       pin("flow", "flow", { required: true }),
-      pin("items", "data", { label: "Items", required: true }),
+      pin("items", "data", { label: "Items", required: true, dataType: { kind: "array" } }),
     ],
     outputs: [
       pin("flow", "flow", { required: true }),
       pin("body", "flow", { label: "Body", required: true }),
       pin("index", "data", { label: "Index" }),
+      pin("item", "data", { label: "Item" }),
     ],
   },
   custom: {
