@@ -93,6 +93,32 @@ export function GlobalSettingsPanel({ settings, onChange, onClose }: GlobalSetti
           </Field>
         </Section>
 
+        <Section title="Pages">
+          <label className="flex items-center gap-2 mt-1">
+            <input
+              type="checkbox"
+              className="rounded"
+              checked={settings?.multiPage ?? false}
+              onChange={(e) => onChange({ ...settings, multiPage: e.target.checked })}
+            />
+            <span className="text-xs text-gray-600">Enable multi-page mode</span>
+          </label>
+          <p className="text-[10px] text-gray-400 mt-1">Allows spawning and switching between multiple tabs</p>
+        </Section>
+
+        <Section title="State Persistence">
+          <label className="flex items-center gap-2 mt-1">
+            <input
+              type="checkbox"
+              className="rounded"
+              checked={settings?.statePersistence !== false}
+              onChange={(e) => onChange({ ...settings, statePersistence: e.target.checked })}
+            />
+            <span className="text-xs text-gray-600">Enable state persistence</span>
+          </label>
+          <p className="text-[10px] text-gray-400 mt-1">Saves global state to disk for crash recovery</p>
+        </Section>
+
         <Section title="Output Type">
           <TypeBuilder
             type={outputType}

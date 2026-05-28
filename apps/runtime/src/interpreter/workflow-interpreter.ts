@@ -1,6 +1,8 @@
-import type { WorkflowDefinition, WorkflowNode, WorkflowEvent } from "@browsermesh/workflow";
+import type { WorkflowDefinition, WorkflowNode, WorkflowEvent, GlobalSettings } from "@browsermesh/workflow";
 import type { Page, ExecutionContext, NodeHandler, CustomHandler } from "./types.js";
 import type { PauseController } from "../pause-controller.js";
+import type { GlobalStateStore } from "../global-state-store.js";
+import type { PageManager } from "../page-manager.js";
 import { defaultHandlerRegistry } from "./handlers/index.js";
 
 export type InterpreterOptions = {
@@ -11,6 +13,8 @@ export type InterpreterOptions = {
   readonly taskId: string;
   readonly signal?: AbortSignal;
   readonly pauseController?: PauseController;
+  readonly stateStore?: GlobalStateStore;
+  readonly pageManager?: PageManager;
 };
 
 export class WorkflowInterpreter {
@@ -21,6 +25,9 @@ export class WorkflowInterpreter {
   private readonly taskId: string;
   private readonly signal: AbortSignal;
   private readonly pauseController?: PauseController;
+  private readonly stateStore?: GlobalStateStore;
+  private readonly pageManager?: PageManager;
+  private readonly globalSettings?: GlobalSettings;
   private readonly nodeMap: Map<string, WorkflowNode>;
 
   private readonly nodeOutputs: Map<string, Map<string, unknown>> = new Map();
@@ -34,6 +41,9 @@ export class WorkflowInterpreter {
     this.taskId = options.taskId;
     this.signal = options.signal ?? new AbortController().signal;
     this.pauseController = options.pauseController;
+    this.stateStore = options.stateStore;
+    this.pageManager = options.pageManager;
+    this.globalSettings = options.workflow.settings;
     this.nodeMap = new Map(options.workflow.nodes.map((n) => [n.id, n]));
   }
 
@@ -269,6 +279,9 @@ export class WorkflowInterpreter {
       page: this.page,
       getCustomHandler: (name: string) => this.customHandlers.get(name),
       pauseController: this.pauseController,
+      globalSettings: this.globalSettings,
+      stateStore: this.stateStore,
+      pageManager: this.pageManager,
       setOutput: () => {},
     };
   }

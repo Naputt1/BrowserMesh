@@ -26,6 +26,7 @@ function mockPage(): Page {
     evaluate: vi.fn().mockResolvedValue(undefined),
     close: vi.fn().mockResolvedValue(undefined),
     url: vi.fn().mockReturnValue("about:blank"),
+    addInitScript: vi.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -569,7 +570,7 @@ describe("WorkflowInterpreter — scroll", () => {
       workflow: wf({
         nodes: [
           node("s", "start"),
-          node("sc", "scroll", { selector: "#section" }),
+          node("sc", "scroll", { direction: "to", selector: "#section" }),
           node("e", "end"),
         ],
         edges: [

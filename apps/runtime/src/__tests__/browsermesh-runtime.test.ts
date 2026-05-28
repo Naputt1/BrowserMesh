@@ -26,6 +26,7 @@ function mockPage(): Page {
     evaluate: vi.fn(),
     close: vi.fn(),
     url: vi.fn().mockReturnValue("about:blank"),
+    addInitScript: vi.fn(),
   };
 }
 

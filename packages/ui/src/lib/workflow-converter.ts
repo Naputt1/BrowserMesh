@@ -2,7 +2,7 @@ import type { WorkflowDefinition, WorkflowNode, WorkflowEdge, NodeType, GlobalSe
 import { NODE_DEFINITIONS } from "@browsermesh/workflow";
 import type { Node, Edge } from "@xyflow/react";
 
-export type RFNode = Node<{ label: string; nodeType: NodeType; config: Record<string, unknown>; pinDataTypes?: Record<string, DataType> }>;
+export type RFNode = Node<{ label: string; nodeType: NodeType; config: Record<string, unknown>; pinDataTypes?: Record<string, DataType>; pageId?: string; multiPage?: boolean }>;
 export type RFEdge = Edge;
 
 const GRID = 20;
@@ -27,11 +27,12 @@ export function workflowToReactFlow(
 ): { nodes: RFNode[]; edges: RFEdge[] } {
   const existingPositions = new Map(existingNodes?.map((n) => [n.id, n.position]));
 
+  const multiPage = wf.settings?.multiPage ?? false;
   const nodes: RFNode[] = wf.nodes.map((n, i) => ({
     id: n.id,
     type: "workflowNode",
     position: n.position ? snap(n.position) : existingPositions.get(n.id) ?? { x: i * 280 + 60, y: 200 },
-    data: { label: n.label ?? n.type, nodeType: n.type, config: n.config ?? {}, pinDataTypes: getPinDataTypes(n.type, n.config ?? {}) },
+    data: { label: n.label ?? n.type, nodeType: n.type, config: n.config ?? {}, pinDataTypes: getPinDataTypes(n.type, n.config ?? {}), pageId: n.pageId, multiPage },
   }));
 
   const edges: RFEdge[] = wf.edges.map((e) => ({
@@ -41,6 +42,7 @@ export function workflowToReactFlow(
     target: e.target,
     targetHandle: e.targetHandle,
     type: "smoothstep",
+    style: getEdgeStyle(e.targetHandle),
   }));
 
   return { nodes, edges };
@@ -59,6 +61,7 @@ export function reactFlowToWorkflow(
     label: n.data.label,
     position: snap(n.position),
     config: n.data.config,
+    pageId: n.data.pageId ?? undefined,
   }));
 
   const wfEdges: WorkflowEdge[] = edges.map((e) => ({
@@ -82,9 +85,17 @@ export function getNodeColor(nodeType: NodeType): string {
   return NODE_DEFINITIONS[nodeType]?.color ?? "#6b7280";
 }
 
-export function getPinColor(type: string): string {
+export function getPinColor(type: string, name?: string): string {
   if (type === "flow") return "#9ca3af";
+  if (name === "pageKey") return "#f97316";
   return "#3b82f6";
+}
+
+export function getEdgeStyle(targetHandle?: string): Record<string, unknown> {
+  if (targetHandle === "pageKey") {
+    return { stroke: "#f97316", strokeWidth: 2 };
+  }
+  return {};
 }
 
 export function getNodeDef(type: NodeType) {

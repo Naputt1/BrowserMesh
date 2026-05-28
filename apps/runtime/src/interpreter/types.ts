@@ -1,5 +1,7 @@
-import type { WorkflowEvent, WorkflowNode } from "@browsermesh/workflow";
+import type { WorkflowEvent, WorkflowNode, GlobalSettings } from "@browsermesh/workflow";
 import type { PauseController } from "../pause-controller.js";
+import type { GlobalStateStore } from "../global-state-store.js";
+import type { PageManager } from "../page-manager.js";
 
 export interface Locator {
   click(): Promise<void>;
@@ -21,6 +23,7 @@ export interface Page {
   evaluate(fn: string, ...args: unknown[]): Promise<unknown>;
   close(): Promise<void>;
   url(): string;
+  addInitScript(script: string): Promise<void>;
 }
 
 export interface ExecutionContext {
@@ -31,6 +34,9 @@ export interface ExecutionContext {
   readonly loopIndex?: number;
   readonly getCustomHandler: (name: string) => CustomHandler | undefined;
   readonly pauseController?: PauseController;
+  readonly globalSettings?: GlobalSettings;
+  readonly stateStore?: GlobalStateStore;
+  readonly pageManager?: PageManager;
   setOutput(pin: string, value: unknown): void;
 }
 

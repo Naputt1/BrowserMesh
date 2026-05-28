@@ -19,6 +19,9 @@ export type GrpcRuntime = {
   resumeTask(taskId: string): Promise<{ taskId: string; state: string; message?: string }>;
   getTaskStatus(taskId: string): Promise<{ taskId: string; state: string; message?: string }>;
   listRunningTasks(): Promise<Array<{ taskId: string; state: string; message?: string }>>;
+  getWorkflowState(workflowId: string): Promise<{ workflowId: string; state: Record<string, unknown>; recovered: boolean }>;
+  setWorkflowState(workflowId: string, state: Record<string, unknown>, commit?: boolean): Promise<{ workflowId: string; state: Record<string, unknown>; recovered: boolean }>;
+  recoverWorkflowState(workflowId: string): Promise<{ workflowId: string; state: Record<string, unknown>; recovered: boolean }>;
 };
 
 export class RuntimeGrpcServer {
@@ -65,6 +68,9 @@ export class RuntimeGrpcServer {
       ResumeTask: this.handleResumeTask.bind(this),
       GetTaskStatus: this.handleGetTaskStatus.bind(this),
       ListRunningTasks: this.handleListRunningTasks.bind(this),
+      GetWorkflowState: this.handleGetWorkflowState.bind(this),
+      SetWorkflowState: this.handleSetWorkflowState.bind(this),
+      RecoverWorkflowState: this.handleRecoverWorkflowState.bind(this),
     });
 
     return new Promise<void>((resolve, reject) => {
@@ -179,6 +185,58 @@ export class RuntimeGrpcServer {
       const tasks = await this.runtime.listRunningTasks();
       callback(null, {
         tasks: tasks.map((t) => ({ task_id: t.taskId, state: t.state, message: t.message ?? "" })),
+      });
+    } catch (err) {
+      callback(err instanceof Error ? err : new Error(String(err)), null);
+    }
+  }
+
+  private async handleGetWorkflowState(
+    call: grpc.ServerUnaryCall<unknown, unknown>,
+    callback: grpc.sendUnaryData<unknown>,
+  ): Promise<void> {
+    try {
+      const request = call.request as { workflow_id?: string };
+      const result = await this.runtime.getWorkflowState(request.workflow_id ?? "");
+      callback(null, {
+        workflow_id: result.workflowId,
+        state_json: JSON.stringify(result.state),
+        recovered: result.recovered,
+      });
+    } catch (err) {
+      callback(err instanceof Error ? err : new Error(String(err)), null);
+    }
+  }
+
+  private async handleSetWorkflowState(
+    call: grpc.ServerUnaryCall<unknown, unknown>,
+    callback: grpc.sendUnaryData<unknown>,
+  ): Promise<void> {
+    try {
+      const request = call.request as { workflow_id?: string; state_json?: string; commit?: boolean };
+      const state = request.state_json ? JSON.parse(request.state_json) : {};
+      const result = await this.runtime.setWorkflowState(request.workflow_id ?? "", state, request.commit);
+      callback(null, {
+        workflow_id: result.workflowId,
+        state_json: JSON.stringify(result.state),
+        recovered: result.recovered,
+      });
+    } catch (err) {
+      callback(err instanceof Error ? err : new Error(String(err)), null);
+    }
+  }
+
+  private async handleRecoverWorkflowState(
+    call: grpc.ServerUnaryCall<unknown, unknown>,
+    callback: grpc.sendUnaryData<unknown>,
+  ): Promise<void> {
+    try {
+      const request = call.request as { workflow_id?: string };
+      const result = await this.runtime.recoverWorkflowState(request.workflow_id ?? "");
+      callback(null, {
+        workflow_id: result.workflowId,
+        state_json: JSON.stringify(result.state),
+        recovered: result.recovered,
       });
     } catch (err) {
       callback(err instanceof Error ? err : new Error(String(err)), null);

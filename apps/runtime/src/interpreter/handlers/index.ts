@@ -11,6 +11,10 @@ import { extractHandler } from "./extract.js";
 import { outputHandler } from "./output.js";
 import { loopHandler } from "./loop.js";
 import { customHandler } from "./custom.js";
+import { fetchHandler } from "./fetch.js";
+import { listenHandler } from "./listen.js";
+import { stateHandler } from "./state.js";
+import { pageHandler } from "./page.js";
 
 export type { NodeHandler } from "../types.js";
 
@@ -27,4 +31,8 @@ export const defaultHandlerRegistry: ReadonlyMap<string, NodeHandler> = new Map(
   ["output", outputHandler],
   ["loop", loopHandler],
   ["custom", customHandler],
+  ["fetch", fetchHandler],
+  ["listen", listenHandler],
+  ["state", stateHandler],
+  ["page", pageHandler],
 ]);
