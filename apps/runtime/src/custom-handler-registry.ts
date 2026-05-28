@@ -22,4 +22,8 @@ export class CustomHandlerRegistry {
   list(): string[] {
     return Array.from(this.handlers.keys());
   }
+
+  toMap(): ReadonlyMap<string, CustomHandler> {
+    return new Map(this.handlers);
+  }
 }

@@ -1,4 +1,5 @@
 import type { WorkflowEvent } from "@browsermesh/workflow";
+import type { PauseController } from "../pause-controller";
 
 export interface Locator {
   click(): Promise<void>;
@@ -28,6 +29,7 @@ export interface ExecutionContext {
   readonly page: Page;
   readonly currentElement?: Locator;
   readonly getCustomHandler: (name: string) => CustomHandler | undefined;
+  readonly pauseController?: PauseController;
 }
 
 export type CustomHandler = (

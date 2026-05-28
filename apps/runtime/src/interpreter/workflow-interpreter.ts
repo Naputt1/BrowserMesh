@@ -1,5 +1,6 @@
 import type { WorkflowDefinition, WorkflowNode, WorkflowEvent } from "@browsermesh/workflow";
 import type { Page, ExecutionContext, NodeHandler, CustomHandler } from "./types";
+import type { PauseController } from "../pause-controller";
 import { defaultHandlerRegistry } from "./handlers";
 
 export type InterpreterOptions = {
@@ -9,6 +10,7 @@ export type InterpreterOptions = {
   readonly handlerRegistry?: ReadonlyMap<string, NodeHandler>;
   readonly taskId: string;
   readonly signal?: AbortSignal;
+  readonly pauseController?: PauseController;
 };
 
 export class WorkflowInterpreter {
@@ -18,6 +20,7 @@ export class WorkflowInterpreter {
   private readonly customHandlers: ReadonlyMap<string, CustomHandler>;
   private readonly taskId: string;
   private readonly signal: AbortSignal;
+  private readonly pauseController?: PauseController;
   private readonly nodeMap: Map<string, WorkflowNode>;
 
   constructor(options: InterpreterOptions) {
@@ -27,6 +30,7 @@ export class WorkflowInterpreter {
     this.handlerRegistry = options.handlerRegistry ?? defaultHandlerRegistry;
     this.taskId = options.taskId;
     this.signal = options.signal ?? new AbortController().signal;
+    this.pauseController = options.pauseController;
     this.nodeMap = new Map(options.workflow.nodes.map((n) => [n.id, n]));
   }
 
@@ -61,6 +65,7 @@ export class WorkflowInterpreter {
         return;
       }
 
+      await this.pauseController?.waitIfPaused();
       yield* this.executeNode(node);
     }
 
@@ -123,6 +128,7 @@ export class WorkflowInterpreter {
         return;
       }
 
+      await this.pauseController?.waitIfPaused();
       yield this.makeEvent("step_started", { stepId: node.id, stepType: node.type });
 
       try {
@@ -150,6 +156,7 @@ export class WorkflowInterpreter {
       signal: this.signal,
       page: this.page,
       getCustomHandler: (name: string) => this.customHandlers.get(name),
+      pauseController: this.pauseController,
     };
   }
 
