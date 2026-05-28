@@ -1,4 +1,4 @@
-import type { GlobalSettings, TimingControls, ExtractionSchema, ExtractionField } from "@browsermesh/workflow";
+import type { GlobalSettings, TimingControls, DataType, DataTypeField } from "@browsermesh/workflow";
 
 export type GlobalSettingsPanelProps = {
   settings?: GlobalSettings;
@@ -6,15 +6,17 @@ export type GlobalSettingsPanelProps = {
   onClose: () => void;
 };
 
+const DEFAULT_OUTPUT: DataType = { kind: "object", name: "Output", fields: [] };
+
 export function GlobalSettingsPanel({ settings, onChange, onClose }: GlobalSettingsPanelProps) {
   const timing = settings?.timing ?? {};
-  const outputType = settings?.outputType;
+  const outputType = settings?.outputType ?? DEFAULT_OUTPUT;
 
   const updateTiming = (update: Partial<TimingControls>) => {
     onChange({ ...settings, timing: { ...timing, ...update } });
   };
 
-  const updateOutputType = (update: ExtractionSchema) => {
+  const updateOutputType = (update: DataType) => {
     onChange({ ...settings, outputType: update });
   };
 
@@ -92,54 +94,120 @@ export function GlobalSettingsPanel({ settings, onChange, onClose }: GlobalSetti
         </Section>
 
         <Section title="Output Type">
-          <Field label="Root Type Name">
-            <input
-              className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm font-mono"
-              placeholder="ScrapeResult"
-              value={outputType?.rootTypeName ?? ""}
-              onChange={(e) =>
-                updateOutputType({
-                  rootTypeName: e.target.value,
-                  fields: outputType?.fields ?? [],
-                })
-              }
-            />
-          </Field>
-          <div className="mt-2">
-            <label className="text-xs font-medium text-gray-600">Fields</label>
-            {outputType?.fields && outputType.fields.length > 0 ? (
-              <div className="mt-1 space-y-2">
-                {outputType.fields.map((field, i) => (
-                  <OutputFieldRow
-                    key={i}
-                    field={field}
-                    onChange={(updated) => {
-                      const fields = [...outputType.fields];
-                      fields[i] = updated;
-                      updateOutputType({ ...outputType, fields });
-                    }}
-                    onDelete={() => {
-                      const fields = outputType.fields.filter((_, j) => j !== i);
-                      updateOutputType({ ...outputType, fields });
-                    }}
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-gray-400 mt-1">No fields defined</p>
-            )}
-            <button
-              onClick={() => {
-                const fields = [...(outputType?.fields ?? []), { name: "", valueType: "string" as const }];
-                updateOutputType({ rootTypeName: outputType?.rootTypeName ?? "", fields });
-              }}
-              className="mt-2 text-xs text-blue-600 hover:text-blue-800"
-            >
-              + Add Field
-            </button>
-          </div>
+          <TypeBuilder
+            type={outputType}
+            onChange={updateOutputType}
+            root
+          />
         </Section>
       </div>
+    </div>
+  );
+}
+
+function TypeBuilder({
+  type,
+  onChange,
+  root,
+}: {
+  type: DataType;
+  onChange: (t: DataType) => void;
+  root?: boolean;
+}) {
+  return (
+    <div className={root ? "" : "ml-3 pl-3 border-l border-gray-200"}>
+      {root && (
+        <Field label="Root Type Name">
+          <input
+            className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm font-mono"
+            placeholder="Output"
+            value={type.name ?? ""}
+            onChange={(e) => onChange({ ...type, name: e.target.value || undefined })}
+          />
+        </Field>
+      )}
+
+      <Field label="Kind">
+        <select
+          className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
+          value={type.kind}
+          onChange={(e) => {
+            const kind = e.target.value as DataType["kind"];
+            const base: DataType = kind === "object"
+              ? { kind, fields: [] }
+              : kind === "array"
+                ? { kind, elementType: { kind: "string" } }
+                : { kind };
+            onChange(base);
+          }}
+        >
+          <option value="string">string</option>
+          <option value="number">number</option>
+          <option value="boolean">boolean</option>
+          <option value="object">object</option>
+          <option value="array">array</option>
+        </select>
+      </Field>
+
+      {type.kind === "object" && (
+        <div className="mt-2">
+          <label className="text-xs font-medium text-gray-600">Fields</label>
+          <div className="mt-1 space-y-2">
+            {(type.fields ?? []).map((field, i) => (
+              <div key={i} className="bg-gray-50 rounded border p-2">
+                <div className="flex items-center gap-1 mb-1">
+                  <input
+                    className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs font-mono"
+                    placeholder="name"
+                    value={field.name}
+                    onChange={(e) => {
+                      const fields = [...(type.fields ?? [])];
+                      fields[i] = { ...field, name: e.target.value };
+                      onChange({ ...type, fields });
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      const fields = (type.fields ?? []).filter((_, j) => j !== i);
+                      onChange({ ...type, fields: fields.length ? fields : undefined });
+                    }}
+                    className="text-xs text-red-500 hover:text-red-700 px-1"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <TypeBuilder
+                  type={field.type}
+                  onChange={(t) => {
+                    const fields = [...(type.fields ?? [])];
+                    fields[i] = { ...field, type: t };
+                    onChange({ ...type, fields });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => {
+              const fields = [...(type.fields ?? []), { name: "", type: { kind: "string" } as DataType }];
+              onChange({ ...type, fields });
+            }}
+            className="mt-2 text-xs text-blue-600 hover:text-blue-800"
+          >
+            + Add Field
+          </button>
+        </div>
+      )}
+
+      {type.kind === "array" && (
+        <div className="mt-2">
+          <label className="text-xs font-medium text-gray-600">Element Type</label>
+          <TypeBuilder
+            type={type.elementType ?? { kind: "string" }}
+            onChange={(t) => onChange({ ...type, elementType: t })}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -158,41 +226,6 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div className="mt-2">
       <label className="text-xs font-medium text-gray-600">{label}</label>
       {children}
-    </div>
-  );
-}
-
-function OutputFieldRow({
-  field,
-  onChange,
-  onDelete,
-}: {
-  field: ExtractionField;
-  onChange: (f: ExtractionField) => void;
-  onDelete: () => void;
-}) {
-  return (
-    <div className="flex items-center gap-1">
-      <input
-        className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs font-mono"
-        placeholder="name"
-        value={field.name}
-        onChange={(e) => onChange({ ...field, name: e.target.value })}
-      />
-      <select
-        className="rounded border border-gray-300 px-1 py-1 text-xs"
-        value={field.valueType}
-        onChange={(e) => onChange({ ...field, valueType: e.target.value as ExtractionField["valueType"] })}
-      >
-        <option value="string">str</option>
-        <option value="number">num</option>
-        <option value="boolean">bool</option>
-        <option value="object">obj</option>
-        <option value="array">arr</option>
-      </select>
-      <button onClick={onDelete} className="text-xs text-red-500 hover:text-red-700 px-1">
-        ✕
-      </button>
     </div>
   );
 }

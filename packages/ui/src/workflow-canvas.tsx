@@ -13,7 +13,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { WorkflowNode } from "./custom-nodes";
-import { workflowToReactFlow, reactFlowToWorkflow, getNodeColor, getNodeDef } from "./lib/workflow-converter";
+import { workflowToReactFlow, reactFlowToWorkflow, getNodeColor, getNodeDef, isDataTypeAssignable, getPinDataType } from "./lib/workflow-converter";
 import type { WorkflowDefinition } from "@browsermesh/workflow";
 import type { RFNode, RFEdge } from "./lib/workflow-converter";
 
@@ -145,8 +145,17 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
 
     const sourcePin = sourceDef.outputs.find((p) => p.name === sourceHandle);
     const targetPin = targetDef.inputs.find((p) => p.name === targetHandle);
+    if (!sourcePin || !targetPin) return false;
 
-    return !!(sourcePin && targetPin && sourcePin.type === targetPin.type);
+    if (sourcePin.type !== targetPin.type) return false;
+
+    if (sourcePin.type === "data") {
+      const sourceType = getPinDataType(sourceNode, sourcePin, sourceHandle);
+      const targetType = getPinDataType(targetNode, targetPin, targetHandle);
+      if (!isDataTypeAssignable(sourceType, targetType)) return false;
+    }
+
+    return true;
   }, []);
 
   const handleCopy = useCallback(() => {

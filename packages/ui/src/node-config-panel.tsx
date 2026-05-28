@@ -1,14 +1,15 @@
-import { useState } from "react";
-import type { NodeType } from "@browsermesh/workflow";
+import { useState, useMemo } from "react";
+import type { DataType, NodeType } from "@browsermesh/workflow";
 import { NODE_DEFINITIONS } from "@browsermesh/workflow";
 
 export type NodeConfigPanelProps = {
   node: { id: string; label: string; type: NodeType; config: Record<string, unknown> } | null;
   onUpdate: (id: string, updates: { label?: string; config?: Record<string, unknown> }) => void;
   onDelete: (id: string) => void;
+  outputType?: DataType;
 };
 
-export function NodeConfigPanel({ node, onUpdate, onDelete }: NodeConfigPanelProps) {
+export function NodeConfigPanel({ node, onUpdate, onDelete, outputType }: NodeConfigPanelProps) {
   if (!node) {
     return (
       <div className="w-64 border-l bg-gray-50 p-4 shrink-0">
@@ -47,7 +48,7 @@ export function NodeConfigPanel({ node, onUpdate, onDelete }: NodeConfigPanelPro
 
         <Separator />
 
-        <ConfigFields type={node.type} config={node.config} onUpdate={(cfg) => onUpdate(node.id, { config: cfg })} />
+        <ConfigFields type={node.type} config={node.config} onUpdate={(cfg) => onUpdate(node.id, { config: cfg })} outputType={outputType} />
 
         <Separator />
 
@@ -70,9 +71,10 @@ type ConfigFieldsProps = {
   type: NodeType;
   config: Record<string, unknown>;
   onUpdate: (config: Record<string, unknown>) => void;
+  outputType?: DataType;
 };
 
-function ConfigFields({ type, config, onUpdate }: ConfigFieldsProps) {
+function ConfigFields({ type, config, onUpdate, outputType }: ConfigFieldsProps) {
   switch (type) {
     case "start":
     case "end":
@@ -268,24 +270,11 @@ function ConfigFields({ type, config, onUpdate }: ConfigFieldsProps) {
 
     case "output":
       return (
-        <>
-          <div>
-            <label className="text-xs font-medium text-gray-600">Property Path</label>
-            <input
-              className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
-              placeholder="pageTitle, items.title"
-              value={(config.propertyPath as string) ?? ""}
-              onChange={(e) => onUpdate({ ...config, propertyPath: e.target.value })}
-            />
-            <p className="text-[10px] text-gray-400 mt-1">
-              Dot-path in result object. Use <code>[]</code> for array indexing with index pin.
-            </p>
-          </div>
-          <div className="mt-2">
-            <label className="text-xs font-medium text-gray-600">Value Input</label>
-            <p className="text-xs text-gray-500 mt-1">Connect a data pin to provide the value</p>
-          </div>
-        </>
+        <OutputConfigFields
+          config={config}
+          onUpdate={onUpdate}
+          outputType={outputType}
+        />
       );
 
     case "loop":
@@ -324,4 +313,85 @@ function ConfigFields({ type, config, onUpdate }: ConfigFieldsProps) {
     default:
       return null;
   }
+}
+
+type LeafPath = { name: string; path: string };
+
+function collectLeafPaths(type: DataType, prefix: string = ""): LeafPath[] {
+  if (type.kind === "object") {
+    return (type.fields ?? []).flatMap((f) => {
+      const fieldPath = prefix ? `${prefix}.${f.name}` : f.name;
+      if (f.type.kind === "string" || f.type.kind === "number" || f.type.kind === "boolean") {
+        return [{ name: f.name, path: fieldPath }];
+      }
+      if (f.type.kind === "object") return collectLeafPaths(f.type, fieldPath);
+      if (f.type.kind === "array" && f.type.elementType) return collectLeafPaths(f.type.elementType, `${fieldPath}[]`);
+      return [];
+    });
+  }
+  if (type.kind === "array" && type.elementType) {
+    return collectLeafPaths(type.elementType, `[]`);
+  }
+  return [];
+}
+
+function pathDepth(path: string): number {
+  return (path.match(/\[\]/g) ?? []).length;
+}
+
+function OutputConfigFields({
+  config,
+  onUpdate,
+  outputType,
+}: {
+  config: Record<string, unknown>;
+  onUpdate: (config: Record<string, unknown>) => void;
+  outputType?: DataType;
+}) {
+  const leafPaths = useMemo(() => (outputType ? collectLeafPaths(outputType) : []), [outputType]);
+  const currentPath = (config.propertyPath as string) ?? "";
+  const currentDepth = pathDepth(currentPath);
+
+  return (
+    <>
+      <div>
+        <label className="text-xs font-medium text-gray-600">Output Field</label>
+        {leafPaths.length > 0 ? (
+          <select
+            className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm font-mono"
+            value={currentPath}
+            onChange={(e) => onUpdate({ ...config, propertyPath: e.target.value })}
+          >
+            <option value="">— select field —</option>
+            {leafPaths.map((lp) => (
+              <option key={lp.path} value={lp.path}>
+                {lp.name} ({lp.path})
+              </option>
+            ))}
+          </select>
+        ) : (
+          <input
+            className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
+            placeholder="pageTitle or [].title"
+            value={currentPath}
+            onChange={(e) => onUpdate({ ...config, propertyPath: e.target.value })}
+          />
+        )}
+      </div>
+
+      {currentPath && (
+        <div className="text-[10px] text-gray-400 space-y-1">
+          {currentDepth > 0 && (
+            <p>Requires <strong>index</strong> input ({currentDepth} array level{currentDepth > 1 ? "s" : ""})</p>
+          )}
+          {currentDepth === 0 && <p>Direct field — no index required</p>}
+        </div>
+      )}
+
+      <div className="mt-2">
+        <label className="text-xs font-medium text-gray-600">Value Input</label>
+        <p className="text-xs text-gray-500 mt-1">Connect a data pin to provide the value</p>
+      </div>
+    </>
+  );
 }

@@ -7,10 +7,11 @@
       "maxDelayMs": 500
     },
     "outputType": {
-      "rootTypeName": "ScrapeResult",
+      "kind": "object",
+      "name": "ScrapeResult",
       "fields": [
-        { "name": "pageTitle", "valueType": "string" },
-        { "name": "firstParagraph", "valueType": "string" }
+        { "name": "pageTitle", "type": { "kind": "string" } },
+        { "name": "firstParagraph", "type": { "kind": "string" } }
       ]
     }
   },
