@@ -5,8 +5,8 @@ const mockBrowserClose = vi.fn();
 const mockContextClose = vi.fn().mockResolvedValue(undefined);
 const mockNewPage = vi.fn();
 
-vi.mock("playwright", () => ({
-  chromium: { launch: mockLaunch },
+vi.mock("cloakbrowser", () => ({
+  launch: mockLaunch,
 }));
 
 function makeMockLocator() {
