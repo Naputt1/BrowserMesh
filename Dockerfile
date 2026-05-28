@@ -51,4 +51,5 @@ RUN npx playwright install-deps chromium 2>/dev/null; true
 RUN node -e "import('cloakbrowser').then(c => c.ensureBinary()).then(() => process.exit(0))"
 
 EXPOSE 50051
+EXPOSE 50052
 CMD ["node", "apps/runtime/dist/cli.js"]

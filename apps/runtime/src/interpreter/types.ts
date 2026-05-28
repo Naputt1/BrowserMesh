@@ -1,5 +1,5 @@
 import type { WorkflowEvent } from "@browsermesh/workflow";
-import type { PauseController } from "../pause-controller";
+import type { PauseController } from "../pause-controller.js";
 
 export interface Locator {
   click(): Promise<void>;

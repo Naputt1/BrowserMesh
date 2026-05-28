@@ -1,0 +1,47 @@
+{
+  "id": "web-scraper-basic",
+  "name": "Wikipedia - Basic Web Scraper",
+  "nodes": [
+    {
+      "id": "nav",
+      "type": "navigate",
+      "label": "Navigate to Wikipedia",
+      "config": {
+        "url": "https://en.wikipedia.org/wiki/Web_scraping"
+      }
+    },
+    {
+      "id": "extract_title",
+      "type": "extract",
+      "label": "Extract page title",
+      "config": {
+        "selector": "h1",
+        "property": "text",
+        "name": "pageTitle"
+      }
+    },
+    {
+      "id": "extract_paragraph",
+      "type": "extract",
+      "label": "Extract first paragraph",
+      "config": {
+        "selector": "#mw-content-text p",
+        "property": "text",
+        "name": "firstParagraph"
+      }
+    },
+    {
+      "id": "wait",
+      "type": "wait",
+      "label": "Wait 2 seconds",
+      "config": {
+        "durationMs": 2000
+      }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "source": "nav", "target": "extract_title" },
+    { "id": "e2", "source": "extract_title", "target": "extract_paragraph" },
+    { "id": "e3", "source": "extract_paragraph", "target": "wait" }
+  ]
+}

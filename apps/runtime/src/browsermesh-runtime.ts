@@ -1,10 +1,10 @@
 import type { WorkflowDefinition, WorkflowEvent } from "@browsermesh/workflow";
-import type { GrpcRuntime } from "./grpc/runtime-grpc-server";
-import { TaskRegistry } from "./task-registry";
-import { CustomHandlerRegistry } from "./custom-handler-registry";
-import { BrowserPool } from "./browser-pool";
-import { WorkflowInterpreter } from "./interpreter/workflow-interpreter";
-import { PauseController } from "./pause-controller";
+import type { GrpcRuntime } from "./grpc/runtime-grpc-server.js";
+import { TaskRegistry } from "./task-registry.js";
+import { CustomHandlerRegistry } from "./custom-handler-registry.js";
+import { BrowserPool } from "./browser-pool.js";
+import { WorkflowInterpreter } from "./interpreter/workflow-interpreter.js";
+import { PauseController } from "./pause-controller.js";
 
 export type RuntimeServiceConfig = {
   readonly host: string;

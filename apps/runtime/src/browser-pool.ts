@@ -1,7 +1,7 @@
 import { launch } from "cloakbrowser";
 import type { Browser, BrowserContext } from "playwright-core";
-import type { Page } from "./interpreter/types";
-import { PlaywrightPageAdapter } from "./playwright-page-adapter";
+import type { Page } from "./interpreter/types.js";
+import { PlaywrightPageAdapter } from "./playwright-page-adapter.js";
 
 export type BrowserPoolOptions = {
   readonly headless?: boolean;

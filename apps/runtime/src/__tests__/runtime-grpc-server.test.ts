@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { RuntimeGrpcServer, type GrpcRuntime } from "../grpc/runtime-grpc-server";
+import { RuntimeGrpcServer, type GrpcRuntime } from "../grpc/runtime-grpc-server.js";
 import type { WorkflowEvent } from "@browsermesh/workflow";
 
 function mockRuntime(): GrpcRuntime {

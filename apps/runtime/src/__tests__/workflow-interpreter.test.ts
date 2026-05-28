@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import type { WorkflowDefinition, WorkflowNode, WorkflowEvent } from "@browsermesh/workflow";
-import { WorkflowInterpreter, type InterpreterOptions } from "../interpreter/workflow-interpreter";
-import type { Page, Locator, CustomHandler } from "../interpreter/types";
+import { WorkflowInterpreter, type InterpreterOptions } from "../interpreter/workflow-interpreter.js";
+import type { Page, Locator, CustomHandler } from "../interpreter/types.js";
 
 function mockLocator(): Locator {
   return {

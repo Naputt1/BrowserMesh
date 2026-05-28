@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { TaskRegistry } from "../task-registry";
+import { TaskRegistry } from "../task-registry.js";
 
 describe("TaskRegistry", () => {
   it("starts a task in running state", () => {

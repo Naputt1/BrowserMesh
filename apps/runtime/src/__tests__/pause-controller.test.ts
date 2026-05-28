@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { PauseController } from "../pause-controller";
+import { PauseController } from "../pause-controller.js";
 
 describe("PauseController", () => {
   it("starts not paused", () => {

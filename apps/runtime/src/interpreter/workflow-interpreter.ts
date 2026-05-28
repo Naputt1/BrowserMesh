@@ -1,7 +1,7 @@
 import type { WorkflowDefinition, WorkflowNode, WorkflowEvent } from "@browsermesh/workflow";
-import type { Page, ExecutionContext, NodeHandler, CustomHandler } from "./types";
-import type { PauseController } from "../pause-controller";
-import { defaultHandlerRegistry } from "./handlers";
+import type { Page, ExecutionContext, NodeHandler, CustomHandler } from "./types.js";
+import type { PauseController } from "../pause-controller.js";
+import { defaultHandlerRegistry } from "./handlers/index.js";
 
 export type InterpreterOptions = {
   readonly workflow: WorkflowDefinition;
