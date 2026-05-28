@@ -1,0 +1,12 @@
+{
+  "name": "@browsermesh/proto",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/validate-proto.mjs",
+    "lint": "node scripts/validate-proto.mjs",
+    "typecheck": "node scripts/validate-proto.mjs"
+  }
+}
+
