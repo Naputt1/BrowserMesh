@@ -10,6 +10,9 @@ function mockRuntime(): GrpcRuntime {
     resumeTask: vi.fn().mockResolvedValue({ taskId: "t1", state: "running" }),
     getTaskStatus: vi.fn().mockResolvedValue({ taskId: "t1", state: "running" }),
     listRunningTasks: vi.fn().mockResolvedValue([{ taskId: "t1", state: "running" }]),
+    getWorkflowState: vi.fn().mockResolvedValue({ workflowId: "w1", state: {}, recovered: true }),
+    setWorkflowState: vi.fn().mockResolvedValue({ workflowId: "w1", state: {}, recovered: true }),
+    recoverWorkflowState: vi.fn().mockResolvedValue({ workflowId: "w1", state: {}, recovered: false }),
   };
 }
 

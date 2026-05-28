@@ -9,6 +9,9 @@ service BrowserMeshRuntime {
   rpc ResumeTask(TaskRequest) returns (TaskStatus);
   rpc GetTaskStatus(TaskRequest) returns (TaskStatus);
   rpc ListRunningTasks(Empty) returns (ListRunningTasksResponse);
+  rpc GetWorkflowState(WorkflowStateRequest) returns (WorkflowStateResponse);
+  rpc SetWorkflowState(SetWorkflowStateRequest) returns (WorkflowStateResponse);
+  rpc RecoverWorkflowState(WorkflowStateRequest) returns (WorkflowStateResponse);
 }
 
 message Empty {}
@@ -123,5 +126,21 @@ message TaskStatus {
 
 message ListRunningTasksResponse {
   repeated TaskStatus tasks = 1;
+}
+
+message WorkflowStateRequest {
+  string workflow_id = 1;
+}
+
+message WorkflowStateResponse {
+  string workflow_id = 1;
+  string state_json = 2;
+  bool recovered = 3;
+}
+
+message SetWorkflowStateRequest {
+  string workflow_id = 1;
+  string state_json = 2;
+  bool commit = 3;
 }
 

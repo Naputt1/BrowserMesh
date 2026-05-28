@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -13,9 +13,11 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { WorkflowNode } from "./custom-nodes";
-import { workflowToReactFlow, reactFlowToWorkflow, getNodeColor, getNodeDef, isDataTypeAssignable, getPinDataType } from "./lib/workflow-converter";
-import type { WorkflowDefinition } from "@browsermesh/workflow";
+import { workflowToReactFlow, reactFlowToWorkflow, getNodeColor, getNodeDef, isDataTypeAssignable, getPinDataType, getEdgeStyle } from "./lib/workflow-converter";
+import type { WorkflowDefinition, NodeType } from "@browsermesh/workflow";
+import { NODE_DEFINITIONS, CATEGORIES } from "@browsermesh/workflow";
 import type { RFNode, RFEdge } from "./lib/workflow-converter";
+import { ContextMenu } from "./components/ui/context-menu";
 
 const nodeTypes = { workflowNode: WorkflowNode };
 
@@ -25,11 +27,12 @@ export type WorkflowCanvasProps = {
   readonly?: boolean;
   onInit?: (instance: ReactFlowInstance<RFNode, RFEdge>) => void;
   onSelectNode?: (nodeId: string | null) => void;
+  onAddNode?: (type: NodeType, position?: { x: number; y: number }) => void;
   onUndo?: () => void;
   onRedo?: () => void;
 };
 
-export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectNode, onUndo, onRedo }: WorkflowCanvasProps) {
+export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectNode, onAddNode, onUndo, onRedo }: WorkflowCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<RFNode>([]);
@@ -42,6 +45,17 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
   const instanceRef = useRef<ReactFlowInstance<RFNode, RFEdge> | null>(null);
   const clipboardRef = useRef<{ nodes: RFNode[]; edges: RFEdge[] } | null>(null);
   const deleteGuardRef = useRef(false);
+
+  type CtxMenuState = {
+    show: boolean;
+    x: number;
+    y: number;
+    kind: "node" | "pane";
+    nodeId?: string;
+  };
+  const [ctxMenu, setCtxMenu] = useState<CtxMenuState>({ show: false, x: 0, y: 0, kind: "pane" });
+
+  const closeCtxMenu = useCallback(() => setCtxMenu((p) => ({ ...p, show: false })), []);
 
   const handleInit = useCallback((instance: ReactFlowInstance<RFNode, RFEdge>) => {
     instanceRef.current = instance;
@@ -93,7 +107,11 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
       );
     }
 
-    newEdges = addEdge({ ...connection, type: "smoothstep" }, newEdges);
+    newEdges = addEdge({
+      ...connection,
+      type: "smoothstep",
+      style: getEdgeStyle(targetHandle),
+    }, newEdges);
     setEdges(newEdges);
     emitChange(currentNodes, newEdges);
   }, [readonly, setEdges, emitChange]);
@@ -109,10 +127,66 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
     emitChange(currentNodes, newEdges);
   }, [readonly, setEdges, emitChange]);
 
+  const onNodeContextMenu = useCallback((event: React.MouseEvent, node: RFNode) => {
+    event.preventDefault();
+    if (readonly) return;
+    setCtxMenu({ show: true, x: event.clientX, y: event.clientY, kind: "node", nodeId: node.id });
+  }, [readonly]);
+
+  const onPaneContextMenu = useCallback((event: React.MouseEvent | MouseEvent) => {
+    event.preventDefault();
+    if (readonly) return;
+    setCtxMenu({ show: true, x: (event as MouseEvent).clientX, y: (event as MouseEvent).clientY, kind: "pane" });
+  }, [readonly]);
+
   const onNodeDragStop = useCallback((_event: React.MouseEvent, _node: RFNode) => {
     if (readonly || !instanceRef.current) return;
     emitChange(instanceRef.current.getNodes(), instanceRef.current.getEdges());
   }, [readonly, emitChange]);
+
+  const handleDuplicateNode = useCallback((nodeId: string) => {
+    if (!instanceRef.current) return;
+    const node = instanceRef.current.getNodes().find((n) => n.id === nodeId);
+    if (!node) return;
+    const newId = `node_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const newNode: RFNode = {
+      ...node,
+      id: newId,
+      position: { x: node.position.x + 40, y: node.position.y + 40 },
+      selected: true,
+    };
+    const curNodes = instanceRef.current.getNodes();
+    const curEdges = instanceRef.current.getEdges();
+    const updatedNodes = [...curNodes, newNode];
+    setNodes(updatedNodes);
+    emitChange(updatedNodes, curEdges);
+  }, [setNodes, emitChange]);
+
+  const handleDeleteNodeFromCtx = useCallback((nodeId: string) => {
+    if (!instanceRef.current) return;
+    const curNodes = instanceRef.current.getNodes();
+    const curEdges = instanceRef.current.getEdges();
+    const updatedNodes = curNodes.filter((n) => n.id !== nodeId);
+    const updatedEdges = curEdges.filter((e) => e.source !== nodeId && e.target !== nodeId);
+    onSelectNode?.(null);
+    setNodes(updatedNodes);
+    setEdges(updatedEdges);
+    emitChange(updatedNodes, updatedEdges);
+  }, [onSelectNode, setNodes, setEdges, emitChange]);
+
+  const handleCopyNodeToClipboard = useCallback((nodeId: string) => {
+    if (!instanceRef.current) return;
+    const allNodes = instanceRef.current.getNodes();
+    const allEdges = instanceRef.current.getEdges();
+    const node = allNodes.find((n) => n.id === nodeId);
+    if (!node) return;
+    const selectedNodes = [node];
+    const selectedNodeIds = new Set(selectedNodes.map((n) => n.id));
+    const selectedEdges = allEdges.filter(
+      (e) => selectedNodeIds.has(e.source) && selectedNodeIds.has(e.target),
+    );
+    clipboardRef.current = { nodes: selectedNodes, edges: selectedEdges };
+  }, []);
 
   const onNodesDelete = useCallback((_deleted: RFNode[]) => {
     if (deleteGuardRef.current) return;
@@ -251,6 +325,8 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
         onInit={handleInit}
         onNodeClick={handleNodeClick}
         onPaneClick={handlePaneClick}
+        onNodeContextMenu={onNodeContextMenu}
+        onPaneContextMenu={onPaneContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
         onNodeDragStop={onNodeDragStop}
         onNodesDelete={onNodesDelete}
@@ -274,6 +350,44 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
           className="border rounded-md shadow-sm"
         />
       </ReactFlow>
+
+      {ctxMenu.show && (
+        <ContextMenu
+          x={ctxMenu.x}
+          y={ctxMenu.y}
+          onClose={closeCtxMenu}
+          items={
+            ctxMenu.kind === "node" && ctxMenu.nodeId
+              ? [
+                  { label: "Edit", onClick: () => onSelectNode?.(ctxMenu.nodeId ?? null) },
+                  { label: "Copy", onClick: () => handleCopyNodeToClipboard(ctxMenu.nodeId!) },
+                  { label: "Duplicate", onClick: () => handleDuplicateNode(ctxMenu.nodeId!) },
+                  { separator: true },
+                  { label: "Delete", onClick: () => handleDeleteNodeFromCtx(ctxMenu.nodeId!), danger: true },
+                ]
+              : [
+                  {
+                    label: "New",
+                    children: CATEGORIES.map((cat) => ({
+                      label: cat.label,
+                      children: Object.values(NODE_DEFINITIONS)
+                        .filter((def) => def.category === cat.value && def.type !== "page" && def.type !== "start")
+                        .map((def) => ({
+                          label: def.label,
+                          color: def.color,
+                          onClick: () => {
+                            const pos = instanceRef.current?.screenToFlowPosition({ x: ctxMenu.x, y: ctxMenu.y });
+                            onAddNode?.(def.type, pos);
+                          },
+                        })),
+                    })),
+                  },
+                  { separator: true },
+                  { label: "Paste", onClick: handlePaste, disabled: !clipboardRef.current },
+                ]
+          }
+        />
+      )}
     </div>
   );
 }

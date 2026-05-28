@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import type { ReactFlowInstance } from "@xyflow/react";
-import type { WorkflowDefinition, NodeType, GlobalSettings, WorkflowEvent } from "@browsermesh/workflow";
+import type { WorkflowDefinition, WorkflowNode, NodeType, GlobalSettings, WorkflowEvent } from "@browsermesh/workflow";
 import { WorkflowCanvas } from "./workflow-canvas";
 import { Toolbar } from "./toolbar";
 import { NodeConfigPanel } from "./node-config-panel";
@@ -100,18 +100,19 @@ export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderP
     queueMicrotask(() => { isUndoRedoRef.current = false; });
   }, [onWorkflowChange, updateUndoRedoState]);
 
-  const handleAddNode = useCallback((type: NodeType) => {
+  const handleAddNode = useCallback((type: NodeType, position?: { x: number; y: number }) => {
     if (type === "start") return;
 
     const existing = workflowState ?? { id: crypto.randomUUID(), nodes: [], edges: [] };
     const hasStart = existing.nodes.some((n) => n.type === "start");
 
     const id = `node_${++nodeCounter}`;
-    const newNode = {
+    const newNode: WorkflowNode = {
       id,
       type,
       label: type.charAt(0).toUpperCase() + type.slice(1),
       config: {},
+      ...(position ? { position: { x: position.x, y: position.y } } : {}),
     };
     const updated = {
       ...existing,
@@ -190,7 +191,6 @@ export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderP
   return (
     <div className="flex flex-col h-full">
       <Toolbar
-        onAddNode={handleAddNode}
         onToggleSettings={() => setShowSettings((v) => !v)}
         onUndo={handleUndo}
         onRedo={handleRedo}
@@ -209,6 +209,7 @@ export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderP
             onChange={handleChange}
             onInit={(instance) => { reactFlowRef.current = instance; }}
             onSelectNode={setSelectedNodeId}
+            onAddNode={handleAddNode}
             onUndo={handleUndo}
             onRedo={handleRedo}
           />
@@ -225,6 +226,8 @@ export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderP
             onUpdate={handleUpdateNode}
             onDelete={handleDeleteNode}
             outputType={workflowState?.settings?.outputType}
+            multiPage={workflowState?.settings?.multiPage}
+            allNodes={workflowState?.nodes}
           />
         )}
       </div>

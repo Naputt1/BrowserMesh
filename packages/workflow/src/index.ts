@@ -10,7 +10,11 @@ export type NodeType =
   | "extract"
   | "output"
   | "loop"
-  | "custom";
+  | "custom"
+  | "fetch"
+  | "listen"
+  | "state"
+  | "page";
 
 export type PinType = "flow" | "data";
 
@@ -28,6 +32,7 @@ export type WorkflowNode = {
   readonly label?: string;
   readonly position?: { readonly x: number; readonly y: number };
   readonly config?: Record<string, unknown>;
+  readonly pageId?: string;
 };
 
 export type WorkflowEdge = {
@@ -63,6 +68,8 @@ export type DataTypeField = {
 export type GlobalSettings = {
   readonly timing?: TimingControls;
   readonly outputType?: DataType;
+  readonly multiPage?: boolean;
+  readonly statePersistence?: boolean;
 };
 
 export type WorkflowDefinition = {
@@ -112,7 +119,11 @@ export const NODE_DEFINITIONS: Record<NodeType, NodeTypeDefinition> = {
     label: "Navigate",
     color: "#3b82f6",
     category: "action",
-    inputs: [pin("flow", "flow", { required: true })],
+    inputs: [
+      pin("flow", "flow", { required: true }),
+      pin("pageKey", "data", { label: "Page Key" }),
+      pin("url", "data", { label: "URL" }),
+    ],
     outputs: [pin("flow", "flow", { required: true })],
   },
   click: {
@@ -122,6 +133,7 @@ export const NODE_DEFINITIONS: Record<NodeType, NodeTypeDefinition> = {
     category: "action",
     inputs: [
       pin("flow", "flow", { required: true }),
+      pin("pageKey", "data", { label: "Page Key" }),
       pin("element", "data", { label: "Element" }),
     ],
     outputs: [pin("flow", "flow", { required: true })],
@@ -133,6 +145,7 @@ export const NODE_DEFINITIONS: Record<NodeType, NodeTypeDefinition> = {
     category: "action",
     inputs: [
       pin("flow", "flow", { required: true }),
+      pin("pageKey", "data", { label: "Page Key" }),
       pin("element", "data", { label: "Element" }),
     ],
     outputs: [pin("flow", "flow", { required: true })],
@@ -142,7 +155,10 @@ export const NODE_DEFINITIONS: Record<NodeType, NodeTypeDefinition> = {
     label: "Wait",
     color: "#a855f7",
     category: "action",
-    inputs: [pin("flow", "flow", { required: true })],
+    inputs: [
+      pin("flow", "flow", { required: true }),
+      pin("pageKey", "data", { label: "Page Key" }),
+    ],
     outputs: [pin("flow", "flow", { required: true })],
   },
   scroll: {
@@ -152,6 +168,7 @@ export const NODE_DEFINITIONS: Record<NodeType, NodeTypeDefinition> = {
     category: "action",
     inputs: [
       pin("flow", "flow", { required: true }),
+      pin("pageKey", "data", { label: "Page Key" }),
       pin("element", "data", { label: "Element" }),
     ],
     outputs: [pin("flow", "flow", { required: true })],
@@ -163,6 +180,7 @@ export const NODE_DEFINITIONS: Record<NodeType, NodeTypeDefinition> = {
     category: "data",
     inputs: [
       pin("flow", "flow", { required: true }),
+      pin("pageKey", "data", { label: "Page Key" }),
       pin("element", "data", { label: "Element" }),
     ],
     outputs: [
@@ -177,6 +195,7 @@ export const NODE_DEFINITIONS: Record<NodeType, NodeTypeDefinition> = {
     category: "data",
     inputs: [
       pin("flow", "flow", { required: true }),
+      pin("pageKey", "data", { label: "Page Key" }),
       pin("element", "data", { label: "Element", required: true }),
     ],
     outputs: [
@@ -219,6 +238,57 @@ export const NODE_DEFINITIONS: Record<NodeType, NodeTypeDefinition> = {
     category: "action",
     inputs: [pin("flow", "flow", { required: true })],
     outputs: [pin("flow", "flow", { required: true })],
+  },
+  fetch: {
+    type: "fetch",
+    label: "Fetch Request",
+    color: "#8b5cf6",
+    category: "action",
+    inputs: [
+      pin("flow", "flow", { required: true }),
+      pin("pageKey", "data", { label: "Page Key" }),
+      pin("url", "data", { label: "URL" }),
+    ],
+    outputs: [
+      pin("flow", "flow", { required: true }),
+      pin("response", "data", { label: "Response", required: true, dataType: { kind: "object" } }),
+    ],
+  },
+  listen: {
+    type: "listen",
+    label: "Listen Requests",
+    color: "#ec4899",
+    category: "action",
+    inputs: [pin("flow", "flow", { required: true })],
+    outputs: [
+      pin("flow", "flow", { required: true }),
+      pin("requests", "data", { label: "Requests", dataType: { kind: "array", elementType: { kind: "object" } } }),
+    ],
+  },
+  state: {
+    type: "state",
+    label: "Global State",
+    color: "#06b6d4",
+    category: "flow",
+    inputs: [
+      pin("flow", "flow", { required: true }),
+      pin("value", "data", { label: "Value" }),
+    ],
+    outputs: [
+      pin("flow", "flow", { required: true }),
+      pin("value", "data", { label: "Value" }),
+    ],
+  },
+  page: {
+    type: "page",
+    label: "Page/Tab",
+    color: "#0ea5e9",
+    category: "action",
+    inputs: [pin("flow", "flow", { required: true })],
+    outputs: [
+      pin("flow", "flow", { required: true }),
+      pin("pageKey", "data", { label: "Page Key", required: true, dataType: { kind: "string" } }),
+    ],
   },
 };
 

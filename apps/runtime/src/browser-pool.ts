@@ -1,7 +1,15 @@
 import { launch } from "cloakbrowser";
-import type { Browser, BrowserContext } from "playwright-core";
+import type { Browser, BrowserContext, Page as PlaywrightPage } from "playwright-core";
 import type { Page } from "./interpreter/types.js";
 import { PlaywrightPageAdapter } from "./playwright-page-adapter.js";
+
+export type AcquireResult = {
+  page: Page;
+  contextId: string;
+  context: BrowserContext;
+  pwPage: PlaywrightPage;
+  release: () => Promise<void>;
+};
 
 export type BrowserPoolOptions = {
   readonly headless?: boolean;
@@ -26,7 +34,7 @@ export class BrowserPool {
 
   async acquire(
     sessionId?: string,
-  ): Promise<{ page: Page; contextId: string; release: () => Promise<void> }> {
+  ): Promise<AcquireResult> {
     this.ensureStarted();
     const context = await this.browser!.newContext();
     const pwPage = await context.newPage();
@@ -35,12 +43,18 @@ export class BrowserPool {
     this.contexts.set(contextId, context);
     return {
       page,
+      pwPage,
+      context,
       contextId,
       release: async () => {
         await context.close();
         this.contexts.delete(contextId);
       },
     };
+  }
+
+  getContext(contextId: string): BrowserContext | undefined {
+    return this.contexts.get(contextId);
   }
 
   get activeCount(): number {

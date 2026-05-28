@@ -1,11 +1,13 @@
 import type { NodeHandler } from "../types.js";
 
-export const navigateHandler: NodeHandler = async function* (node, context) {
+export const navigateHandler: NodeHandler = async function* (node, context, inputs) {
   const config = node.config ?? {};
-  const url = config.url as string | undefined;
+  const url = (inputs.url as string) ?? (config.url as string);
   if (!url) {
-    throw new Error("navigate node requires a url in config");
+    throw new Error("navigate node requires a url in config or connected to URL input");
   }
+  const pageKey = inputs.pageKey as string | undefined;
+  const page = (context.pageManager && pageKey) ? context.pageManager.getPage(pageKey) : context.page;
   const waitUntil = config.waitUntil as string | undefined;
-  await context.page.goto(url, waitUntil ? { waitUntil } : undefined);
+  await page.goto(url, waitUntil ? { waitUntil } : undefined);
 };

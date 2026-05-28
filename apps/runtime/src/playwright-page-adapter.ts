@@ -26,4 +26,8 @@ export class PlaywrightPageAdapter implements Page {
   url(): string {
     return this.pwPage.url();
   }
+
+  async addInitScript(script: string): Promise<void> {
+    await this.pwPage.addInitScript(script);
+  }
 }

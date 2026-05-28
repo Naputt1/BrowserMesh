@@ -1,0 +1,43 @@
+{
+  "id": "advanced-listen",
+  "name": "Listen - Capture Page API Requests",
+  "settings": {
+    "timing": { "minDelayMs": 300, "maxDelayMs": 800 },
+    "outputType": {
+      "kind": "array",
+      "elementType": { "kind": "object" }
+    }
+  },
+  "nodes": [
+    { "id": "s", "type": "start", "label": "Start" },
+    {
+      "id": "nav", "type": "navigate",
+      "label": "Open page with XHR calls",
+      "config": { "url": "https://jsonplaceholder.typicode.com" }
+    },
+    {
+      "id": "fetch_demo", "type": "fetch",
+      "label": "Trigger a fetch request",
+      "config": { "method": "GET", "url": "https://jsonplaceholder.typicode.com/posts/1", "actLikeNavigation": false }
+    },
+    {
+      "id": "listen", "type": "listen",
+      "label": "Capture requests",
+      "config": { "urlPatterns": ["/posts/*"], "waitMs": 500, "captureResponse": true }
+    },
+    {
+      "id": "out", "type": "output",
+      "label": "Output captured requests",
+      "config": { "propertyPath": "[].url" }
+    },
+    { "id": "e", "type": "end", "label": "End" }
+  ],
+  "edges": [
+    { "id": "e1", "source": "s", "sourceHandle": "flow", "target": "nav", "targetHandle": "flow" },
+    { "id": "e2", "source": "nav", "sourceHandle": "flow", "target": "fetch_demo", "targetHandle": "flow" },
+    { "id": "e3", "source": "fetch_demo", "sourceHandle": "flow", "target": "listen", "targetHandle": "flow" },
+    { "id": "e4", "source": "listen", "sourceHandle": "flow", "target": "out", "targetHandle": "flow" },
+    { "id": "e5", "source": "listen", "sourceHandle": "requests", "target": "out", "targetHandle": "value" },
+    { "id": "e6", "source": "out", "sourceHandle": "flow", "target": "e", "targetHandle": "flow" }
+  ]
+}

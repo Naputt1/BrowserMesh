@@ -82,6 +82,21 @@ export class RuntimeRestServer {
         return await this.handleResumeTask(resumeMatch[1], res);
       }
 
+      const stateMatch = path.match(/^\/api\/workflows\/([^/]+)\/state$/);
+      const recoverMatch = path.match(/^\/api\/workflows\/([^/]+)\/state\/recover$/);
+
+      if (recoverMatch && method === "GET") {
+        return await this.handleRecoverState(recoverMatch[1], res);
+      }
+
+      if (stateMatch && method === "GET") {
+        return await this.handleGetState(stateMatch[1], res);
+      }
+
+      if (stateMatch && method === "POST") {
+        return await this.handleSetState(stateMatch[1], req, res);
+      }
+
       writeJson(res, 404, { error: "Not found" });
     } catch (err) {
       writeJson(res, 500, { error: err instanceof Error ? err.message : "Internal error" });
@@ -165,6 +180,34 @@ export class RuntimeRestServer {
       writeJson(res, 200, status);
     } catch (err) {
       writeJson(res, 404, { error: err instanceof Error ? err.message : "Task not found" });
+    }
+  }
+
+  private async handleGetState(workflowId: string, res: ServerResponse): Promise<void> {
+    try {
+      const result = await this.runtime.getWorkflowState(workflowId);
+      writeJson(res, 200, result);
+    } catch (err) {
+      writeJson(res, 500, { error: err instanceof Error ? err.message : "Internal error" });
+    }
+  }
+
+  private async handleSetState(workflowId: string, req: IncomingMessage, res: ServerResponse): Promise<void> {
+    try {
+      const body = JSON.parse(await readBody(req)) as { state: Record<string, unknown>; commit?: boolean };
+      const result = await this.runtime.setWorkflowState(workflowId, body.state, body.commit);
+      writeJson(res, 200, result);
+    } catch (err) {
+      writeJson(res, 500, { error: err instanceof Error ? err.message : "Internal error" });
+    }
+  }
+
+  private async handleRecoverState(workflowId: string, res: ServerResponse): Promise<void> {
+    try {
+      const result = await this.runtime.recoverWorkflowState(workflowId);
+      writeJson(res, 200, result);
+    } catch (err) {
+      writeJson(res, 500, { error: err instanceof Error ? err.message : "Internal error" });
     }
   }
 

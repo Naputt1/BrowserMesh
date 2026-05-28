@@ -49,10 +49,12 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
   const color = getNodeColor(data.nodeType);
   const typeLabel = data.nodeType.charAt(0).toUpperCase() + data.nodeType.slice(1);
 
+  const showPageKey = data.multiPage === true;
+  const pageKeyFilter = (p: { name: string }) => showPageKey || p.name !== "pageKey";
   const flowInputs = def?.inputs.filter((p) => p.type === "flow") ?? [];
-  const dataInputs = def?.inputs.filter((p) => p.type !== "flow") ?? [];
+  const dataInputs = def?.inputs.filter((p) => p.type !== "flow" && pageKeyFilter(p)) ?? [];
   const flowOutputs = def?.outputs.filter((p) => p.type === "flow") ?? [];
-  const dataOutputs = def?.outputs.filter((p) => p.type !== "flow") ?? [];
+  const dataOutputs = def?.outputs.filter((p) => p.type !== "flow" && pageKeyFilter(p)) ?? [];
 
   const flowTop = 16;
   const pinGap = 28;
@@ -76,7 +78,7 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
               position={Position.Left}
               id={pin.name}
               className="!w-2 !h-2 !border-0"
-              style={{ top: `${top}px`, backgroundColor: getPinColor(pin.type) }}
+              style={{ top: `${top}px`, backgroundColor: getPinColor(pin.type, pin.name) }}
             />
             <PinLabel pin={pin} side="left" top={top - 4} />
           </span>
@@ -92,7 +94,7 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
               position={Position.Left}
               id={pin.name}
               className="!w-2 !h-2 !border-0"
-              style={{ top: `${top}px`, backgroundColor: getPinColor(pin.type) }}
+              style={{ top: `${top}px`, backgroundColor: getPinColor(pin.type, pin.name) }}
             />
             <PinLabel pin={pin} side="left" top={top - 4} />
           </span>
@@ -123,7 +125,7 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
               position={Position.Right}
               id={pin.name}
               className="!w-2 !h-2 !border-0"
-              style={{ top: `${top}px`, backgroundColor: getPinColor(pin.type) }}
+              style={{ top: `${top}px`, backgroundColor: getPinColor(pin.type, pin.name) }}
             />
             <PinLabel pin={pin} side="right" top={top - 4} />
           </span>
@@ -139,7 +141,7 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
               position={Position.Right}
               id={pin.name}
               className="!w-2 !h-2 !border-0"
-              style={{ top: `${top}px`, backgroundColor: getPinColor(pin.type) }}
+              style={{ top: `${top}px`, backgroundColor: getPinColor(pin.type, pin.name) }}
             />
             <PinLabel pin={pin} side="right" top={top - 4} />
           </span>
