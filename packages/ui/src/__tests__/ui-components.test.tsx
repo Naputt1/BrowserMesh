@@ -172,14 +172,12 @@ describe("ContextMenu", () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it("closes when backdrop is clicked", () => {
+  it("closes when clicking outside", () => {
     const onClose = vi.fn();
     render(
       <ContextMenu x={0} y={0} items={[{ label: "Item" }]} onClose={onClose} />,
     );
-    const backdrop = document.querySelector(".fixed.inset-0");
-    expect(backdrop).toBeTruthy();
-    fireEvent.click(backdrop!);
+    fireEvent.pointerDown(document.body);
     expect(onClose).toHaveBeenCalled();
   });
 
@@ -242,8 +240,10 @@ describe("ExtractionMapper", () => {
   it("removes a field when clicking remove", () => {
     const { container } = render(<ExtractionMapper typeName="Test" />);
     fireEvent.click(screen.getByText("+ Field"));
-    const removeButtons = container.querySelectorAll('button');
-    const removeBtn = Array.from(removeButtons).find(b => b.textContent === "✕");
+    const removeButtons = container.querySelectorAll("button");
+    const removeBtn = Array.from(removeButtons).find(
+      (b) => b.querySelector("svg"),
+    );
     expect(removeBtn).toBeTruthy();
   });
 });
