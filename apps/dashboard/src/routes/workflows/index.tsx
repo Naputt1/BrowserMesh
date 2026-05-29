@@ -1,17 +1,12 @@
-import { createRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Route as rootRoute } from "../__root";
-import { useWorkflowStore } from "../../stores/workflow-store";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
-import { Badge } from "../../components/ui/badge";
+import { createRoute, Link, useNavigate } from '@tanstack/react-router';
+import { Route as rootRoute } from '../__root';
+import { useWorkflowStore } from '../../stores/workflow-store';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/workflows",
+  path: '/workflows',
   component: WorkflowsPage,
 });
 
@@ -26,7 +21,7 @@ function WorkflowsPage() {
         <div>
           <h1 className="text-3xl font-bold">Workflows</h1>
           <p className="text-muted-foreground mt-1">
-            {workflows.length} saved workflow{workflows.length !== 1 ? "s" : ""}
+            {workflows.length} saved workflow{workflows.length !== 1 ? 's' : ''}
           </p>
         </div>
         <Link
@@ -41,9 +36,7 @@ function WorkflowsPage() {
       {workflows.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">
-              No saved workflows yet.
-            </p>
+            <p className="text-muted-foreground mb-4">No saved workflows yet.</p>
             <Link
               to="/workflows/new"
               search={{ load: undefined }}
@@ -62,21 +55,15 @@ function WorkflowsPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2 mb-3">
-                  <Badge variant="secondary">
-                    {w.workflow.nodes.length} nodes
-                  </Badge>
-                  <Badge variant="outline">
-                    {w.workflow.edges.length} edges
-                  </Badge>
+                  <Badge variant="secondary">{w.workflow.nodes.length} nodes</Badge>
+                  <Badge variant="outline">{w.workflow.edges.length} edges</Badge>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
                   Updated {new Date(w.updatedAt).toLocaleDateString()}
                 </p>
                 <div className="flex gap-2">
                   <button
-                    onClick={() =>
-                      navigate({ to: "/workflows/new", search: { load: w.id } })
-                    }
+                    onClick={() => navigate({ to: '/workflows/new', search: { load: w.id } })}
                     className="text-xs px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                   >
                     Edit

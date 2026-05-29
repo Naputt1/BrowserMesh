@@ -1,8 +1,23 @@
-import type { WorkflowDefinition, WorkflowNode, WorkflowEdge, NodeType, GlobalSettings, DataType, PinDescriptor } from "@browsermesh/workflow";
-import { NODE_DEFINITIONS } from "@browsermesh/workflow";
-import type { Node, Edge } from "@xyflow/react";
+import type {
+  WorkflowDefinition,
+  WorkflowNode,
+  WorkflowEdge,
+  NodeType,
+  GlobalSettings,
+  DataType,
+  PinDescriptor,
+} from '@browsermesh/workflow';
+import { NODE_DEFINITIONS } from '@browsermesh/workflow';
+import type { Node, Edge } from '@xyflow/react';
 
-export type RFNode = Node<{ label: string; nodeType: NodeType; config: Record<string, unknown>; pinDataTypes?: Record<string, DataType>; pageId?: string; multiPage?: boolean }>;
+export type RFNode = Node<{
+  label: string;
+  nodeType: NodeType;
+  config: Record<string, unknown>;
+  pinDataTypes?: Record<string, DataType>;
+  pageId?: string;
+  multiPage?: boolean;
+}>;
 export type RFEdge = Edge;
 
 const GRID = 20;
@@ -14,9 +29,12 @@ function snap(pos: { x: number; y: number }): { x: number; y: number } {
   };
 }
 
-function getPinDataTypes(nodeType: NodeType, config: Record<string, unknown>): Record<string, DataType> | undefined {
-  if (nodeType === "select" && config.mode === "all") {
-    return { element: { kind: "array" } };
+function getPinDataTypes(
+  nodeType: NodeType,
+  config: Record<string, unknown>,
+): Record<string, DataType> | undefined {
+  if (nodeType === 'select' && config.mode === 'all') {
+    return { element: { kind: 'array' } };
   }
   return undefined;
 }
@@ -31,9 +49,18 @@ export function workflowToReactFlow(
   const multiPage = wf.settings?.multiPage ?? false;
   const nodes: RFNode[] = wf.nodes.map((n, i) => ({
     id: n.id,
-    type: "workflowNode",
-    position: n.position ? snap(n.position) : existingPositions.get(n.id) ?? { x: i * 280 + 60, y: 200 },
-    data: { label: n.label ?? n.type, nodeType: n.type, config: n.config ?? {}, pinDataTypes: getPinDataTypes(n.type, n.config ?? {}), pageId: n.pageId, multiPage },
+    type: 'workflowNode',
+    position: n.position
+      ? snap(n.position)
+      : (existingPositions.get(n.id) ?? { x: i * 280 + 60, y: 200 }),
+    data: {
+      label: n.label ?? n.type,
+      nodeType: n.type,
+      config: n.config ?? {},
+      pinDataTypes: getPinDataTypes(n.type, n.config ?? {}),
+      pageId: n.pageId,
+      multiPage,
+    },
     selected: existingSelected.get(n.id) ?? false,
   }));
 
@@ -43,7 +70,7 @@ export function workflowToReactFlow(
     sourceHandle: e.sourceHandle,
     target: e.target,
     targetHandle: e.targetHandle,
-    type: "smoothstep",
+    type: 'smoothstep',
     style: getEdgeStyle(e.targetHandle),
   }));
 
@@ -69,9 +96,9 @@ export function reactFlowToWorkflow(
   const wfEdges: WorkflowEdge[] = edges.map((e) => ({
     id: e.id,
     source: e.source,
-    sourceHandle: e.sourceHandle ?? "flow",
+    sourceHandle: e.sourceHandle ?? 'flow',
     target: e.target,
-    targetHandle: e.targetHandle ?? "flow",
+    targetHandle: e.targetHandle ?? 'flow',
   }));
 
   return {
@@ -84,18 +111,18 @@ export function reactFlowToWorkflow(
 }
 
 export function getNodeColor(nodeType: NodeType): string {
-  return NODE_DEFINITIONS[nodeType]?.color ?? "#6b7280";
+  return NODE_DEFINITIONS[nodeType]?.color ?? '#6b7280';
 }
 
 export function getPinColor(type: string, name?: string): string {
-  if (type === "flow") return "#9ca3af";
-  if (name === "pageKey") return "#f97316";
-  return "#3b82f6";
+  if (type === 'flow') return '#9ca3af';
+  if (name === 'pageKey') return '#f97316';
+  return '#3b82f6';
 }
 
 export function getEdgeStyle(targetHandle?: string): Record<string, unknown> {
-  if (targetHandle === "pageKey") {
-    return { stroke: "#f97316", strokeWidth: 2 };
+  if (targetHandle === 'pageKey') {
+    return { stroke: '#f97316', strokeWidth: 2 };
   }
   return {};
 }
@@ -116,10 +143,10 @@ export function isDataTypeAssignable(source?: DataType, target?: DataType): bool
   if (!target) return true;
   if (!source) return false;
   if (source.kind !== target.kind) return false;
-  if (source.kind === "array" && target.kind === "array") {
+  if (source.kind === 'array' && target.kind === 'array') {
     return isDataTypeAssignable(source.elementType, target.elementType);
   }
-  if (source.kind === "object" && target.kind === "object") {
+  if (source.kind === 'object' && target.kind === 'object') {
     if (!target.fields || target.fields.length === 0) return true;
     if (!source.fields) return false;
     return target.fields.every((tf) => {

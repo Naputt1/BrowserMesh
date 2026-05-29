@@ -1,24 +1,19 @@
-import { createRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Route as rootRoute } from "../__root";
-import { listRunningTasks } from "../../lib/api";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
-import { Badge } from "../../components/ui/badge";
+import { createRoute, Link } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
+import { Route as rootRoute } from '../__root';
+import { listRunningTasks } from '../../lib/api';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/tasks",
+  path: '/tasks',
   component: TasksPage,
 });
 
 function TasksPage() {
   const { data, isLoading } = useQuery({
-    queryKey: ["running-tasks"],
+    queryKey: ['running-tasks'],
     queryFn: listRunningTasks,
     refetchInterval: 5000,
   });
@@ -30,7 +25,7 @@ function TasksPage() {
       <div>
         <h1 className="text-3xl font-bold">Tasks</h1>
         <p className="text-muted-foreground mt-1">
-          {tasks.length} running task{tasks.length !== 1 ? "s" : ""}
+          {tasks.length} running task{tasks.length !== 1 ? 's' : ''}
         </p>
       </div>
 
@@ -55,9 +50,7 @@ function TasksPage() {
                   <div>
                     <div className="text-sm font-mono">{task.taskId}</div>
                     {task.message && (
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        {task.message}
-                      </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{task.message}</div>
                     )}
                   </div>
                   <Badge>{task.state}</Badge>

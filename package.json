@@ -8,11 +8,13 @@
     "build": "turbo run build",
     "test": "turbo run test",
     "lint": "turbo run lint",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
+    "prettier": "^3.8.3",
     "turbo": "^2.5.0",
     "typescript": "^5.8.0"
   }
 }
-

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -9,14 +9,22 @@ import {
   addEdge,
   type Connection,
   type ReactFlowInstance,
-} from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
-import { WorkflowNode } from "./custom-nodes";
-import { workflowToReactFlow, reactFlowToWorkflow, getNodeColor, getNodeDef, isDataTypeAssignable, getPinDataType, getEdgeStyle } from "./lib/workflow-converter";
-import type { WorkflowDefinition, NodeType } from "@browsermesh/workflow";
-import { NODE_DEFINITIONS, CATEGORIES } from "@browsermesh/workflow";
-import type { RFNode, RFEdge } from "./lib/workflow-converter";
-import { ContextMenu } from "./components/ui/context-menu";
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+import { WorkflowNode } from './custom-nodes';
+import {
+  workflowToReactFlow,
+  reactFlowToWorkflow,
+  getNodeColor,
+  getNodeDef,
+  isDataTypeAssignable,
+  getPinDataType,
+  getEdgeStyle,
+} from './lib/workflow-converter';
+import type { WorkflowDefinition, NodeType } from '@browsermesh/workflow';
+import { NODE_DEFINITIONS, CATEGORIES } from '@browsermesh/workflow';
+import type { RFNode, RFEdge } from './lib/workflow-converter';
+import { ContextMenu } from './components/ui/context-menu';
 
 const nodeTypes = { workflowNode: WorkflowNode };
 
@@ -31,7 +39,16 @@ export type WorkflowCanvasProps = {
   onRedo?: () => void;
 };
 
-export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectNode, onAddNode, onUndo, onRedo }: WorkflowCanvasProps) {
+export function WorkflowCanvas({
+  workflow,
+  onChange,
+  readonly,
+  onInit,
+  onSelectNode,
+  onAddNode,
+  onUndo,
+  onRedo,
+}: WorkflowCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<RFNode>([]);
@@ -49,17 +66,20 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
     show: boolean;
     x: number;
     y: number;
-    kind: "node" | "pane";
+    kind: 'node' | 'pane';
     nodeId?: string;
   };
-  const [ctxMenu, setCtxMenu] = useState<CtxMenuState>({ show: false, x: 0, y: 0, kind: "pane" });
+  const [ctxMenu, setCtxMenu] = useState<CtxMenuState>({ show: false, x: 0, y: 0, kind: 'pane' });
 
   const closeCtxMenu = useCallback(() => setCtxMenu((p) => ({ ...p, show: false })), []);
 
-  const handleInit = useCallback((instance: ReactFlowInstance<RFNode, RFEdge>) => {
-    instanceRef.current = instance;
-    onInit?.(instance);
-  }, [onInit]);
+  const handleInit = useCallback(
+    (instance: ReactFlowInstance<RFNode, RFEdge>) => {
+      instanceRef.current = instance;
+      onInit?.(instance);
+    },
+    [onInit],
+  );
 
   useEffect(() => {
     if (!workflow) return;
@@ -68,114 +88,158 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
     setEdges(converted.edges);
   }, [workflow]);
 
-  const emitChange = useCallback((newNodes: RFNode[], newEdges: RFEdge[]) => {
-    if (!onChange) return;
-    const wf = reactFlowToWorkflow(newNodes, newEdges, workflow?.id, workflow?.name, workflow?.settings);
-    onChange(wf);
-  }, [onChange, workflow]);
+  const emitChange = useCallback(
+    (newNodes: RFNode[], newEdges: RFEdge[]) => {
+      if (!onChange) return;
+      const wf = reactFlowToWorkflow(
+        newNodes,
+        newEdges,
+        workflow?.id,
+        workflow?.name,
+        workflow?.settings,
+      );
+      onChange(wf);
+    },
+    [onChange, workflow],
+  );
 
-  const handleNodeClick = useCallback((event: React.MouseEvent, node: RFNode) => {
-    if (!event.shiftKey) {
-      onSelectNode?.(node.id);
-    }
-  }, [onSelectNode]);
+  const handleNodeClick = useCallback(
+    (event: React.MouseEvent, node: RFNode) => {
+      if (!event.shiftKey) {
+        onSelectNode?.(node.id);
+      }
+    },
+    [onSelectNode],
+  );
 
-  const handlePaneClick = useCallback((event: React.MouseEvent | MouseEvent) => {
-    if (!event.shiftKey) {
+  const handlePaneClick = useCallback(
+    (event: React.MouseEvent | MouseEvent) => {
+      if (!event.shiftKey) {
+        onSelectNode?.(null);
+      }
+    },
+    [onSelectNode],
+  );
+
+  const onConnect = useCallback(
+    (connection: Connection) => {
+      if (readonly) return;
+
+      const sourceHandle = connection.sourceHandle ?? undefined;
+      const targetHandle = connection.targetHandle ?? undefined;
+      if (!sourceHandle || !targetHandle) return;
+
+      const currentEdges = instanceRef.current?.getEdges() ?? edgesRef.current;
+      const currentNodes = instanceRef.current?.getNodes() ?? nodesRef.current;
+      let newEdges = [...currentEdges];
+
+      const isFlow = sourceHandle === 'flow' || targetHandle === 'flow';
+      if (isFlow) {
+        newEdges = newEdges.filter(
+          (e) =>
+            !(e.source === connection.source && e.sourceHandle === sourceHandle) &&
+            !(e.target === connection.target && e.targetHandle === targetHandle),
+        );
+      } else {
+        newEdges = newEdges.filter(
+          (e) => !(e.target === connection.target && e.targetHandle === targetHandle),
+        );
+      }
+
+      newEdges = addEdge(
+        {
+          ...connection,
+          type: 'smoothstep',
+          style: getEdgeStyle(targetHandle),
+        },
+        newEdges,
+      );
+      setEdges(newEdges);
+      emitChange(currentNodes, newEdges);
+    },
+    [readonly, setEdges, emitChange],
+  );
+
+  const onEdgeContextMenu = useCallback(
+    (event: React.MouseEvent, edge: RFEdge) => {
+      event.preventDefault();
+      if (readonly) return;
+      if (!instanceRef.current) return;
+      const currentNodes = instanceRef.current.getNodes();
+      const currentEdges = instanceRef.current.getEdges();
+      const newEdges = currentEdges.filter((e) => e.id !== edge.id);
+      setEdges(newEdges);
+      emitChange(currentNodes, newEdges);
+    },
+    [readonly, setEdges, emitChange],
+  );
+
+  const onNodeContextMenu = useCallback(
+    (event: React.MouseEvent, node: RFNode) => {
+      event.preventDefault();
+      if (readonly) return;
+      setCtxMenu({ show: true, x: event.clientX, y: event.clientY, kind: 'node', nodeId: node.id });
+    },
+    [readonly],
+  );
+
+  const onPaneContextMenu = useCallback(
+    (event: React.MouseEvent | MouseEvent) => {
+      event.preventDefault();
+      if (readonly) return;
+      setCtxMenu({
+        show: true,
+        x: (event as MouseEvent).clientX,
+        y: (event as MouseEvent).clientY,
+        kind: 'pane',
+      });
+    },
+    [readonly],
+  );
+
+  const onNodeDragStop = useCallback(
+    (_event: React.MouseEvent, _node: RFNode) => {
+      if (readonly || !instanceRef.current) return;
+      emitChange(instanceRef.current.getNodes(), instanceRef.current.getEdges());
+    },
+    [readonly, emitChange],
+  );
+
+  const handleDuplicateNode = useCallback(
+    (nodeId: string) => {
+      if (!instanceRef.current) return;
+      const node = instanceRef.current.getNodes().find((n) => n.id === nodeId);
+      if (!node) return;
+      const newId = `node_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      const newNode: RFNode = {
+        ...node,
+        id: newId,
+        position: { x: node.position.x + 40, y: node.position.y + 40 },
+        selected: true,
+      };
+      const curNodes = instanceRef.current.getNodes();
+      const curEdges = instanceRef.current.getEdges();
+      const updatedNodes = [...curNodes, newNode];
+      setNodes(updatedNodes);
+      emitChange(updatedNodes, curEdges);
+    },
+    [setNodes, emitChange],
+  );
+
+  const handleDeleteNodeFromCtx = useCallback(
+    (nodeId: string) => {
+      if (!instanceRef.current) return;
+      const curNodes = instanceRef.current.getNodes();
+      const curEdges = instanceRef.current.getEdges();
+      const updatedNodes = curNodes.filter((n) => n.id !== nodeId);
+      const updatedEdges = curEdges.filter((e) => e.source !== nodeId && e.target !== nodeId);
       onSelectNode?.(null);
-    }
-  }, [onSelectNode]);
-
-  const onConnect = useCallback((connection: Connection) => {
-    if (readonly) return;
-
-    const sourceHandle = connection.sourceHandle ?? undefined;
-    const targetHandle = connection.targetHandle ?? undefined;
-    if (!sourceHandle || !targetHandle) return;
-
-    const currentEdges = instanceRef.current?.getEdges() ?? edgesRef.current;
-    const currentNodes = instanceRef.current?.getNodes() ?? nodesRef.current;
-    let newEdges = [...currentEdges];
-
-    const isFlow = sourceHandle === "flow" || targetHandle === "flow";
-    if (isFlow) {
-      newEdges = newEdges.filter(
-        (e) =>
-          !(e.source === connection.source && e.sourceHandle === sourceHandle) &&
-          !(e.target === connection.target && e.targetHandle === targetHandle),
-      );
-    } else {
-      newEdges = newEdges.filter(
-        (e) => !(e.target === connection.target && e.targetHandle === targetHandle),
-      );
-    }
-
-    newEdges = addEdge({
-      ...connection,
-      type: "smoothstep",
-      style: getEdgeStyle(targetHandle),
-    }, newEdges);
-    setEdges(newEdges);
-    emitChange(currentNodes, newEdges);
-  }, [readonly, setEdges, emitChange]);
-
-  const onEdgeContextMenu = useCallback((event: React.MouseEvent, edge: RFEdge) => {
-    event.preventDefault();
-    if (readonly) return;
-    if (!instanceRef.current) return;
-    const currentNodes = instanceRef.current.getNodes();
-    const currentEdges = instanceRef.current.getEdges();
-    const newEdges = currentEdges.filter((e) => e.id !== edge.id);
-    setEdges(newEdges);
-    emitChange(currentNodes, newEdges);
-  }, [readonly, setEdges, emitChange]);
-
-  const onNodeContextMenu = useCallback((event: React.MouseEvent, node: RFNode) => {
-    event.preventDefault();
-    if (readonly) return;
-    setCtxMenu({ show: true, x: event.clientX, y: event.clientY, kind: "node", nodeId: node.id });
-  }, [readonly]);
-
-  const onPaneContextMenu = useCallback((event: React.MouseEvent | MouseEvent) => {
-    event.preventDefault();
-    if (readonly) return;
-    setCtxMenu({ show: true, x: (event as MouseEvent).clientX, y: (event as MouseEvent).clientY, kind: "pane" });
-  }, [readonly]);
-
-  const onNodeDragStop = useCallback((_event: React.MouseEvent, _node: RFNode) => {
-    if (readonly || !instanceRef.current) return;
-    emitChange(instanceRef.current.getNodes(), instanceRef.current.getEdges());
-  }, [readonly, emitChange]);
-
-  const handleDuplicateNode = useCallback((nodeId: string) => {
-    if (!instanceRef.current) return;
-    const node = instanceRef.current.getNodes().find((n) => n.id === nodeId);
-    if (!node) return;
-    const newId = `node_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-    const newNode: RFNode = {
-      ...node,
-      id: newId,
-      position: { x: node.position.x + 40, y: node.position.y + 40 },
-      selected: true,
-    };
-    const curNodes = instanceRef.current.getNodes();
-    const curEdges = instanceRef.current.getEdges();
-    const updatedNodes = [...curNodes, newNode];
-    setNodes(updatedNodes);
-    emitChange(updatedNodes, curEdges);
-  }, [setNodes, emitChange]);
-
-  const handleDeleteNodeFromCtx = useCallback((nodeId: string) => {
-    if (!instanceRef.current) return;
-    const curNodes = instanceRef.current.getNodes();
-    const curEdges = instanceRef.current.getEdges();
-    const updatedNodes = curNodes.filter((n) => n.id !== nodeId);
-    const updatedEdges = curEdges.filter((e) => e.source !== nodeId && e.target !== nodeId);
-    onSelectNode?.(null);
-    setNodes(updatedNodes);
-    setEdges(updatedEdges);
-    emitChange(updatedNodes, updatedEdges);
-  }, [onSelectNode, setNodes, setEdges, emitChange]);
+      setNodes(updatedNodes);
+      setEdges(updatedEdges);
+      emitChange(updatedNodes, updatedEdges);
+    },
+    [onSelectNode, setNodes, setEdges, emitChange],
+  );
 
   const handleCopyNodeToClipboard = useCallback((nodeId: string) => {
     if (!instanceRef.current) return;
@@ -191,21 +255,31 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
     clipboardRef.current = { nodes: selectedNodes, edges: selectedEdges };
   }, []);
 
-  const onNodesDelete = useCallback((_deleted: RFNode[]) => {
-    if (deleteGuardRef.current) return;
-    deleteGuardRef.current = true;
-    queueMicrotask(() => { deleteGuardRef.current = false; });
-    if (readonly || !instanceRef.current) return;
-    emitChange(instanceRef.current.getNodes(), instanceRef.current.getEdges());
-  }, [readonly, emitChange]);
+  const onNodesDelete = useCallback(
+    (_deleted: RFNode[]) => {
+      if (deleteGuardRef.current) return;
+      deleteGuardRef.current = true;
+      queueMicrotask(() => {
+        deleteGuardRef.current = false;
+      });
+      if (readonly || !instanceRef.current) return;
+      emitChange(instanceRef.current.getNodes(), instanceRef.current.getEdges());
+    },
+    [readonly, emitChange],
+  );
 
-  const onEdgesDelete = useCallback((_deleted: RFEdge[]) => {
-    if (deleteGuardRef.current) return;
-    deleteGuardRef.current = true;
-    queueMicrotask(() => { deleteGuardRef.current = false; });
-    if (readonly || !instanceRef.current) return;
-    emitChange(instanceRef.current.getNodes(), instanceRef.current.getEdges());
-  }, [readonly, emitChange]);
+  const onEdgesDelete = useCallback(
+    (_deleted: RFEdge[]) => {
+      if (deleteGuardRef.current) return;
+      deleteGuardRef.current = true;
+      queueMicrotask(() => {
+        deleteGuardRef.current = false;
+      });
+      if (readonly || !instanceRef.current) return;
+      emitChange(instanceRef.current.getNodes(), instanceRef.current.getEdges());
+    },
+    [readonly, emitChange],
+  );
 
   const isValidConnection = useCallback((connection: RFEdge | Connection) => {
     const sourceHandle = connection.sourceHandle ?? undefined;
@@ -226,7 +300,7 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
 
     if (sourcePin.type !== targetPin.type) return false;
 
-    if (sourcePin.type === "data") {
+    if (sourcePin.type === 'data') {
       const sourceType = getPinDataType(sourceNode, sourcePin, sourceHandle);
       const targetType = getPinDataType(targetNode, targetPin, targetHandle);
       if (!isDataTypeAssignable(sourceType, targetType)) return false;
@@ -290,30 +364,30 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
       if (e.target !== el && !el.contains(e.target as Node)) return;
       const isCmd = e.metaKey || e.ctrlKey;
 
-      if (isCmd && e.key === "z" && e.shiftKey) {
+      if (isCmd && e.key === 'z' && e.shiftKey) {
         e.preventDefault();
         onRedo?.();
         return;
       }
-      if ((isCmd && e.key === "z" && !e.shiftKey) || (isCmd && e.key === "y")) {
+      if ((isCmd && e.key === 'z' && !e.shiftKey) || (isCmd && e.key === 'y')) {
         e.preventDefault();
         onUndo?.();
         return;
       }
-      if (isCmd && e.key === "c") {
+      if (isCmd && e.key === 'c') {
         e.preventDefault();
         handleCopy();
         return;
       }
-      if (isCmd && e.key === "v") {
+      if (isCmd && e.key === 'v') {
         e.preventDefault();
         handlePaste();
         return;
       }
     };
 
-    el.addEventListener("keydown", handler);
-    return () => el.removeEventListener("keydown", handler);
+    el.addEventListener('keydown', handler);
+    return () => el.removeEventListener('keydown', handler);
   }, [onUndo, onRedo, handleCopy, handlePaste]);
 
   return (
@@ -342,7 +416,7 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
         maxZoom={2}
         snapToGrid
         snapGrid={[20, 20]}
-        deleteKeyCode={readonly ? undefined : "Delete"}
+        deleteKeyCode={readonly ? undefined : 'Delete'}
         className="bg-gray-50"
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
@@ -361,33 +435,45 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
           y={ctxMenu.y}
           onClose={closeCtxMenu}
           items={
-            ctxMenu.kind === "node" && ctxMenu.nodeId
+            ctxMenu.kind === 'node' && ctxMenu.nodeId
               ? [
-                  { label: "Edit", onClick: () => onSelectNode?.(ctxMenu.nodeId ?? null) },
-                  { label: "Copy", onClick: () => handleCopyNodeToClipboard(ctxMenu.nodeId!) },
-                  { label: "Duplicate", onClick: () => handleDuplicateNode(ctxMenu.nodeId!) },
+                  { label: 'Edit', onClick: () => onSelectNode?.(ctxMenu.nodeId ?? null) },
+                  { label: 'Copy', onClick: () => handleCopyNodeToClipboard(ctxMenu.nodeId!) },
+                  { label: 'Duplicate', onClick: () => handleDuplicateNode(ctxMenu.nodeId!) },
                   { separator: true },
-                  { label: "Delete", onClick: () => handleDeleteNodeFromCtx(ctxMenu.nodeId!), danger: true },
+                  {
+                    label: 'Delete',
+                    onClick: () => handleDeleteNodeFromCtx(ctxMenu.nodeId!),
+                    danger: true,
+                  },
                 ]
               : [
                   {
-                    label: "New",
+                    label: 'New',
                     children: CATEGORIES.map((cat) => ({
                       label: cat.label,
                       children: Object.values(NODE_DEFINITIONS)
-                        .filter((def) => def.category === cat.value && def.type !== "page" && def.type !== "start")
+                        .filter(
+                          (def) =>
+                            def.category === cat.value &&
+                            def.type !== 'page' &&
+                            def.type !== 'start',
+                        )
                         .map((def) => ({
                           label: def.label,
                           color: def.color,
                           onClick: () => {
-                            const pos = instanceRef.current?.screenToFlowPosition({ x: ctxMenu.x, y: ctxMenu.y });
+                            const pos = instanceRef.current?.screenToFlowPosition({
+                              x: ctxMenu.x,
+                              y: ctxMenu.y,
+                            });
                             onAddNode?.(def.type, pos);
                           },
                         })),
                     })),
                   },
                   { separator: true },
-                  { label: "Paste", onClick: handlePaste, disabled: !clipboardRef.current },
+                  { label: 'Paste', onClick: handlePaste, disabled: !clipboardRef.current },
                 ]
           }
         />

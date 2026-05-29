@@ -1,19 +1,19 @@
-import { createRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Route as rootRoute } from "./__root";
-import { listRunningTasks } from "../lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Button } from "../components/ui/button";
+import { createRoute } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
+import { Route as rootRoute } from './__root';
+import { listRunningTasks } from '../lib/api';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/settings",
+  path: '/settings',
   component: SettingsPage,
 });
 
 function SettingsPage() {
   const { refetch, isRefetching } = useQuery({
-    queryKey: ["running-tasks"],
+    queryKey: ['running-tasks'],
     queryFn: listRunningTasks,
     enabled: false,
   });
@@ -24,9 +24,7 @@ function SettingsPage() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground mt-1">
-          Runtime connection and configuration.
-        </p>
+        <p className="text-muted-foreground mt-1">Runtime connection and configuration.</p>
       </div>
 
       <Card>
@@ -52,7 +50,7 @@ function SettingsPage() {
           </div>
           <div className="pt-2">
             <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
-              {isRefetching ? "Testing..." : "Test Connection"}
+              {isRefetching ? 'Testing...' : 'Test Connection'}
             </Button>
           </div>
         </CardContent>

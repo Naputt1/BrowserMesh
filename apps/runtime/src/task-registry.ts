@@ -1,4 +1,4 @@
-export type TaskState = "pending" | "running" | "paused" | "completed" | "failed" | "cancelled";
+export type TaskState = 'pending' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
 
 export type TaskInfo = {
   readonly taskId: string;
@@ -18,7 +18,7 @@ export class TaskRegistry {
     const info: TaskInfo = {
       taskId,
       workflowId,
-      state: "running",
+      state: 'running',
       createdAt: now,
       updatedAt: now,
       cleanup,
@@ -33,35 +33,60 @@ export class TaskRegistry {
 
   complete(taskId: string, message?: string): TaskInfo {
     const info = this.getOrThrow(taskId);
-    const updated: TaskInfo = { ...info, state: "completed", updatedAt: new Date().toISOString(), message };
+    const updated: TaskInfo = {
+      ...info,
+      state: 'completed',
+      updatedAt: new Date().toISOString(),
+      message,
+    };
     this.tasks.set(taskId, updated);
     return updated;
   }
 
   fail(taskId: string, message?: string): TaskInfo {
     const info = this.getOrThrow(taskId);
-    const updated: TaskInfo = { ...info, state: "failed", updatedAt: new Date().toISOString(), message };
+    const updated: TaskInfo = {
+      ...info,
+      state: 'failed',
+      updatedAt: new Date().toISOString(),
+      message,
+    };
     this.tasks.set(taskId, updated);
     return updated;
   }
 
   cancel(taskId: string, message?: string): TaskInfo {
     const info = this.getOrThrow(taskId);
-    const updated: TaskInfo = { ...info, state: "cancelled", updatedAt: new Date().toISOString(), message };
+    const updated: TaskInfo = {
+      ...info,
+      state: 'cancelled',
+      updatedAt: new Date().toISOString(),
+      message,
+    };
     this.tasks.set(taskId, updated);
     return updated;
   }
 
   pause(taskId: string, message?: string): TaskInfo {
     const info = this.getOrThrow(taskId);
-    const updated: TaskInfo = { ...info, state: "paused", updatedAt: new Date().toISOString(), message };
+    const updated: TaskInfo = {
+      ...info,
+      state: 'paused',
+      updatedAt: new Date().toISOString(),
+      message,
+    };
     this.tasks.set(taskId, updated);
     return updated;
   }
 
   resume(taskId: string): TaskInfo {
     const info = this.getOrThrow(taskId);
-    const updated: TaskInfo = { ...info, state: "running", updatedAt: new Date().toISOString(), message: undefined };
+    const updated: TaskInfo = {
+      ...info,
+      state: 'running',
+      updatedAt: new Date().toISOString(),
+      message: undefined,
+    };
     this.tasks.set(taskId, updated);
     return updated;
   }
@@ -69,7 +94,7 @@ export class TaskRegistry {
   listRunning(): TaskInfo[] {
     const result: TaskInfo[] = [];
     for (const info of this.tasks.values()) {
-      if (info.state === "running" || info.state === "paused") {
+      if (info.state === 'running' || info.state === 'paused') {
         result.push(info);
       }
     }

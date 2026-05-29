@@ -1,6 +1,6 @@
-import type { BrowserContext, Page as PlaywrightPage } from "playwright-core";
-import type { Page } from "./interpreter/types.js";
-import { PlaywrightPageAdapter } from "./playwright-page-adapter.js";
+import type { BrowserContext, Page as PlaywrightPage } from 'playwright-core';
+import type { Page } from './interpreter/types.js';
+import { PlaywrightPageAdapter } from './playwright-page-adapter.js';
 
 export class PageManager {
   private readonly pages = new Map<string, Page>();
@@ -11,7 +11,7 @@ export class PageManager {
 
   async initialize(context: BrowserContext, initialPage: PlaywrightPage): Promise<string> {
     this.context = context;
-    const pageId = "default";
+    const pageId = 'default';
     const adapter = this.pageFactory.createAdapter(initialPage);
     this.pages.set(pageId, adapter);
     this.defaultPageId = pageId;
@@ -19,7 +19,7 @@ export class PageManager {
   }
 
   async createPage(pageId: string, url?: string): Promise<Page> {
-    if (!this.context) throw new Error("PageManager not initialized");
+    if (!this.context) throw new Error('PageManager not initialized');
     if (this.pages.has(pageId)) {
       throw new Error(`Page already exists: ${pageId}`);
     }
@@ -27,7 +27,7 @@ export class PageManager {
     const adapter = this.pageFactory.createAdapter(pwPage);
     this.pages.set(pageId, adapter);
     if (url) {
-      await pwPage.goto(url, { waitUntil: "domcontentloaded" });
+      await pwPage.goto(url, { waitUntil: 'domcontentloaded' });
     }
     return adapter;
   }
@@ -35,7 +35,7 @@ export class PageManager {
   getPage(pageId?: string): Page {
     const id = pageId ?? this.defaultPageId;
     if (!id || !this.pages.has(id)) {
-      throw new Error(`Page not found: ${id ?? "default"}`);
+      throw new Error(`Page not found: ${id ?? 'default'}`);
     }
     return this.pages.get(id)!;
   }

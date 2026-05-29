@@ -21,47 +21,56 @@
   "nodes": [
     { "id": "s", "type": "start", "label": "Start" },
     {
-      "id": "nav", "type": "navigate",
+      "id": "nav",
+      "type": "navigate",
       "label": "Navigate to books",
       "config": { "url": "https://books.toscrape.com/" }
     },
     {
-      "id": "sel_books", "type": "select",
+      "id": "sel_books",
+      "type": "select",
       "label": "Select all books",
       "config": { "mode": "all", "selector": "article.product_pod" }
     },
     {
-      "id": "loop", "type": "loop",
+      "id": "loop",
+      "type": "loop",
       "label": "Loop through books",
       "config": { "maxIterations": 50 }
     },
     {
-      "id": "sel_title", "type": "select",
+      "id": "sel_title",
+      "type": "select",
       "label": "Select title link",
       "config": { "mode": "one", "selector": "h3 a" }
     },
     {
-      "id": "ext_title", "type": "extract",
+      "id": "ext_title",
+      "type": "extract",
       "label": "Extract title",
       "config": { "property": "attribute", "attribute": "title" }
     },
     {
-      "id": "out_title", "type": "output",
+      "id": "out_title",
+      "type": "output",
       "label": "Output title",
       "config": { "propertyPath": "[].title" }
     },
     {
-      "id": "sel_price", "type": "select",
+      "id": "sel_price",
+      "type": "select",
       "label": "Select price element",
       "config": { "mode": "one", "selector": ".price_color" }
     },
     {
-      "id": "ext_price", "type": "extract",
+      "id": "ext_price",
+      "type": "extract",
       "label": "Extract price",
       "config": { "property": "text" }
     },
     {
-      "id": "out_price", "type": "output",
+      "id": "out_price",
+      "type": "output",
       "label": "Output price",
       "config": { "propertyPath": "[].price" }
     },
@@ -69,23 +78,131 @@
   ],
   "edges": [
     { "id": "e1", "source": "s", "sourceHandle": "flow", "target": "nav", "targetHandle": "flow" },
-    { "id": "e2", "source": "nav", "sourceHandle": "flow", "target": "sel_books", "targetHandle": "flow" },
-    { "id": "e3", "source": "sel_books", "sourceHandle": "flow", "target": "loop", "targetHandle": "flow" },
-    { "id": "e4", "source": "sel_books", "sourceHandle": "element", "target": "loop", "targetHandle": "items" },
-    { "id": "e5", "source": "loop", "sourceHandle": "body", "target": "sel_title", "targetHandle": "flow" },
-    { "id": "e6", "source": "loop", "sourceHandle": "item", "target": "sel_title", "targetHandle": "element" },
-    { "id": "e7", "source": "sel_title", "sourceHandle": "flow", "target": "ext_title", "targetHandle": "flow" },
-    { "id": "e8", "source": "sel_title", "sourceHandle": "element", "target": "ext_title", "targetHandle": "element" },
-    { "id": "e9", "source": "ext_title", "sourceHandle": "flow", "target": "out_title", "targetHandle": "flow" },
-    { "id": "e10", "source": "ext_title", "sourceHandle": "value", "target": "out_title", "targetHandle": "value" },
-    { "id": "e11", "source": "out_title", "sourceHandle": "flow", "target": "sel_price", "targetHandle": "flow" },
-    { "id": "e12", "source": "loop", "sourceHandle": "item", "target": "sel_price", "targetHandle": "element" },
-    { "id": "e13", "source": "sel_price", "sourceHandle": "flow", "target": "ext_price", "targetHandle": "flow" },
-    { "id": "e14", "source": "sel_price", "sourceHandle": "element", "target": "ext_price", "targetHandle": "element" },
-    { "id": "e15", "source": "ext_price", "sourceHandle": "flow", "target": "out_price", "targetHandle": "flow" },
-    { "id": "e16", "source": "ext_price", "sourceHandle": "value", "target": "out_price", "targetHandle": "value" },
-    { "id": "e17", "source": "loop", "sourceHandle": "flow", "target": "e", "targetHandle": "flow" },
-    { "id": "e18", "source": "loop", "sourceHandle": "index", "target": "out_title", "targetHandle": "index" },
-    { "id": "e19", "source": "loop", "sourceHandle": "index", "target": "out_price", "targetHandle": "index" }
+    {
+      "id": "e2",
+      "source": "nav",
+      "sourceHandle": "flow",
+      "target": "sel_books",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e3",
+      "source": "sel_books",
+      "sourceHandle": "flow",
+      "target": "loop",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e4",
+      "source": "sel_books",
+      "sourceHandle": "element",
+      "target": "loop",
+      "targetHandle": "items"
+    },
+    {
+      "id": "e5",
+      "source": "loop",
+      "sourceHandle": "body",
+      "target": "sel_title",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e6",
+      "source": "loop",
+      "sourceHandle": "item",
+      "target": "sel_title",
+      "targetHandle": "element"
+    },
+    {
+      "id": "e7",
+      "source": "sel_title",
+      "sourceHandle": "flow",
+      "target": "ext_title",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e8",
+      "source": "sel_title",
+      "sourceHandle": "element",
+      "target": "ext_title",
+      "targetHandle": "element"
+    },
+    {
+      "id": "e9",
+      "source": "ext_title",
+      "sourceHandle": "flow",
+      "target": "out_title",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e10",
+      "source": "ext_title",
+      "sourceHandle": "value",
+      "target": "out_title",
+      "targetHandle": "value"
+    },
+    {
+      "id": "e11",
+      "source": "out_title",
+      "sourceHandle": "flow",
+      "target": "sel_price",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e12",
+      "source": "loop",
+      "sourceHandle": "item",
+      "target": "sel_price",
+      "targetHandle": "element"
+    },
+    {
+      "id": "e13",
+      "source": "sel_price",
+      "sourceHandle": "flow",
+      "target": "ext_price",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e14",
+      "source": "sel_price",
+      "sourceHandle": "element",
+      "target": "ext_price",
+      "targetHandle": "element"
+    },
+    {
+      "id": "e15",
+      "source": "ext_price",
+      "sourceHandle": "flow",
+      "target": "out_price",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e16",
+      "source": "ext_price",
+      "sourceHandle": "value",
+      "target": "out_price",
+      "targetHandle": "value"
+    },
+    {
+      "id": "e17",
+      "source": "loop",
+      "sourceHandle": "flow",
+      "target": "e",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e18",
+      "source": "loop",
+      "sourceHandle": "index",
+      "target": "out_title",
+      "targetHandle": "index"
+    },
+    {
+      "id": "e19",
+      "source": "loop",
+      "sourceHandle": "index",
+      "target": "out_price",
+      "targetHandle": "index"
+    }
   ]
 }

@@ -1,7 +1,7 @@
-import { X } from "lucide-react";
-import { useState, useMemo } from "react";
-import type { DataType, NodeType } from "@browsermesh/workflow";
-import { NODE_DEFINITIONS } from "@browsermesh/workflow";
+import { X } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import type { DataType, NodeType } from '@browsermesh/workflow';
+import { NODE_DEFINITIONS } from '@browsermesh/workflow';
 
 export type NodeConfigPanelProps = {
   node: { id: string; label: string; type: NodeType; config: Record<string, unknown> } | null;
@@ -12,7 +12,14 @@ export type NodeConfigPanelProps = {
   allNodes?: readonly { id: string; label?: string; type: NodeType }[];
 };
 
-export function NodeConfigPanel({ node, onUpdate, onDelete, outputType, multiPage, allNodes }: NodeConfigPanelProps) {
+export function NodeConfigPanel({
+  node,
+  onUpdate,
+  onDelete,
+  outputType,
+  multiPage,
+  allNodes,
+}: NodeConfigPanelProps) {
   if (!node) {
     return (
       <div className="w-64 border-l bg-gray-50 p-4 shrink-0">
@@ -51,7 +58,13 @@ export function NodeConfigPanel({ node, onUpdate, onDelete, outputType, multiPag
 
         <Separator />
 
-        <ConfigFields type={node.type} config={node.config} onUpdate={(cfg) => onUpdate(node.id, { config: cfg })} outputType={outputType} allNodes={allNodes} />
+        <ConfigFields
+          type={node.type}
+          config={node.config}
+          onUpdate={(cfg) => onUpdate(node.id, { config: cfg })}
+          outputType={outputType}
+          allNodes={allNodes}
+        />
 
         <Separator />
 
@@ -80,20 +93,20 @@ type ConfigFieldsProps = {
 
 function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFieldsProps) {
   switch (type) {
-    case "start":
-    case "end":
-    case "break":
-    case "continue":
-    case "if":
-    case "and":
-    case "or":
-    case "not":
+    case 'start':
+    case 'end':
+    case 'break':
+    case 'continue':
+    case 'if':
+    case 'and':
+    case 'or':
+    case 'not':
       return <p className="text-xs text-gray-500 italic">No configuration needed</p>;
 
-    case "compare":
+    case 'compare':
       return <CompareConfigFields config={config} onUpdate={onUpdate} />;
 
-    case "navigate":
+    case 'navigate':
       return (
         <>
           <div>
@@ -101,7 +114,7 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
             <input
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
               placeholder="https://example.com"
-              value={(config.url as string) ?? ""}
+              value={(config.url as string) ?? ''}
               onChange={(e) => onUpdate({ ...config, url: e.target.value })}
             />
             <p className="text-[10px] text-gray-400 mt-1">Or connect URL from data pin</p>
@@ -110,7 +123,7 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
             <label className="text-xs font-medium text-gray-600">Wait Until</label>
             <select
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-              value={(config.waitUntil as string) ?? ""}
+              value={(config.waitUntil as string) ?? ''}
               onChange={(e) => onUpdate({ ...config, waitUntil: e.target.value || undefined })}
             >
               <option value="">Default</option>
@@ -120,11 +133,13 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
               <option value="commit">Commit</option>
             </select>
           </div>
-          <p className="text-[10px] text-gray-400 mt-2">Connect pageKey from Page node to target a specific tab</p>
+          <p className="text-[10px] text-gray-400 mt-2">
+            Connect pageKey from Page node to target a specific tab
+          </p>
         </>
       );
 
-    case "click":
+    case 'click':
       return (
         <>
           <div>
@@ -132,16 +147,18 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
             <input
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
               placeholder=".btn, #submit"
-              value={(config.selector as string) ?? ""}
+              value={(config.selector as string) ?? ''}
               onChange={(e) => onUpdate({ ...config, selector: e.target.value })}
             />
             <p className="text-[10px] text-gray-400 mt-1">Optional if element pin is connected</p>
           </div>
-          <p className="text-[10px] text-gray-400 mt-2">Connect pageKey from Page node to target a specific tab</p>
+          <p className="text-[10px] text-gray-400 mt-2">
+            Connect pageKey from Page node to target a specific tab
+          </p>
         </>
       );
 
-    case "type":
+    case 'type':
       return (
         <>
           <div>
@@ -149,7 +166,7 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
             <input
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
               placeholder="#search"
-              value={(config.selector as string) ?? ""}
+              value={(config.selector as string) ?? ''}
               onChange={(e) => onUpdate({ ...config, selector: e.target.value })}
             />
             <p className="text-[10px] text-gray-400 mt-1">Optional if element pin is connected</p>
@@ -159,14 +176,14 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
             <input
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
               placeholder="text to type"
-              value={(config.value as string) ?? ""}
+              value={(config.value as string) ?? ''}
               onChange={(e) => onUpdate({ ...config, value: e.target.value })}
             />
           </div>
         </>
       );
 
-    case "wait":
+    case 'wait':
       return (
         <>
           <div>
@@ -175,7 +192,9 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
               type="number"
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
               value={(config.durationMs as number) ?? 1000}
-              onChange={(e) => onUpdate({ ...config, durationMs: parseInt(e.target.value, 10) || undefined })}
+              onChange={(e) =>
+                onUpdate({ ...config, durationMs: parseInt(e.target.value, 10) || undefined })
+              }
             />
           </div>
           <div className="mt-2">
@@ -183,22 +202,24 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
             <input
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
               placeholder=".loaded"
-              value={(config.selector as string) ?? ""}
+              value={(config.selector as string) ?? ''}
               onChange={(e) => onUpdate({ ...config, selector: e.target.value })}
             />
-            <p className="text-[10px] text-gray-400 mt-1">Connect pageKey from Page node to target a specific tab</p>
+            <p className="text-[10px] text-gray-400 mt-1">
+              Connect pageKey from Page node to target a specific tab
+            </p>
           </div>
         </>
       );
 
-    case "scroll":
+    case 'scroll':
       return (
         <>
           <div>
             <label className="text-xs font-medium text-gray-600">Direction</label>
             <select
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
-              value={(config.direction as string) ?? "down"}
+              value={(config.direction as string) ?? 'down'}
               onChange={(e) => onUpdate({ ...config, direction: e.target.value })}
             >
               <option value="down">Down</option>
@@ -206,12 +227,12 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
               <option value="to">To element</option>
             </select>
           </div>
-          {config.direction === "to" && (
+          {config.direction === 'to' && (
             <div className="mt-2">
               <label className="text-xs font-medium text-gray-600">Selector</label>
               <input
                 className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
-                value={(config.selector as string) ?? ""}
+                value={(config.selector as string) ?? ''}
                 onChange={(e) => onUpdate({ ...config, selector: e.target.value })}
               />
             </div>
@@ -219,7 +240,7 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
         </>
       );
 
-    case "select":
+    case 'select':
       return (
         <>
           <div>
@@ -227,7 +248,7 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
             <input
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
               placeholder=".item, h1, a"
-              value={(config.selector as string) ?? ""}
+              value={(config.selector as string) ?? ''}
               onChange={(e) => onUpdate({ ...config, selector: e.target.value })}
             />
           </div>
@@ -235,14 +256,14 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
             <label className="text-xs font-medium text-gray-600">Mode</label>
             <select
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-              value={(config.mode as string) ?? "one"}
+              value={(config.mode as string) ?? 'one'}
               onChange={(e) => onUpdate({ ...config, mode: e.target.value })}
             >
               <option value="one">Select One (single element)</option>
               <option value="all">Select All (multiple elements)</option>
             </select>
           </div>
-          {(!config.mode || config.mode === "one") && (
+          {(!config.mode || config.mode === 'one') && (
             <div className="mt-2">
               <label className="text-xs font-medium text-gray-600">Index</label>
               <input
@@ -251,21 +272,25 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
                 value={(config.index as number) ?? 0}
                 onChange={(e) => onUpdate({ ...config, index: parseInt(e.target.value, 10) || 0 })}
               />
-              <p className="text-[10px] text-gray-400 mt-1">Which matching element to pick (0-based)</p>
+              <p className="text-[10px] text-gray-400 mt-1">
+                Which matching element to pick (0-based)
+              </p>
             </div>
           )}
-          <p className="text-[10px] text-gray-400 mt-2">Connect pageKey from Page node to target a specific tab</p>
+          <p className="text-[10px] text-gray-400 mt-2">
+            Connect pageKey from Page node to target a specific tab
+          </p>
         </>
       );
 
-    case "extract":
+    case 'extract':
       return (
         <>
           <div>
             <label className="text-xs font-medium text-gray-600">Property</label>
             <select
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-              value={(config.property as string) ?? "text"}
+              value={(config.property as string) ?? 'text'}
               onChange={(e) => onUpdate({ ...config, property: e.target.value })}
             >
               <option value="text">Text Content</option>
@@ -273,31 +298,27 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
               <option value="value">Input Value</option>
             </select>
           </div>
-          {config.property === "attribute" && (
+          {config.property === 'attribute' && (
             <div className="mt-2">
               <label className="text-xs font-medium text-gray-600">Attribute Name</label>
               <input
                 className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
                 placeholder="href, src, title"
-                value={(config.attribute as string) ?? ""}
+                value={(config.attribute as string) ?? ''}
                 onChange={(e) => onUpdate({ ...config, attribute: e.target.value })}
               />
             </div>
           )}
-          <p className="text-[10px] text-gray-400 mt-2">Element input is required (connect from Select)</p>
+          <p className="text-[10px] text-gray-400 mt-2">
+            Element input is required (connect from Select)
+          </p>
         </>
       );
 
-    case "output":
-      return (
-        <OutputConfigFields
-          config={config}
-          onUpdate={onUpdate}
-          outputType={outputType}
-        />
-      );
+    case 'output':
+      return <OutputConfigFields config={config} onUpdate={onUpdate} outputType={outputType} />;
 
-    case "loop":
+    case 'loop':
       return (
         <>
           <div>
@@ -306,43 +327,47 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
               type="number"
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
               value={(config.maxIterations as number) ?? 10}
-              onChange={(e) => onUpdate({ ...config, maxIterations: parseInt(e.target.value, 10) || undefined })}
+              onChange={(e) =>
+                onUpdate({ ...config, maxIterations: parseInt(e.target.value, 10) || undefined })
+              }
             />
             <p className="text-[10px] text-gray-400 mt-1">Leave empty for unlimited</p>
           </div>
           <div className="mt-2">
             <label className="text-xs font-medium text-gray-600">Items Input</label>
-            <p className="text-xs text-gray-500 mt-1">Connect a Select (mode: all) to the items pin</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Connect a Select (mode: all) to the items pin
+            </p>
           </div>
         </>
       );
 
-    case "custom":
+    case 'custom':
       return (
         <div>
           <label className="text-xs font-medium text-gray-600">Handler Name</label>
           <input
             className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
             placeholder="myHandler"
-            value={(config.handlerName as string) ?? ""}
+            value={(config.handlerName as string) ?? ''}
             onChange={(e) => onUpdate({ ...config, handlerName: e.target.value })}
           />
         </div>
       );
 
-    case "fetch":
+    case 'fetch':
       return <FetchConfigFields config={config} onUpdate={onUpdate} allNodes={allNodes} />;
 
-    case "listen":
+    case 'listen':
       return <ListenConfigFields config={config} onUpdate={onUpdate} />;
 
-    case "state":
+    case 'state':
       return <StateConfigFields config={config} onUpdate={onUpdate} />;
 
-    case "page":
+    case 'page':
       return <PageConfigFields config={config} onUpdate={onUpdate} />;
 
-    case "switch":
+    case 'switch':
       return <SwitchConfigFields config={config} onUpdate={onUpdate} />;
 
     default:
@@ -353,10 +378,10 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
 type CaseEntry = { label: string; value: string };
 
 const DEFAULT_CASES: CaseEntry[] = [
-  { label: "Case 1", value: "" },
-  { label: "Case 2", value: "" },
-  { label: "Case 3", value: "" },
-  { label: "Case 4", value: "" },
+  { label: 'Case 1', value: '' },
+  { label: 'Case 2', value: '' },
+  { label: 'Case 3', value: '' },
+  { label: 'Case 4', value: '' },
 ];
 
 function SwitchConfigFields({
@@ -373,7 +398,7 @@ function SwitchConfigFields({
   };
 
   const addCase = () => {
-    setCases([...cases, { label: `Case ${cases.length + 1}`, value: "" }]);
+    setCases([...cases, { label: `Case ${cases.length + 1}`, value: '' }]);
   };
 
   const removeCase = (i: number) => {
@@ -383,7 +408,10 @@ function SwitchConfigFields({
 
   return (
     <>
-      <p className="text-xs text-gray-500 mb-2">Connect a value to the <strong>Value</strong> pin. Each case flow output is taken when the value matches.</p>
+      <p className="text-xs text-gray-500 mb-2">
+        Connect a value to the <strong>Value</strong> pin. Each case flow output is taken when the
+        value matches.
+      </p>
 
       <div className="space-y-1.5">
         <label className="text-xs font-medium text-gray-600">Cases</label>
@@ -408,17 +436,16 @@ function SwitchConfigFields({
             </button>
           </div>
         ))}
-        <button
-          onClick={addCase}
-          className="text-xs text-blue-600 hover:text-blue-800"
-        >
+        <button onClick={addCase} className="text-xs text-blue-600 hover:text-blue-800">
           + Add case
         </button>
       </div>
 
       <div className="mt-2">
         <label className="text-xs font-medium text-gray-600">Default case</label>
-        <p className="text-[10px] text-gray-400 mt-1">Connect the <strong>Default</strong> output pin to handle unmatched values</p>
+        <p className="text-[10px] text-gray-400 mt-1">
+          Connect the <strong>Default</strong> output pin to handle unmatched values
+        </p>
       </div>
     </>
   );
@@ -426,19 +453,20 @@ function SwitchConfigFields({
 
 type LeafPath = { name: string; path: string };
 
-function collectLeafPaths(type: DataType, prefix: string = ""): LeafPath[] {
-  if (type.kind === "object") {
+function collectLeafPaths(type: DataType, prefix: string = ''): LeafPath[] {
+  if (type.kind === 'object') {
     return (type.fields ?? []).flatMap((f) => {
       const fieldPath = prefix ? `${prefix}.${f.name}` : f.name;
-      if (f.type.kind === "string" || f.type.kind === "number" || f.type.kind === "boolean") {
+      if (f.type.kind === 'string' || f.type.kind === 'number' || f.type.kind === 'boolean') {
         return [{ name: f.name, path: fieldPath }];
       }
-      if (f.type.kind === "object") return collectLeafPaths(f.type, fieldPath);
-      if (f.type.kind === "array" && f.type.elementType) return collectLeafPaths(f.type.elementType, `${fieldPath}[]`);
+      if (f.type.kind === 'object') return collectLeafPaths(f.type, fieldPath);
+      if (f.type.kind === 'array' && f.type.elementType)
+        return collectLeafPaths(f.type.elementType, `${fieldPath}[]`);
       return [];
     });
   }
-  if (type.kind === "array" && type.elementType) {
+  if (type.kind === 'array' && type.elementType) {
     return collectLeafPaths(type.elementType, `[]`);
   }
   return [];
@@ -458,7 +486,7 @@ function OutputConfigFields({
   outputType?: DataType;
 }) {
   const leafPaths = useMemo(() => (outputType ? collectLeafPaths(outputType) : []), [outputType]);
-  const currentPath = (config.propertyPath as string) ?? "";
+  const currentPath = (config.propertyPath as string) ?? '';
   const currentDepth = pathDepth(currentPath);
 
   return (
@@ -491,7 +519,10 @@ function OutputConfigFields({
       {currentPath && (
         <div className="text-[10px] text-gray-400 space-y-1">
           {currentDepth > 0 && (
-            <p>Requires <strong>index</strong> input ({currentDepth} array level{currentDepth > 1 ? "s" : ""})</p>
+            <p>
+              Requires <strong>index</strong> input ({currentDepth} array level
+              {currentDepth > 1 ? 's' : ''})
+            </p>
           )}
           {currentDepth === 0 && <p>Direct field — no index required</p>}
         </div>
@@ -550,7 +581,7 @@ function KVPairEditor({
         ))}
       </div>
       <button
-        onClick={() => onChange([...pairs, { key: "", value: "" }])}
+        onClick={() => onChange([...pairs, { key: '', value: '' }])}
         className="mt-1 text-xs text-blue-600 hover:text-blue-800"
       >
         + Add {label.toLowerCase()}
@@ -570,12 +601,12 @@ function FetchConfigFields({
 }) {
   const headers = (config.headers as Array<{ key: string; value: string }>) ?? [];
   const queryParams = (config.queryParams as Array<{ key: string; value: string }>) ?? [];
-  const fetchNodes = allNodes?.filter((n) => n.type === "fetch" && n.id !== undefined) ?? [];
+  const fetchNodes = allNodes?.filter((n) => n.type === 'fetch' && n.id !== undefined) ?? [];
 
   const copyFrom = config.copyFromNodeId as string | undefined;
   const selectedCopyLabel = copyFrom
-    ? fetchNodes.find((n) => n.id === copyFrom)?.label ?? copyFrom
-    : "";
+    ? (fetchNodes.find((n) => n.id === copyFrom)?.label ?? copyFrom)
+    : '';
 
   return (
     <>
@@ -583,7 +614,7 @@ function FetchConfigFields({
         <label className="text-xs font-medium text-gray-600">Method</label>
         <select
           className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-          value={(config.method as string) ?? "GET"}
+          value={(config.method as string) ?? 'GET'}
           onChange={(e) => onUpdate({ ...config, method: e.target.value })}
         >
           <option value="GET">GET</option>
@@ -599,27 +630,62 @@ function FetchConfigFields({
         <input
           className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
           placeholder="https://api.example.com/data?page=${var}"
-          value={(config.url as string) ?? ""}
-          onChange={(e) => onUpdate({ ...config, url: e.target.value, variables: extractVariables(e.target.value, headers, queryParams, config.body as string | undefined) })}
+          value={(config.url as string) ?? ''}
+          onChange={(e) =>
+            onUpdate({
+              ...config,
+              url: e.target.value,
+              variables: extractVariables(
+                e.target.value,
+                headers,
+                queryParams,
+                config.body as string | undefined,
+              ),
+            })
+          }
         />
-        <p className="text-[10px] text-gray-400 mt-1">Use {'${variableName}'} for dynamic values. Or connect URL from data pin</p>
+        <p className="text-[10px] text-gray-400 mt-1">
+          Use {'${variableName}'} for dynamic values. Or connect URL from data pin
+        </p>
       </div>
 
       <KVPairEditor
         label="Query Params"
         pairs={queryParams}
-        onChange={(pairs) => onUpdate({ ...config, queryParams: pairs, variables: extractVariables(config.url as string ?? "", headers, pairs, config.body as string | undefined) })}
+        onChange={(pairs) =>
+          onUpdate({
+            ...config,
+            queryParams: pairs,
+            variables: extractVariables(
+              (config.url as string) ?? '',
+              headers,
+              pairs,
+              config.body as string | undefined,
+            ),
+          })
+        }
       />
 
-      {config.method && config.method !== "GET" && config.method !== "HEAD" && (
+      {config.method && config.method !== 'GET' && config.method !== 'HEAD' && (
         <div className="mt-2">
           <label className="text-xs font-medium text-gray-600">Body</label>
           <textarea
             className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
             rows={3}
             placeholder={'{"key": "${var}"}'}
-            value={(config.body as string) ?? ""}
-            onChange={(e) => onUpdate({ ...config, body: e.target.value, variables: extractVariables(config.url as string ?? "", headers, queryParams, e.target.value) })}
+            value={(config.body as string) ?? ''}
+            onChange={(e) =>
+              onUpdate({
+                ...config,
+                body: e.target.value,
+                variables: extractVariables(
+                  (config.url as string) ?? '',
+                  headers,
+                  queryParams,
+                  e.target.value,
+                ),
+              })
+            }
           />
         </div>
       )}
@@ -627,7 +693,18 @@ function FetchConfigFields({
       <KVPairEditor
         label="Headers"
         pairs={headers}
-        onChange={(pairs) => onUpdate({ ...config, headers: pairs, variables: extractVariables(config.url as string ?? "", pairs, queryParams, config.body as string | undefined) })}
+        onChange={(pairs) =>
+          onUpdate({
+            ...config,
+            headers: pairs,
+            variables: extractVariables(
+              (config.url as string) ?? '',
+              pairs,
+              queryParams,
+              config.body as string | undefined,
+            ),
+          })
+        }
       />
 
       {fetchNodes.length > 0 && (
@@ -636,7 +713,7 @@ function FetchConfigFields({
           <div className="flex gap-1 mt-1">
             <select
               className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs"
-              value={copyFrom ?? ""}
+              value={copyFrom ?? ''}
               onChange={(e) => onUpdate({ ...config, copyFromNodeId: e.target.value || undefined })}
             >
               <option value="">— select —</option>
@@ -652,7 +729,8 @@ function FetchConfigFields({
                   const source = allNodes?.find((n) => n.id === copyFrom);
                   if (source) {
                     const sourceConfig = (source as any).config ?? {};
-                    const sourceHeaders = (sourceConfig.headers as Array<{ key: string; value: string }>) ?? [];
+                    const sourceHeaders =
+                      (sourceConfig.headers as Array<{ key: string; value: string }>) ?? [];
                     onUpdate({ ...config, headers: JSON.parse(JSON.stringify(sourceHeaders)) });
                   }
                 }}
@@ -673,7 +751,9 @@ function FetchConfigFields({
             checked={config.actLikeNavigation !== false}
             onChange={(e) => onUpdate({ ...config, actLikeNavigation: e.target.checked })}
           />
-          <span className="text-xs font-medium text-gray-600">Act like navigation (apply delay)</span>
+          <span className="text-xs font-medium text-gray-600">
+            Act like navigation (apply delay)
+          </span>
         </label>
       </div>
     </>
@@ -689,7 +769,12 @@ function extractVariables(
   const pattern = /\$\{(\w+)\}/g;
   const vars = new Set<string>();
   let m: RegExpExecArray | null;
-  const all = [url, ...headers.map((h) => h.value), ...queryParams.map((q) => q.value), body ?? ""].join(" ");
+  const all = [
+    url,
+    ...headers.map((h) => h.value),
+    ...queryParams.map((q) => q.value),
+    body ?? '',
+  ].join(' ');
   while ((m = pattern.exec(all)) !== null) {
     vars.add(m[1]);
   }
@@ -714,8 +799,16 @@ function ListenConfigFields({
           className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
           rows={4}
           placeholder="/api/data/*\n*/users"
-          value={patterns.join("\n")}
-          onChange={(e) => onUpdate({ ...config, urlPatterns: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) })}
+          value={patterns.join('\n')}
+          onChange={(e) =>
+            onUpdate({
+              ...config,
+              urlPatterns: e.target.value
+                .split('\n')
+                .map((s) => s.trim())
+                .filter(Boolean),
+            })
+          }
         />
       </div>
 
@@ -767,7 +860,7 @@ function StateConfigFields({
         <label className="text-xs font-medium text-gray-600">Operation</label>
         <select
           className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-          value={(config.operation as string) ?? "get"}
+          value={(config.operation as string) ?? 'get'}
           onChange={(e) => onUpdate({ ...config, operation: e.target.value })}
         >
           <option value="get">Get</option>
@@ -783,18 +876,18 @@ function StateConfigFields({
         <input
           className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
           placeholder="processedIndex"
-          value={(config.key as string) ?? ""}
+          value={(config.key as string) ?? ''}
           onChange={(e) => onUpdate({ ...config, key: e.target.value })}
         />
       </div>
 
-      {config.operation === "get" && (
+      {config.operation === 'get' && (
         <div className="mt-2">
           <label className="text-xs font-medium text-gray-600">Default Value</label>
           <input
             className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
             placeholder="0"
-            value={config.defaultValue !== undefined ? String(config.defaultValue) : ""}
+            value={config.defaultValue !== undefined ? String(config.defaultValue) : ''}
             onChange={(e) => onUpdate({ ...config, defaultValue: e.target.value || undefined })}
           />
           <p className="text-[10px] text-gray-400 mt-1">Returned if key doesn't exist</p>
@@ -809,7 +902,9 @@ function StateConfigFields({
             checked={config.persistToFile !== false}
             onChange={(e) => onUpdate({ ...config, persistToFile: e.target.checked })}
           />
-          <span className="text-xs font-medium text-gray-600">Persist to file (crash recovery)</span>
+          <span className="text-xs font-medium text-gray-600">
+            Persist to file (crash recovery)
+          </span>
         </label>
       </div>
     </>
@@ -823,7 +918,7 @@ function PageConfigFields({
   config: Record<string, unknown>;
   onUpdate: (config: Record<string, unknown>) => void;
 }) {
-  const action = (config.action as string) ?? "create";
+  const action = (config.action as string) ?? 'create';
 
   return (
     <>
@@ -845,25 +940,27 @@ function PageConfigFields({
         <input
           className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none font-mono"
           placeholder="tab1"
-          value={(config.pageId as string) ?? ""}
+          value={(config.pageId as string) ?? ''}
           onChange={(e) => onUpdate({ ...config, pageId: e.target.value })}
         />
-        <p className="text-[10px] text-gray-400 mt-1">Identifier for this tab. Output connects to other nodes</p>
+        <p className="text-[10px] text-gray-400 mt-1">
+          Identifier for this tab. Output connects to other nodes
+        </p>
       </div>
     </>
   );
 }
 
 const COMPARE_OPERATORS = [
-  { value: "equals", label: "Equals (==)" },
-  { value: "notEquals", label: "Not equals (!=)" },
-  { value: "gt", label: "Greater than (>)" },
-  { value: "gte", label: "Greater than or equal (>=)" },
-  { value: "lt", label: "Less than (<)" },
-  { value: "lte", label: "Less than or equal (<=)" },
-  { value: "contains", label: "Contains" },
-  { value: "startsWith", label: "Starts with" },
-  { value: "endsWith", label: "Ends with" },
+  { value: 'equals', label: 'Equals (==)' },
+  { value: 'notEquals', label: 'Not equals (!=)' },
+  { value: 'gt', label: 'Greater than (>)' },
+  { value: 'gte', label: 'Greater than or equal (>=)' },
+  { value: 'lt', label: 'Less than (<)' },
+  { value: 'lte', label: 'Less than or equal (<=)' },
+  { value: 'contains', label: 'Contains' },
+  { value: 'startsWith', label: 'Starts with' },
+  { value: 'endsWith', label: 'Ends with' },
 ];
 
 function CompareConfigFields({
@@ -875,17 +972,22 @@ function CompareConfigFields({
 }) {
   return (
     <>
-      <p className="text-xs text-gray-500 mb-2">Compares <strong>Left</strong> and <strong>Right</strong> data inputs using the selected operator. Result is a boolean.</p>
+      <p className="text-xs text-gray-500 mb-2">
+        Compares <strong>Left</strong> and <strong>Right</strong> data inputs using the selected
+        operator. Result is a boolean.
+      </p>
 
       <div>
         <label className="text-xs font-medium text-gray-600">Operator</label>
         <select
           className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-          value={(config.operator as string) ?? "equals"}
+          value={(config.operator as string) ?? 'equals'}
           onChange={(e) => onUpdate({ ...config, operator: e.target.value })}
         >
           {COMPARE_OPERATORS.map((op) => (
-            <option key={op.value} value={op.value}>{op.label}</option>
+            <option key={op.value} value={op.value}>
+              {op.label}
+            </option>
           ))}
         </select>
       </div>

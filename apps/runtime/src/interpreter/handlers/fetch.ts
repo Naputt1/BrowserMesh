@@ -1,4 +1,4 @@
-import type { NodeHandler } from "../types.js";
+import type { NodeHandler } from '../types.js';
 
 function resolveVars(template: string, variables: Record<string, string>): string {
   return template.replace(/\$\{(\w+)\}/g, (_, name) => variables[name] ?? `\${${name}}`);
@@ -6,11 +6,11 @@ function resolveVars(template: string, variables: Record<string, string>): strin
 
 export const fetchHandler: NodeHandler = async function* (node, context, inputs) {
   const config = node.config ?? {};
-  const method = (config.method as string) ?? "GET";
+  const method = (config.method as string) ?? 'GET';
   let url = (inputs.url as string) ?? (config.url as string);
-  if (!url) throw new Error("fetch node requires a url in config or connected to URL input");
+  if (!url) throw new Error('fetch node requires a url in config or connected to URL input');
   const pageKey = inputs.pageKey as string | undefined;
-  const page = (context.pageManager && pageKey) ? context.pageManager.getPage(pageKey) : context.page;
+  const page = context.pageManager && pageKey ? context.pageManager.getPage(pageKey) : context.page;
 
   const rawHeaders = (config.headers as Array<{ key: string; value: string }>) ?? [];
   const rawQueryParams = (config.queryParams as Array<{ key: string; value: string }>) ?? [];
@@ -27,10 +27,12 @@ export const fetchHandler: NodeHandler = async function* (node, context, inputs)
 
   const queryString = rawQueryParams
     .filter((p) => p.key)
-    .map((p) => `${encodeURIComponent(p.key)}=${encodeURIComponent(resolveVars(p.value, variables))}`)
-    .join("&");
+    .map(
+      (p) => `${encodeURIComponent(p.key)}=${encodeURIComponent(resolveVars(p.value, variables))}`,
+    )
+    .join('&');
   if (queryString) {
-    url += (url.includes("?") ? "&" : "?") + queryString;
+    url += (url.includes('?') ? '&' : '?') + queryString;
   }
 
   const headers: Record<string, string> = {};
@@ -52,7 +54,7 @@ export const fetchHandler: NodeHandler = async function* (node, context, inputs)
   }
 
   const fetchOpts: Record<string, unknown> = { method, headers };
-  if (body && method !== "GET" && method !== "HEAD") {
+  if (body && method !== 'GET' && method !== 'HEAD') {
     fetchOpts.body = body;
   }
 
@@ -82,5 +84,5 @@ export const fetchHandler: NodeHandler = async function* (node, context, inputs)
 
   const response = await page.evaluate(script);
 
-  context.setOutput("response", response);
+  context.setOutput('response', response);
 };

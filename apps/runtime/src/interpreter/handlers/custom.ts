@@ -1,11 +1,11 @@
-import type { NodeHandler } from "../types.js";
+import type { NodeHandler } from '../types.js';
 
 export const customHandler: NodeHandler = async function* (node, context) {
   const config = node.config ?? {};
   const handlerName = config.handlerName as string | undefined;
 
   if (!handlerName) {
-    throw new Error("custom node requires handlerName in config");
+    throw new Error('custom node requires handlerName in config');
   }
 
   const handler = context.getCustomHandler(handlerName);

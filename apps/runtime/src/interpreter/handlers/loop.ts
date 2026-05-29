@@ -1,4 +1,4 @@
-import type { NodeHandler, Locator } from "../types.js";
+import type { NodeHandler, Locator } from '../types.js';
 
 export const loopHandler: NodeHandler = async function* (node, context, inputs, executeSubgraph) {
   const config = node.config ?? {};
@@ -12,17 +12,17 @@ export const loopHandler: NodeHandler = async function* (node, context, inputs, 
   const limit = maxIterations ?? items.length;
 
   for (let i = 0; i < Math.min(items.length, limit); i++) {
-    context.setOutput("index", i);
+    context.setOutput('index', i);
     const item = items[i];
-    context.setOutput("item", item);
+    context.setOutput('item', item);
     if (executeSubgraph) {
-      yield* executeSubgraph("body", { currentElement: item, loopIndex: i });
+      yield* executeSubgraph('body', { currentElement: item, loopIndex: i });
 
-      if (context.controlSignal?.value === "break") {
+      if (context.controlSignal?.value === 'break') {
         context.controlSignal.value = undefined;
         break;
       }
-      if (context.controlSignal?.value === "continue") {
+      if (context.controlSignal?.value === 'continue') {
         context.controlSignal.value = undefined;
       }
     }

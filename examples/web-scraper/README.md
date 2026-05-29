@@ -10,14 +10,18 @@ This example demonstrates BrowserMesh's web scraping capabilities using the runt
 ## Workflows
 
 ### Basic Workflow (`workflow-basic.json`)
+
 Navigates to Wikipedia's "Web scraping" article and extracts:
+
 - The page title
 - The first paragraph
 
 Nodes: `navigate → extract → extract → wait`
 
 ### Loop Workflow (`workflow-loop.json`)
+
 Navigates to Books to Scrape and loops through all books on the page:
+
 - Iterates over each `article.product_pod` element
 - Extracts the book title and price for each
 
@@ -41,6 +45,7 @@ HOST=0.0.0.0 REST_PORT=50052 node run.mjs
 ```
 
 The runner will:
+
 1. Submit the workflow to the runtime
 2. Connect to the SSE event stream
 3. Print each event with emoji indicators
@@ -48,6 +53,7 @@ The runner will:
 ## Importing into the Dashboard
 
 Both workflow JSON files can be imported into the BrowserMesh Dashboard:
+
 1. Start the runtime: `pnpm --filter @browsermesh/runtime start`
 2. Start the dashboard: `pnpm --filter @browsermesh/dashboard dev`
 3. Open http://localhost:3000

@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockLaunch = vi.fn();
 const mockBrowserClose = vi.fn();
 const mockContextClose = vi.fn().mockResolvedValue(undefined);
 const mockNewPage = vi.fn();
 
-vi.mock("cloakbrowser", () => ({
+vi.mock('cloakbrowser', () => ({
   launch: mockLaunch,
 }));
 
@@ -13,9 +13,9 @@ function makeMockLocator() {
   return {
     click: vi.fn(),
     fill: vi.fn(),
-    textContent: vi.fn().mockResolvedValue("text"),
-    getAttribute: vi.fn().mockResolvedValue("attr"),
-    inputValue: vi.fn().mockResolvedValue("val"),
+    textContent: vi.fn().mockResolvedValue('text'),
+    getAttribute: vi.fn().mockResolvedValue('attr'),
+    inputValue: vi.fn().mockResolvedValue('val'),
     isVisible: vi.fn().mockResolvedValue(true),
     waitFor: vi.fn(),
     all: vi.fn().mockResolvedValue([]),
@@ -25,7 +25,7 @@ function makeMockLocator() {
   };
 }
 
-describe("BrowserPool", () => {
+describe('BrowserPool', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -37,7 +37,7 @@ describe("BrowserPool", () => {
       locator: vi.fn().mockReturnValue(mockLocator),
       evaluate: vi.fn(),
       close: vi.fn(),
-      url: vi.fn().mockReturnValue("about:blank"),
+      url: vi.fn().mockReturnValue('about:blank'),
     };
     mockNewPage.mockResolvedValue(mockPage);
     mockContextClose.mockResolvedValue(undefined);
@@ -55,67 +55,67 @@ describe("BrowserPool", () => {
     };
   }
 
-  it("launches chromium on start with headless default", async () => {
-    const { BrowserPool } = await import("../browser-pool.js");
+  it('launches chromium on start with headless default', async () => {
+    const { BrowserPool } = await import('../browser-pool.js');
     mockLaunch.mockResolvedValue({ newContext: vi.fn(), close: vi.fn() });
     const pool = new BrowserPool();
     await pool.start();
     expect(mockLaunch).toHaveBeenCalledWith({ headless: true });
   });
 
-  it("launches chromium with custom options", async () => {
-    const { BrowserPool } = await import("../browser-pool.js");
+  it('launches chromium with custom options', async () => {
+    const { BrowserPool } = await import('../browser-pool.js');
     mockLaunch.mockResolvedValue({ newContext: vi.fn(), close: vi.fn() });
-    const pool = new BrowserPool({ headless: false, chromiumPath: "/custom/chrome" });
+    const pool = new BrowserPool({ headless: false, chromiumPath: '/custom/chrome' });
     await pool.start();
     expect(mockLaunch).toHaveBeenCalledWith({
       headless: false,
-      executablePath: "/custom/chrome",
+      executablePath: '/custom/chrome',
     });
   });
 
-  it("acquire creates a new context and page", async () => {
+  it('acquire creates a new context and page', async () => {
     makePoolContext();
-    const { BrowserPool } = await import("../browser-pool.js");
+    const { BrowserPool } = await import('../browser-pool.js');
     const pool = new BrowserPool();
     await pool.start();
     const result = await pool.acquire();
 
     expect(result.page).toBeDefined();
     expect(result.contextId).toBeDefined();
-    expect(typeof result.contextId).toBe("string");
+    expect(typeof result.contextId).toBe('string');
     expect(mockNewPage).toHaveBeenCalled();
   });
 
-  it("acquire returns a Page that delegates goto calls", async () => {
+  it('acquire returns a Page that delegates goto calls', async () => {
     const { mockPage } = makePoolContext();
-    const { BrowserPool } = await import("../browser-pool.js");
+    const { BrowserPool } = await import('../browser-pool.js');
     const pool = new BrowserPool();
     await pool.start();
     const { page } = await pool.acquire();
 
-    await page.goto("https://example.com", { waitUntil: "networkidle" });
-    expect(mockPage.goto).toHaveBeenCalledWith("https://example.com", { waitUntil: "networkidle" });
+    await page.goto('https://example.com', { waitUntil: 'networkidle' });
+    expect(mockPage.goto).toHaveBeenCalledWith('https://example.com', { waitUntil: 'networkidle' });
   });
 
-  it("acquire returns a Page that delegates locator calls", async () => {
+  it('acquire returns a Page that delegates locator calls', async () => {
     const { mockPage, mockLocator } = makePoolContext();
-    const { BrowserPool } = await import("../browser-pool.js");
+    const { BrowserPool } = await import('../browser-pool.js');
     const pool = new BrowserPool();
     await pool.start();
     const { page } = await pool.acquire();
 
-    const loc = page.locator("#btn");
-    expect(mockPage.locator).toHaveBeenCalledWith("#btn");
+    const loc = page.locator('#btn');
+    expect(mockPage.locator).toHaveBeenCalledWith('#btn');
     expect(loc).toBeDefined();
     // verify delegated methods work
     await loc.click();
     expect(mockLocator.click).toHaveBeenCalled();
   });
 
-  it("release closes the context", async () => {
+  it('release closes the context', async () => {
     makePoolContext();
-    const { BrowserPool } = await import("../browser-pool.js");
+    const { BrowserPool } = await import('../browser-pool.js');
     const pool = new BrowserPool();
     await pool.start();
     const { release } = await pool.acquire();
@@ -124,9 +124,9 @@ describe("BrowserPool", () => {
     expect(mockContextClose).toHaveBeenCalled();
   });
 
-  it("tracks active count", async () => {
+  it('tracks active count', async () => {
     makePoolContext();
-    const { BrowserPool } = await import("../browser-pool.js");
+    const { BrowserPool } = await import('../browser-pool.js');
     const pool = new BrowserPool();
     await pool.start();
     expect(pool.activeCount).toBe(0);
@@ -144,9 +144,9 @@ describe("BrowserPool", () => {
     expect(pool.activeCount).toBe(0);
   });
 
-  it("shutdown closes all contexts and the browser", async () => {
+  it('shutdown closes all contexts and the browser', async () => {
     makePoolContext();
-    const { BrowserPool } = await import("../browser-pool.js");
+    const { BrowserPool } = await import('../browser-pool.js');
     const pool = new BrowserPool();
     await pool.start();
     await pool.acquire();
@@ -158,14 +158,14 @@ describe("BrowserPool", () => {
     expect(pool.activeCount).toBe(0);
   });
 
-  it("acquire throws if not started", async () => {
-    const { BrowserPool } = await import("../browser-pool.js");
+  it('acquire throws if not started', async () => {
+    const { BrowserPool } = await import('../browser-pool.js');
     const pool = new BrowserPool();
-    await expect(pool.acquire()).rejects.toThrow("BrowserPool not started");
+    await expect(pool.acquire()).rejects.toThrow('BrowserPool not started');
   });
 
-  it("start is idempotent", async () => {
-    const { BrowserPool } = await import("../browser-pool.js");
+  it('start is idempotent', async () => {
+    const { BrowserPool } = await import('../browser-pool.js');
     mockLaunch.mockResolvedValue({ newContext: vi.fn(), close: vi.fn() });
     const pool = new BrowserPool();
     await pool.start();

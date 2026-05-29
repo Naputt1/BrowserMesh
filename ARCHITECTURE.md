@@ -108,4 +108,3 @@ These concerns belong to products built on top of BrowserMesh.
 - `packages/workflow` owns shared workflow and extraction contracts.
 - `packages/sdk` owns client-facing runtime connection primitives.
 - `packages/ui` owns embeddable authoring components.
-

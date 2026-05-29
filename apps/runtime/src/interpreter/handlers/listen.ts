@@ -1,4 +1,4 @@
-import type { NodeHandler } from "../types.js";
+import type { NodeHandler } from '../types.js';
 
 const INTERCEPT_SCRIPT = `
 window.__browsermesh_requests = [];
@@ -101,9 +101,9 @@ XMLHttpRequest.prototype.send = function(body) {
 
 function globMatch(pattern: string, url: string): boolean {
   const regexStr = pattern
-    .replace(/[.+^${}()|[\]\\]/g, "\\$&")
-    .replace(/\*/g, ".*")
-    .replace(/\?/g, ".");
+    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\*/g, '.*')
+    .replace(/\?/g, '.');
   try {
     return new RegExp(`^${regexStr}$`).test(url);
   } catch {
@@ -137,9 +137,10 @@ export const listenHandler: NodeHandler = async function* (node, context) {
   const raw = await context.page.evaluate(`JSON.stringify(window.__browsermesh_requests)`);
   const allRequests = JSON.parse(raw as string) as Array<Record<string, unknown>>;
 
-  const matched = urlPatterns.length > 0
-    ? allRequests.filter((r) => matchesAnyPattern(urlPatterns, String(r.url ?? "")))
-    : allRequests;
+  const matched =
+    urlPatterns.length > 0
+      ? allRequests.filter((r) => matchesAnyPattern(urlPatterns, String(r.url ?? '')))
+      : allRequests;
 
   if (!captureResponse) {
     for (const r of matched) {
@@ -147,5 +148,5 @@ export const listenHandler: NodeHandler = async function* (node, context) {
     }
   }
 
-  context.setOutput("requests", matched);
+  context.setOutput('requests', matched);
 };

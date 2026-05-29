@@ -1,44 +1,46 @@
-import { Handle, Position, type NodeProps } from "@xyflow/react";
-import type { NodeType, PinDescriptor, DataType } from "@browsermesh/workflow";
-import { NODE_DEFINITIONS } from "@browsermesh/workflow";
-import { cn } from "./lib/cn";
-import { getNodeColor, getPinColor, type RFNode } from "./lib/workflow-converter";
+import { Handle, Position, type NodeProps } from '@xyflow/react';
+import type { NodeType, PinDescriptor, DataType } from '@browsermesh/workflow';
+import { NODE_DEFINITIONS } from '@browsermesh/workflow';
+import { cn } from './lib/cn';
+import { getNodeColor, getPinColor, type RFNode } from './lib/workflow-converter';
 
 const TYPE_BADGE: Record<string, string> = {
-  string: "str",
-  number: "num",
-  boolean: "bool",
-  object: "obj",
-  array: "arr",
+  string: 'str',
+  number: 'num',
+  boolean: 'bool',
+  object: 'obj',
+  array: 'arr',
 };
 
-function PinLabel({ pin, side, top }: { pin: PinDescriptor; side: "left" | "right"; top: number }) {
+function PinLabel({ pin, side, top }: { pin: PinDescriptor; side: 'left' | 'right'; top: number }) {
   const badge = pin.dataType?.kind ? TYPE_BADGE[pin.dataType.kind] : undefined;
   return (
     <span
       className="absolute text-[9px] text-gray-400 pointer-events-none select-none whitespace-nowrap leading-none flex items-center gap-1"
       style={{
-        [side === "left" ? "left" : "right"]: "8px",
+        [side === 'left' ? 'left' : 'right']: '8px',
         top: `${top}px`,
       }}
     >
-      {side === "left" && badge && <TypeBadge kind={pin.dataType!.kind} />}
+      {side === 'left' && badge && <TypeBadge kind={pin.dataType!.kind} />}
       {pin.label}
-      {side === "right" && badge && <TypeBadge kind={pin.dataType!.kind} />}
+      {side === 'right' && badge && <TypeBadge kind={pin.dataType!.kind} />}
     </span>
   );
 }
 
-function TypeBadge({ kind }: { kind: DataType["kind"] }) {
+function TypeBadge({ kind }: { kind: DataType['kind'] }) {
   const colors: Record<string, string> = {
-    string: "bg-blue-100 text-blue-700",
-    number: "bg-green-100 text-green-700",
-    boolean: "bg-purple-100 text-purple-700",
-    object: "bg-amber-100 text-amber-700",
-    array: "bg-rose-100 text-rose-700",
+    string: 'bg-blue-100 text-blue-700',
+    number: 'bg-green-100 text-green-700',
+    boolean: 'bg-purple-100 text-purple-700',
+    object: 'bg-amber-100 text-amber-700',
+    array: 'bg-rose-100 text-rose-700',
   };
   return (
-    <span className={`inline-block text-[8px] px-1 py-[1px] rounded font-medium leading-none ${colors[kind] ?? "bg-gray-100 text-gray-500"}`}>
+    <span
+      className={`inline-block text-[8px] px-1 py-[1px] rounded font-medium leading-none ${colors[kind] ?? 'bg-gray-100 text-gray-500'}`}
+    >
       {TYPE_BADGE[kind] ?? kind}
     </span>
   );
@@ -50,15 +52,16 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
   const typeLabel = data.nodeType.charAt(0).toUpperCase() + data.nodeType.slice(1);
 
   const showPageKey = data.multiPage === true;
-  const pageKeyFilter = (p: { name: string }) => showPageKey || p.name !== "pageKey";
-  const flowInputs = def?.inputs.filter((p) => p.type === "flow") ?? [];
-  const dataInputs = def?.inputs.filter((p) => p.type !== "flow" && pageKeyFilter(p)) ?? [];
-  const flowOutputs = def?.outputs.filter((p) => p.type === "flow") ?? [];
-  const dataOutputs = def?.outputs.filter((p) => p.type !== "flow" && pageKeyFilter(p)) ?? [];
+  const pageKeyFilter = (p: { name: string }) => showPageKey || p.name !== 'pageKey';
+  const flowInputs = def?.inputs.filter((p) => p.type === 'flow') ?? [];
+  const dataInputs = def?.inputs.filter((p) => p.type !== 'flow' && pageKeyFilter(p)) ?? [];
+  const flowOutputs = def?.outputs.filter((p) => p.type === 'flow') ?? [];
+  const dataOutputs = def?.outputs.filter((p) => p.type !== 'flow' && pageKeyFilter(p)) ?? [];
 
-  const switchCases = data.nodeType === "switch"
-    ? ((data.config?.cases as Array<{ label: string; value: string }>) ?? [])
-    : [];
+  const switchCases =
+    data.nodeType === 'switch'
+      ? ((data.config?.cases as Array<{ label: string; value: string }>) ?? [])
+      : [];
   const totalFlowOutputs = flowOutputs.length + switchCases.length;
 
   const flowTop = 16;
@@ -69,8 +72,8 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
   return (
     <div
       className={cn(
-        "relative px-12 py-3 rounded-lg border-2 bg-white shadow-sm min-w-[180px]",
-        selected ? "border-primary ring-2 ring-primary/20" : "border-gray-200",
+        'relative px-12 py-3 rounded-lg border-2 bg-white shadow-sm min-w-[180px]',
+        selected ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200',
       )}
       style={{ borderLeftColor: color, borderLeftWidth: 4 }}
     >
@@ -116,9 +119,7 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
           {typeLabel}
         </div>
         <div className="text-sm font-semibold text-gray-900 text-center">{data.label}</div>
-        {def?.category && (
-          <div className="text-[10px] text-gray-400">{def.category}</div>
-        )}
+        {def?.category && <div className="text-[10px] text-gray-400">{def.category}</div>}
       </div>
 
       {/* --- OUTPUTS (right side) --- */}
@@ -147,7 +148,7 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
               position={Position.Right}
               id={`case_${i}`}
               className="!w-2 !h-2 !border-0"
-              style={{ top: `${top}px`, backgroundColor: getPinColor("flow", `case_${i}`) }}
+              style={{ top: `${top}px`, backgroundColor: getPinColor('flow', `case_${i}`) }}
             />
             <span
               className="absolute text-[9px] text-gray-400 pointer-events-none select-none whitespace-nowrap leading-none right-2"
@@ -176,7 +177,11 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
       })}
 
       {/* spacer so the node is tall enough for all pins */}
-      <div style={{ height: `${Math.max(leftDataStart + dataInputs.length * pinGap, rightDataStart + dataOutputs.length * pinGap) - 8}px` }} />
+      <div
+        style={{
+          height: `${Math.max(leftDataStart + dataInputs.length * pinGap, rightDataStart + dataOutputs.length * pinGap) - 8}px`,
+        }}
+      />
     </div>
   );
 }

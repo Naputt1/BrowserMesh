@@ -1,6 +1,6 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import type { BrowserMeshRuntime } from "../browsermesh-runtime.js";
-import type { WorkflowDefinition, WorkflowEvent } from "@browsermesh/workflow";
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import type { BrowserMeshRuntime } from '../browsermesh-runtime.js';
+import type { WorkflowDefinition, WorkflowEvent } from '@browsermesh/workflow';
 
 export class RuntimeRestServer {
   private server: ReturnType<typeof createServer>;
@@ -33,14 +33,14 @@ export class RuntimeRestServer {
 
   private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
     try {
-      const method = req.method ?? "GET";
-      const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
+      const method = req.method ?? 'GET';
+      const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
 
-      res.setHeader("Access-Control-Allow-Origin", "*");
-      res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-      res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-      if (method === "OPTIONS") {
+      if (method === 'OPTIONS') {
         res.writeHead(204);
         res.end();
         return;
@@ -48,11 +48,11 @@ export class RuntimeRestServer {
 
       const path = url.pathname;
 
-      if (method === "POST" && path === "/api/workflows/execute") {
+      if (method === 'POST' && path === '/api/workflows/execute') {
         return await this.handleExecuteWorkflow(req, res);
       }
 
-      if (method === "GET" && path === "/api/tasks") {
+      if (method === 'GET' && path === '/api/tasks') {
         return this.handleListTasks(res);
       }
 
@@ -62,49 +62,52 @@ export class RuntimeRestServer {
       const pauseMatch = path.match(/^\/api\/tasks\/([^/]+)\/pause$/);
       const resumeMatch = path.match(/^\/api\/tasks\/([^/]+)\/resume$/);
 
-      if (taskMatch && method === "GET") {
+      if (taskMatch && method === 'GET') {
         return await this.handleGetTaskStatus(taskMatch[1], res);
       }
 
-      if (eventsMatch && method === "GET") {
+      if (eventsMatch && method === 'GET') {
         return this.handleTaskEvents(eventsMatch[1], req, res);
       }
 
-      if (cancelMatch && method === "POST") {
+      if (cancelMatch && method === 'POST') {
         return await this.handleCancelTask(cancelMatch[1], res);
       }
 
-      if (pauseMatch && method === "POST") {
+      if (pauseMatch && method === 'POST') {
         return await this.handlePauseTask(pauseMatch[1], res);
       }
 
-      if (resumeMatch && method === "POST") {
+      if (resumeMatch && method === 'POST') {
         return await this.handleResumeTask(resumeMatch[1], res);
       }
 
       const stateMatch = path.match(/^\/api\/workflows\/([^/]+)\/state$/);
       const recoverMatch = path.match(/^\/api\/workflows\/([^/]+)\/state\/recover$/);
 
-      if (recoverMatch && method === "GET") {
+      if (recoverMatch && method === 'GET') {
         return await this.handleRecoverState(recoverMatch[1], res);
       }
 
-      if (stateMatch && method === "GET") {
+      if (stateMatch && method === 'GET') {
         return await this.handleGetState(stateMatch[1], res);
       }
 
-      if (stateMatch && method === "POST") {
+      if (stateMatch && method === 'POST') {
         return await this.handleSetState(stateMatch[1], req, res);
       }
 
-      writeJson(res, 404, { error: "Not found" });
+      writeJson(res, 404, { error: 'Not found' });
     } catch (err) {
-      writeJson(res, 500, { error: err instanceof Error ? err.message : "Internal error" });
+      writeJson(res, 500, { error: err instanceof Error ? err.message : 'Internal error' });
     }
   }
 
   private async handleExecuteWorkflow(req: IncomingMessage, res: ServerResponse): Promise<void> {
-    const body = JSON.parse(await readBody(req)) as { workflow: WorkflowDefinition; taskId?: string };
+    const body = JSON.parse(await readBody(req)) as {
+      workflow: WorkflowDefinition;
+      taskId?: string;
+    };
 
     const taskId = body.taskId ?? crypto.randomUUID();
     const buffer: WorkflowEvent[] = [];
@@ -133,7 +136,11 @@ export class RuntimeRestServer {
     const listeners = this.taskListeners.get(taskId);
     if (listeners) {
       for (const cb of listeners) {
-        try { cb(event); } catch { /* ignore */ }
+        try {
+          cb(event);
+        } catch {
+          /* ignore */
+        }
       }
     }
   }
@@ -152,7 +159,7 @@ export class RuntimeRestServer {
       const status = await this.runtime.getTaskStatus(taskId);
       writeJson(res, 200, status);
     } catch (err) {
-      writeJson(res, 404, { error: err instanceof Error ? err.message : "Task not found" });
+      writeJson(res, 404, { error: err instanceof Error ? err.message : 'Task not found' });
     }
   }
 
@@ -161,7 +168,7 @@ export class RuntimeRestServer {
       const status = await this.runtime.cancelTask(taskId);
       writeJson(res, 200, status);
     } catch (err) {
-      writeJson(res, 404, { error: err instanceof Error ? err.message : "Task not found" });
+      writeJson(res, 404, { error: err instanceof Error ? err.message : 'Task not found' });
     }
   }
 
@@ -170,7 +177,7 @@ export class RuntimeRestServer {
       const status = await this.runtime.pauseTask(taskId);
       writeJson(res, 200, status);
     } catch (err) {
-      writeJson(res, 404, { error: err instanceof Error ? err.message : "Task not found" });
+      writeJson(res, 404, { error: err instanceof Error ? err.message : 'Task not found' });
     }
   }
 
@@ -179,7 +186,7 @@ export class RuntimeRestServer {
       const status = await this.runtime.resumeTask(taskId);
       writeJson(res, 200, status);
     } catch (err) {
-      writeJson(res, 404, { error: err instanceof Error ? err.message : "Task not found" });
+      writeJson(res, 404, { error: err instanceof Error ? err.message : 'Task not found' });
     }
   }
 
@@ -188,17 +195,24 @@ export class RuntimeRestServer {
       const result = await this.runtime.getWorkflowState(workflowId);
       writeJson(res, 200, result);
     } catch (err) {
-      writeJson(res, 500, { error: err instanceof Error ? err.message : "Internal error" });
+      writeJson(res, 500, { error: err instanceof Error ? err.message : 'Internal error' });
     }
   }
 
-  private async handleSetState(workflowId: string, req: IncomingMessage, res: ServerResponse): Promise<void> {
+  private async handleSetState(
+    workflowId: string,
+    req: IncomingMessage,
+    res: ServerResponse,
+  ): Promise<void> {
     try {
-      const body = JSON.parse(await readBody(req)) as { state: Record<string, unknown>; commit?: boolean };
+      const body = JSON.parse(await readBody(req)) as {
+        state: Record<string, unknown>;
+        commit?: boolean;
+      };
       const result = await this.runtime.setWorkflowState(workflowId, body.state, body.commit);
       writeJson(res, 200, result);
     } catch (err) {
-      writeJson(res, 500, { error: err instanceof Error ? err.message : "Internal error" });
+      writeJson(res, 500, { error: err instanceof Error ? err.message : 'Internal error' });
     }
   }
 
@@ -207,21 +221,21 @@ export class RuntimeRestServer {
       const result = await this.runtime.recoverWorkflowState(workflowId);
       writeJson(res, 200, result);
     } catch (err) {
-      writeJson(res, 500, { error: err instanceof Error ? err.message : "Internal error" });
+      writeJson(res, 500, { error: err instanceof Error ? err.message : 'Internal error' });
     }
   }
 
   private handleTaskEvents(taskId: string, req: IncomingMessage, res: ServerResponse): void {
     if (!this.taskBuffers.has(taskId)) {
-      writeJson(res, 404, { error: "Task not found" });
+      writeJson(res, 404, { error: 'Task not found' });
       return;
     }
 
     res.writeHead(200, {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      "Connection": "keep-alive",
-      "X-Accel-Buffering": "no",
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
     });
 
     const buffer = this.taskBuffers.get(taskId)!;
@@ -237,10 +251,10 @@ export class RuntimeRestServer {
     listeners.add(listener);
 
     const keepAlive = setInterval(() => {
-      res.write(": keepalive\n\n");
+      res.write(': keepalive\n\n');
     }, 30000);
 
-    req.on("close", () => {
+    req.on('close', () => {
       listeners.delete(listener);
       clearInterval(keepAlive);
     });
@@ -250,13 +264,13 @@ export class RuntimeRestServer {
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
-    req.on("data", (chunk: Buffer) => chunks.push(chunk));
-    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
-    req.on("error", reject);
+    req.on('data', (chunk: Buffer) => chunks.push(chunk));
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+    req.on('error', reject);
   });
 }
 
 function writeJson(res: ServerResponse, status: number, data: unknown): void {
-  res.writeHead(status, { "Content-Type": "application/json" });
+  res.writeHead(status, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(data));
 }

@@ -1,5 +1,5 @@
-import { readFile, writeFile, mkdir, access } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import { readFile, writeFile, mkdir, access } from 'node:fs/promises';
+import { join, dirname } from 'node:path';
 
 export interface PersistentStateStore {
   load(workflowId: string): Promise<Record<string, unknown> | null>;
@@ -18,7 +18,7 @@ export class GlobalStateStore {
     stateDir?: string,
     persistent?: PersistentStateStore,
   ) {
-    this.stateDir = stateDir ?? join(process.cwd(), "state");
+    this.stateDir = stateDir ?? join(process.cwd(), 'state');
     this.persistent = persistent ?? new FilePersistentStateStore(this.stateDir);
   }
 
@@ -81,14 +81,14 @@ export class GlobalStateStore {
   private async writeBackup(): Promise<void> {
     const filePath = join(this.stateDir, `${this.workflowId}.json`);
     await mkdir(dirname(filePath), { recursive: true }).catch(() => {});
-    await writeFile(filePath, JSON.stringify(this.getAll(), null, 2), "utf-8");
+    await writeFile(filePath, JSON.stringify(this.getAll(), null, 2), 'utf-8');
   }
 
   private async loadBackup(): Promise<Record<string, unknown> | null> {
     const filePath = join(this.stateDir, `${this.workflowId}.json`);
     try {
       await access(filePath);
-      const content = await readFile(filePath, "utf-8");
+      const content = await readFile(filePath, 'utf-8');
       return JSON.parse(content);
     } catch {
       return null;
@@ -96,7 +96,7 @@ export class GlobalStateStore {
   }
 
   static async recover(workflowId: string, stateDir?: string): Promise<boolean> {
-    const dir = stateDir ?? join(process.cwd(), "state");
+    const dir = stateDir ?? join(process.cwd(), 'state');
     const filePath = join(dir, `${workflowId}.json`);
     try {
       await access(filePath);
@@ -114,7 +114,7 @@ export class FilePersistentStateStore implements PersistentStateStore {
     const filePath = join(this.stateDir, `${workflowId}.persist.json`);
     try {
       await access(filePath);
-      const content = await readFile(filePath, "utf-8");
+      const content = await readFile(filePath, 'utf-8');
       return JSON.parse(content);
     } catch {
       return null;
@@ -124,6 +124,6 @@ export class FilePersistentStateStore implements PersistentStateStore {
   async save(workflowId: string, state: Record<string, unknown>): Promise<void> {
     const filePath = join(this.stateDir, `${workflowId}.persist.json`);
     await mkdir(dirname(filePath), { recursive: true }).catch(() => {});
-    await writeFile(filePath, JSON.stringify(state, null, 2), "utf-8");
+    await writeFile(filePath, JSON.stringify(state, null, 2), 'utf-8');
   }
 }

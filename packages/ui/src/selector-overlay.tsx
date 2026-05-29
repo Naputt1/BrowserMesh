@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 export type SelectorOverlayProps = {
   readonly active?: boolean;
@@ -6,7 +6,7 @@ export type SelectorOverlayProps = {
 };
 
 export function SelectorOverlay({ active, onSelectorPick }: SelectorOverlayProps) {
-  const [selector, setSelector] = useState("");
+  const [selector, setSelector] = useState('');
 
   const handlePick = () => {
     if (selector && onSelectorPick) {
@@ -23,7 +23,7 @@ export function SelectorOverlay({ active, onSelectorPick }: SelectorOverlayProps
           placeholder=".class, #id, div > p"
           value={selector}
           onChange={(e) => setSelector(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handlePick()}
+          onKeyDown={(e) => e.key === 'Enter' && handlePick()}
         />
         <button
           onClick={handlePick}
