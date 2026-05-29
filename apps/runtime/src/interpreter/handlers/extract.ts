@@ -20,7 +20,7 @@ export const extractHandler: NodeHandler = async function* (node, context, input
   const page = (context.pageManager && pageKey) ? context.pageManager.getPage(pageKey) : context.page;
   const property = config.property as string ?? "text";
   const attribute = config.attribute as string | undefined;
-  const element = inputs.element as ElementLike | undefined;
+  const element = (inputs.element as ElementLike | undefined) ?? (context.currentElement as ElementLike | undefined);
   if (!element) {
     throw new Error("extract node requires an element input");
   }
