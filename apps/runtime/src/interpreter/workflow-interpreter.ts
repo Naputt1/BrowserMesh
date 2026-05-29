@@ -145,10 +145,13 @@ export class WorkflowInterpreter {
       this.setNodeOutput(node.id, pin, value);
     };
 
+    const controlSignal = contextOverride?.controlSignal ?? { value: undefined as "break" | "continue" | undefined };
+
     const nodeContext: ExecutionContext = {
       ...baseContext,
       ...contextOverride,
       setOutput,
+      controlSignal,
     };
 
     yield this.makeEvent("step_started", { stepId: node.id, stepType: node.type });
@@ -164,6 +167,7 @@ export class WorkflowInterpreter {
             ...contextOverride,
             ...childOverride,
             setOutput,
+            controlSignal,
           }),
       );
 

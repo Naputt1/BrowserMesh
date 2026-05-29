@@ -81,7 +81,16 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
   switch (type) {
     case "start":
     case "end":
+    case "break":
+    case "continue":
+    case "if":
+    case "and":
+    case "or":
+    case "not":
       return <p className="text-xs text-gray-500 italic">No configuration needed</p>;
+
+    case "compare":
+      return <CompareConfigFields config={config} onUpdate={onUpdate} />;
 
     case "navigate":
       return (
@@ -332,9 +341,86 @@ function ConfigFields({ type, config, onUpdate, outputType, allNodes }: ConfigFi
     case "page":
       return <PageConfigFields config={config} onUpdate={onUpdate} />;
 
+    case "switch":
+      return <SwitchConfigFields config={config} onUpdate={onUpdate} />;
+
     default:
       return null;
   }
+}
+
+type CaseEntry = { label: string; value: string };
+
+const DEFAULT_CASES: CaseEntry[] = [
+  { label: "Case 1", value: "" },
+  { label: "Case 2", value: "" },
+  { label: "Case 3", value: "" },
+  { label: "Case 4", value: "" },
+];
+
+function SwitchConfigFields({
+  config,
+  onUpdate,
+}: {
+  config: Record<string, unknown>;
+  onUpdate: (config: Record<string, unknown>) => void;
+}) {
+  const cases = (config.cases as CaseEntry[]) ?? DEFAULT_CASES;
+
+  const setCases = (next: CaseEntry[]) => {
+    onUpdate({ ...config, cases: next });
+  };
+
+  const addCase = () => {
+    setCases([...cases, { label: `Case ${cases.length + 1}`, value: "" }]);
+  };
+
+  const removeCase = (i: number) => {
+    const next = cases.filter((_, j) => j !== i);
+    setCases(next);
+  };
+
+  return (
+    <>
+      <p className="text-xs text-gray-500 mb-2">Connect a value to the <strong>Value</strong> pin. Each case flow output is taken when the value matches.</p>
+
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-gray-600">Cases</label>
+        {cases.map((c, i) => (
+          <div key={i} className="flex gap-1 items-center">
+            <input
+              className="flex-1 rounded border border-gray-300 px-2 py-1 text-xs font-mono"
+              placeholder="Match value"
+              value={c.value}
+              onChange={(e) => {
+                const next = [...cases];
+                next[i] = { ...next[i], value: e.target.value };
+                setCases(next);
+              }}
+            />
+            <span className="text-[10px] text-gray-400 whitespace-nowrap">{c.label}</span>
+            <button
+              onClick={() => removeCase(i)}
+              className="text-xs text-red-500 hover:text-red-700 px-1"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        <button
+          onClick={addCase}
+          className="text-xs text-blue-600 hover:text-blue-800"
+        >
+          + Add case
+        </button>
+      </div>
+
+      <div className="mt-2">
+        <label className="text-xs font-medium text-gray-600">Default case</label>
+        <p className="text-[10px] text-gray-400 mt-1">Connect the <strong>Default</strong> output pin to handle unmatched values</p>
+      </div>
+    </>
+  );
 }
 
 type LeafPath = { name: string; path: string };
@@ -762,6 +848,45 @@ function PageConfigFields({
           onChange={(e) => onUpdate({ ...config, pageId: e.target.value })}
         />
         <p className="text-[10px] text-gray-400 mt-1">Identifier for this tab. Output connects to other nodes</p>
+      </div>
+    </>
+  );
+}
+
+const COMPARE_OPERATORS = [
+  { value: "equals", label: "Equals (==)" },
+  { value: "notEquals", label: "Not equals (!=)" },
+  { value: "gt", label: "Greater than (>)" },
+  { value: "gte", label: "Greater than or equal (>=)" },
+  { value: "lt", label: "Less than (<)" },
+  { value: "lte", label: "Less than or equal (<=)" },
+  { value: "contains", label: "Contains" },
+  { value: "startsWith", label: "Starts with" },
+  { value: "endsWith", label: "Ends with" },
+];
+
+function CompareConfigFields({
+  config,
+  onUpdate,
+}: {
+  config: Record<string, unknown>;
+  onUpdate: (config: Record<string, unknown>) => void;
+}) {
+  return (
+    <>
+      <p className="text-xs text-gray-500 mb-2">Compares <strong>Left</strong> and <strong>Right</strong> data inputs using the selected operator. Result is a boolean.</p>
+
+      <div>
+        <label className="text-xs font-medium text-gray-600">Operator</label>
+        <select
+          className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
+          value={(config.operator as string) ?? "equals"}
+          onChange={(e) => onUpdate({ ...config, operator: e.target.value })}
+        >
+          {COMPARE_OPERATORS.map((op) => (
+            <option key={op.value} value={op.value}>{op.label}</option>
+          ))}
+        </select>
       </div>
     </>
   );

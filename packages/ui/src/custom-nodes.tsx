@@ -56,9 +56,15 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
   const flowOutputs = def?.outputs.filter((p) => p.type === "flow") ?? [];
   const dataOutputs = def?.outputs.filter((p) => p.type !== "flow" && pageKeyFilter(p)) ?? [];
 
+  const switchCases = data.nodeType === "switch"
+    ? ((data.config?.cases as Array<{ label: string; value: string }>) ?? [])
+    : [];
+  const totalFlowOutputs = flowOutputs.length + switchCases.length;
+
   const flowTop = 16;
   const pinGap = 28;
-  const dataStart = flowTop + Math.max(flowInputs.length, flowOutputs.length) * pinGap;
+  const leftDataStart = flowTop + flowInputs.length * pinGap;
+  const rightDataStart = flowTop + totalFlowOutputs * pinGap;
 
   return (
     <div
@@ -86,7 +92,7 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
       })}
 
       {dataInputs.map((pin, i) => {
-        const top = dataStart + i * pinGap;
+        const top = leftDataStart + i * pinGap;
         return (
           <span key={pin.name}>
             <Handle
@@ -132,8 +138,29 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
         );
       })}
 
+      {switchCases.map((c, i) => {
+        const top = flowTop + (flowOutputs.length + i) * pinGap;
+        return (
+          <span key={`case_${i}`}>
+            <Handle
+              type="source"
+              position={Position.Right}
+              id={`case_${i}`}
+              className="!w-2 !h-2 !border-0"
+              style={{ top: `${top}px`, backgroundColor: getPinColor("flow", `case_${i}`) }}
+            />
+            <span
+              className="absolute text-[9px] text-gray-400 pointer-events-none select-none whitespace-nowrap leading-none right-2"
+              style={{ top: `${top - 4}px` }}
+            >
+              {c.label || `Case ${i + 1}`}
+            </span>
+          </span>
+        );
+      })}
+
       {dataOutputs.map((pin, i) => {
-        const top = dataStart + i * pinGap;
+        const top = rightDataStart + i * pinGap;
         return (
           <span key={pin.name}>
             <Handle
@@ -149,7 +176,7 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
       })}
 
       {/* spacer so the node is tall enough for all pins */}
-      <div style={{ height: `${dataStart + Math.max(dataInputs.length, dataOutputs.length) * pinGap - 8}px` }} />
+      <div style={{ height: `${Math.max(leftDataStart + dataInputs.length * pinGap, rightDataStart + dataOutputs.length * pinGap) - 8}px` }} />
     </div>
   );
 }

@@ -17,6 +17,14 @@ export const loopHandler: NodeHandler = async function* (node, context, inputs, 
     context.setOutput("item", item);
     if (executeSubgraph) {
       yield* executeSubgraph("body", { currentElement: item, loopIndex: i });
+
+      if (context.controlSignal?.value === "break") {
+        context.controlSignal.value = undefined;
+        break;
+      }
+      if (context.controlSignal?.value === "continue") {
+        context.controlSignal.value = undefined;
+      }
     }
   }
 };
