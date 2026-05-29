@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserPane, ScreenshotViewer } from "../browser-pane.js";
 import { SelectorOverlay } from "../selector-overlay.js";
 import { ExtractionMapper } from "../extraction-mapper.js";
 import { DevtoolsPanel } from "../devtools-panel.js";
 import { TaskConsole } from "../task-console.js";
+import { ContextMenu } from "../components/ui/context-menu.js";
 
 beforeAll(() => {
   Element.prototype.scrollIntoView = () => {};
@@ -119,5 +120,130 @@ describe("TaskConsole", () => {
     render(<TaskConsole events={events} />);
     expect(screen.getByText("page did not load")).toBeTruthy();
     expect(screen.getByText("[Failed]")).toBeTruthy();
+  });
+
+  it("renders progress event", () => {
+    const ts = new Date().toISOString();
+    const events = [{ type: "progress" as const, taskId: "t1", timestamp: ts, completedSteps: 3, totalSteps: 10 }];
+    render(<TaskConsole events={events} />);
+    expect(screen.getByText("3/10 steps")).toBeTruthy();
+  });
+
+  it("renders partial_data event", () => {
+    const ts = new Date().toISOString();
+    const events = [{ type: "partial_data" as const, taskId: "t1", timestamp: ts, path: "title", value: "Hello" }];
+    render(<TaskConsole events={events} />);
+    expect(screen.getByText(/title/)).toBeTruthy();
+  });
+});
+
+describe("ContextMenu", () => {
+  it("renders menu items", () => {
+    render(
+      <ContextMenu x={100} y={200} items={[{ label: "Edit" }, { label: "Delete" }]} onClose={() => {}} />,
+    );
+    expect(screen.getByText("Edit")).toBeTruthy();
+    expect(screen.getByText("Delete")).toBeTruthy();
+  });
+
+  it("renders separators between items", () => {
+    render(
+      <ContextMenu x={0} y={0} items={[{ label: "Cut" }, { separator: true }, { label: "Paste" }]} onClose={() => {}} />,
+    );
+    expect(screen.getByText("Cut")).toBeTruthy();
+    expect(screen.getByText("Paste")).toBeTruthy();
+  });
+
+  it("calls item onClick when clicked", () => {
+    const onClick = vi.fn();
+    render(
+      <ContextMenu x={0} y={0} items={[{ label: "Edit", onClick }]} onClose={() => {}} />,
+    );
+    fireEvent.click(screen.getByText("Edit"));
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it("closes on Escape key", () => {
+    const onClose = vi.fn();
+    render(
+      <ContextMenu x={0} y={0} items={[{ label: "Item" }]} onClose={onClose} />,
+    );
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it("closes when backdrop is clicked", () => {
+    const onClose = vi.fn();
+    render(
+      <ContextMenu x={0} y={0} items={[{ label: "Item" }]} onClose={onClose} />,
+    );
+    const backdrop = document.querySelector(".fixed.inset-0");
+    expect(backdrop).toBeTruthy();
+    fireEvent.click(backdrop!);
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it("renders danger items (red styling)", () => {
+    render(
+      <ContextMenu x={0} y={0} items={[{ label: "Delete", danger: true }]} onClose={() => {}} />,
+    );
+    expect(screen.getByText("Delete")).toBeTruthy();
+  });
+
+  it("renders items with color dot", () => {
+    render(
+      <ContextMenu x={0} y={0} items={[{ label: "Colored", color: "#ff0000" }]} onClose={() => {}} />,
+    );
+    expect(screen.getByText("Colored")).toBeTruthy();
+  });
+
+  it("renders disabled items", () => {
+    render(
+      <ContextMenu x={0} y={0} items={[{ label: "Disabled", disabled: true }]} onClose={() => {}} />,
+    );
+    const btn = screen.getByText("Disabled").closest("button");
+    expect(btn).toHaveProperty("disabled", true);
+  });
+
+  it("renders items with icon", () => {
+    render(
+      <ContextMenu x={0} y={0} items={[{ label: "With Icon", icon: <span data-testid="icon">🔍</span> }]} onClose={() => {}} />,
+    );
+    expect(screen.getByTestId("icon")).toBeTruthy();
+  });
+});
+
+describe("BrowserPane", () => {
+  it("renders empty state with undefined URL", () => {
+    const { container } = render(<BrowserPane />);
+    expect(container.textContent).toContain("No URL loaded");
+  });
+
+  it("renders empty state with empty string URL", () => {
+    const { container } = render(<BrowserPane previewUrl="" />);
+    expect(container.textContent).toContain("No URL loaded");
+  });
+});
+
+describe("ScreenshotViewer", () => {
+  it("shows latest screenshot with multiple events", () => {
+    const ts = new Date().toISOString();
+    const events = [
+      { type: "screenshot" as const, taskId: "t1", timestamp: ts, label: "page1", data: new Uint8Array([1, 2, 3]), mimeType: "image/png" as const },
+      { type: "screenshot" as const, taskId: "t1", timestamp: ts, label: "page2", data: new Uint8Array([4, 5, 6]), mimeType: "image/png" as const },
+    ];
+    const { container } = render(<ScreenshotViewer events={events} />);
+    expect(container.textContent).toContain("page2");
+    expect(screen.getByAltText("page2")).toBeTruthy();
+  });
+});
+
+describe("ExtractionMapper", () => {
+  it("removes a field when clicking remove", () => {
+    const { container } = render(<ExtractionMapper typeName="Test" />);
+    fireEvent.click(screen.getByText("+ Field"));
+    const removeButtons = container.querySelectorAll('button');
+    const removeBtn = Array.from(removeButtons).find(b => b.textContent === "✕");
+    expect(removeBtn).toBeTruthy();
   });
 });
