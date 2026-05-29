@@ -26,6 +26,7 @@ export function workflowToReactFlow(
   existingNodes?: RFNode[],
 ): { nodes: RFNode[]; edges: RFEdge[] } {
   const existingPositions = new Map(existingNodes?.map((n) => [n.id, n.position]));
+  const existingSelected = new Map(existingNodes?.map((n) => [n.id, n.selected]));
 
   const multiPage = wf.settings?.multiPage ?? false;
   const nodes: RFNode[] = wf.nodes.map((n, i) => ({
@@ -33,6 +34,7 @@ export function workflowToReactFlow(
     type: "workflowNode",
     position: n.position ? snap(n.position) : existingPositions.get(n.id) ?? { x: i * 280 + 60, y: 200 },
     data: { label: n.label ?? n.type, nodeType: n.type, config: n.config ?? {}, pinDataTypes: getPinDataTypes(n.type, n.config ?? {}), pageId: n.pageId, multiPage },
+    selected: existingSelected.get(n.id) ?? false,
   }));
 
   const edges: RFEdge[] = wf.edges.map((e) => ({
