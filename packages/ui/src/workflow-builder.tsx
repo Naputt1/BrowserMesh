@@ -17,6 +17,7 @@ export type WorkflowBuilderProps = {
   readonly workflow?: WorkflowDefinition;
   readonly events?: readonly WorkflowEvent[];
   readonly onWorkflowChange?: (workflow: WorkflowDefinition) => void;
+  readonly onError?: (error: string) => void;
 };
 
 const DEFAULT_WORKFLOW: WorkflowDefinition = {
@@ -27,7 +28,7 @@ const DEFAULT_WORKFLOW: WorkflowDefinition = {
 
 const MAX_HISTORY = 50;
 
-export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderProps) {
+export function WorkflowBuilder({ workflow, onWorkflowChange, onError }: WorkflowBuilderProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [workflowState, setWorkflowState] = useState<WorkflowDefinition | undefined>(
     workflow ?? DEFAULT_WORKFLOW,
@@ -221,7 +222,7 @@ export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderP
         const wf = JSON.parse(text) as WorkflowDefinition;
         handleChange(wf);
       } catch {
-        alert('Invalid workflow JSON');
+        onError?.('Invalid workflow JSON');
       }
     };
     input.click();

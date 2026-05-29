@@ -5,6 +5,7 @@ import { useWorkflowStore, useTaskStore } from '../../stores/workflow-store';
 import { useTaskEvents } from '../../hooks/use-task-events';
 import { executeWorkflow } from '../../lib/api';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import type { WorkflowDefinition, WorkflowEvent } from '@browsermesh/workflow';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 
@@ -73,7 +74,7 @@ function NewWorkflowPage() {
       setTaskId(result.taskId);
       clearEvents(result.taskId);
     } catch (err) {
-      alert('Failed to start workflow: ' + (err instanceof Error ? err.message : String(err)));
+      toast.error('Failed to start workflow: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setRunning(false);
     }
