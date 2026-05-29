@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import type { GlobalSettings, TimingControls, DataType, DataTypeField } from "@browsermesh/workflow";
 
 export type GlobalSettingsPanelProps = {
@@ -197,9 +198,9 @@ function TypeBuilder({
                       const fields = (type.fields ?? []).filter((_, j) => j !== i);
                       onChange({ ...type, fields: fields.length ? fields : undefined });
                     }}
-                    className="text-xs text-red-500 hover:text-red-700 px-1"
+                    className="text-red-500 hover:text-red-700 p-1"
                   >
-                    ✕
+                    <X size={14} />
                   </button>
                 </div>
                 <TypeBuilder

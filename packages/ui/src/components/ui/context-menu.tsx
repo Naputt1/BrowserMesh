@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "../../lib/cn";
 
 export type ContextMenuItem = {
@@ -102,7 +103,7 @@ function MenuItem({ item, onClose }: { item: ContextMenuItem; onClose: () => voi
         )}
         {item.icon}
         <span className="flex-1">{item.label}</span>
-        {hasChildren && <span className="text-muted-foreground text-xs ml-2">▸</span>}
+        {hasChildren && <ChevronRight className="text-muted-foreground ml-2" size={14} />}
       </button>
       {hasChildren && showChildren && (
         <div className="absolute left-full top-0 ml-0.5">

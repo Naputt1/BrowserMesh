@@ -169,6 +169,9 @@ importers:
       clsx:
         specifier: ^2.1.0
         version: 2.1.1
+      lucide-react:
+        specifier: ^0.400.0
+        version: 0.400.0(react@19.2.6)
       react:
         specifier: ^18.0.0 || ^19.0.0
         version: 19.2.6
