@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ReactFlow,
   Background,
-  Controls,
   MiniMap,
   BackgroundVariant,
   useNodesState,
@@ -347,7 +346,6 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
         className="bg-gray-50"
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
-        <Controls />
         <MiniMap
           nodeColor={(node: RFNode) => getNodeColor(node.data.nodeType)}
           nodeStrokeColor={(node: RFNode) => getNodeColor(node.data.nodeType)}
