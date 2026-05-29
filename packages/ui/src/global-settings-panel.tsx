@@ -1,5 +1,10 @@
-import { X } from "lucide-react";
-import type { GlobalSettings, TimingControls, DataType, DataTypeField } from "@browsermesh/workflow";
+import { X } from 'lucide-react';
+import type {
+  GlobalSettings,
+  TimingControls,
+  DataType,
+  DataTypeField,
+} from '@browsermesh/workflow';
 
 export type GlobalSettingsPanelProps = {
   settings?: GlobalSettings;
@@ -7,7 +12,7 @@ export type GlobalSettingsPanelProps = {
   onClose: () => void;
 };
 
-const DEFAULT_OUTPUT: DataType = { kind: "object", name: "Output", fields: [] };
+const DEFAULT_OUTPUT: DataType = { kind: 'object', name: 'Output', fields: [] };
 
 export function GlobalSettingsPanel({ settings, onChange, onClose }: GlobalSettingsPanelProps) {
   const timing = settings?.timing ?? {};
@@ -25,10 +30,7 @@ export function GlobalSettingsPanel({ settings, onChange, onClose }: GlobalSetti
     <div className="w-80 border-l bg-white p-4 shrink-0 overflow-y-auto">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold text-gray-900">Global Settings</h3>
-        <button
-          onClick={onClose}
-          className="text-xs text-gray-400 hover:text-gray-600"
-        >
+        <button onClick={onClose} className="text-xs text-gray-400 hover:text-gray-600">
           Close
         </button>
       </div>
@@ -39,23 +41,33 @@ export function GlobalSettingsPanel({ settings, onChange, onClose }: GlobalSetti
             <input
               type="number"
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-              value={timing.minDelayMs ?? ""}
-              onChange={(e) => updateTiming({ minDelayMs: e.target.value ? parseInt(e.target.value, 10) : undefined })}
+              value={timing.minDelayMs ?? ''}
+              onChange={(e) =>
+                updateTiming({
+                  minDelayMs: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                })
+              }
             />
           </Field>
           <Field label="Max Delay (ms)">
             <input
               type="number"
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-              value={timing.maxDelayMs ?? ""}
-              onChange={(e) => updateTiming({ maxDelayMs: e.target.value ? parseInt(e.target.value, 10) : undefined })}
+              value={timing.maxDelayMs ?? ''}
+              onChange={(e) =>
+                updateTiming({
+                  maxDelayMs: e.target.value ? parseInt(e.target.value, 10) : undefined,
+                })
+              }
             />
           </Field>
           <Field label="Typing Speed">
             <select
               className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
-              value={timing.typingSpeed ?? "instant"}
-              onChange={(e) => updateTiming({ typingSpeed: e.target.value as TimingControls["typingSpeed"] })}
+              value={timing.typingSpeed ?? 'instant'}
+              onChange={(e) =>
+                updateTiming({ typingSpeed: e.target.value as TimingControls['typingSpeed'] })
+              }
             >
               <option value="instant">Instant</option>
               <option value="fast">Fast</option>
@@ -104,7 +116,9 @@ export function GlobalSettingsPanel({ settings, onChange, onClose }: GlobalSetti
             />
             <span className="text-xs text-gray-600">Enable multi-page mode</span>
           </label>
-          <p className="text-[10px] text-gray-400 mt-1">Allows spawning and switching between multiple tabs</p>
+          <p className="text-[10px] text-gray-400 mt-1">
+            Allows spawning and switching between multiple tabs
+          </p>
         </Section>
 
         <Section title="State Persistence">
@@ -117,15 +131,13 @@ export function GlobalSettingsPanel({ settings, onChange, onClose }: GlobalSetti
             />
             <span className="text-xs text-gray-600">Enable state persistence</span>
           </label>
-          <p className="text-[10px] text-gray-400 mt-1">Saves global state to disk for crash recovery</p>
+          <p className="text-[10px] text-gray-400 mt-1">
+            Saves global state to disk for crash recovery
+          </p>
         </Section>
 
         <Section title="Output Type">
-          <TypeBuilder
-            type={outputType}
-            onChange={updateOutputType}
-            root
-          />
+          <TypeBuilder type={outputType} onChange={updateOutputType} root />
         </Section>
       </div>
     </div>
@@ -142,13 +154,13 @@ function TypeBuilder({
   root?: boolean;
 }) {
   return (
-    <div className={root ? "" : "ml-3 pl-3 border-l border-gray-200"}>
+    <div className={root ? '' : 'ml-3 pl-3 border-l border-gray-200'}>
       {root && (
         <Field label="Root Type Name">
           <input
             className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm font-mono"
             placeholder="Output"
-            value={type.name ?? ""}
+            value={type.name ?? ''}
             onChange={(e) => onChange({ ...type, name: e.target.value || undefined })}
           />
         </Field>
@@ -159,12 +171,13 @@ function TypeBuilder({
           className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-sm"
           value={type.kind}
           onChange={(e) => {
-            const kind = e.target.value as DataType["kind"];
-            const base: DataType = kind === "object"
-              ? { kind, fields: [] }
-              : kind === "array"
-                ? { kind, elementType: { kind: "string" } }
-                : { kind };
+            const kind = e.target.value as DataType['kind'];
+            const base: DataType =
+              kind === 'object'
+                ? { kind, fields: [] }
+                : kind === 'array'
+                  ? { kind, elementType: { kind: 'string' } }
+                  : { kind };
             onChange(base);
           }}
         >
@@ -176,7 +189,7 @@ function TypeBuilder({
         </select>
       </Field>
 
-      {type.kind === "object" && (
+      {type.kind === 'object' && (
         <div className="mt-2">
           <label className="text-xs font-medium text-gray-600">Fields</label>
           <div className="mt-1 space-y-2">
@@ -216,7 +229,10 @@ function TypeBuilder({
           </div>
           <button
             onClick={() => {
-              const fields = [...(type.fields ?? []), { name: "", type: { kind: "string" } as DataType }];
+              const fields = [
+                ...(type.fields ?? []),
+                { name: '', type: { kind: 'string' } as DataType },
+              ];
               onChange({ ...type, fields });
             }}
             className="mt-2 text-xs text-blue-600 hover:text-blue-800"
@@ -226,11 +242,11 @@ function TypeBuilder({
         </div>
       )}
 
-      {type.kind === "array" && (
+      {type.kind === 'array' && (
         <div className="mt-2">
           <label className="text-xs font-medium text-gray-600">Element Type</label>
           <TypeBuilder
-            type={type.elementType ?? { kind: "string" }}
+            type={type.elementType ?? { kind: 'string' }}
             onChange={(t) => onChange({ ...type, elementType: t })}
           />
         </div>

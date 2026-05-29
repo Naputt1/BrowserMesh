@@ -1,14 +1,11 @@
-import type { Page as PlaywrightPage } from "playwright-core";
-import type { Page, Locator } from "./interpreter/types.js";
+import type { Page as PlaywrightPage } from 'playwright-core';
+import type { Page, Locator } from './interpreter/types.js';
 
 export class PlaywrightPageAdapter implements Page {
   constructor(private readonly pwPage: PlaywrightPage) {}
 
   async goto(url: string, options?: { waitUntil?: string }): Promise<void> {
-    await this.pwPage.goto(
-      url,
-      options as Parameters<PlaywrightPage["goto"]>[1],
-    );
+    await this.pwPage.goto(url, options as Parameters<PlaywrightPage['goto']>[1]);
   }
 
   locator(selector: string): Locator {

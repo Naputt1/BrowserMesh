@@ -1,7 +1,7 @@
-import type { WorkflowEvent, WorkflowNode, GlobalSettings } from "@browsermesh/workflow";
-import type { PauseController } from "../pause-controller.js";
-import type { GlobalStateStore } from "../global-state-store.js";
-import type { PageManager } from "../page-manager.js";
+import type { WorkflowEvent, WorkflowNode, GlobalSettings } from '@browsermesh/workflow';
+import type { PauseController } from '../pause-controller.js';
+import type { GlobalStateStore } from '../global-state-store.js';
+import type { PageManager } from '../page-manager.js';
 
 export interface Locator {
   click(): Promise<void>;
@@ -37,7 +37,7 @@ export interface ExecutionContext {
   readonly globalSettings?: GlobalSettings;
   readonly stateStore?: GlobalStateStore;
   readonly pageManager?: PageManager;
-  controlSignal?: { value: "break" | "continue" | undefined };
+  controlSignal?: { value: 'break' | 'continue' | undefined };
   setOutput(pin: string, value: unknown): void;
 }
 

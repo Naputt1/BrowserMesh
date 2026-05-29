@@ -1,4 +1,4 @@
-import type { WorkflowEvent } from "@browsermesh/workflow";
+import type { WorkflowEvent } from '@browsermesh/workflow';
 
 export type BrowserPaneProps = {
   readonly previewUrl?: string;
@@ -14,7 +14,7 @@ export function BrowserPane({ previewUrl }: BrowserPaneProps) {
           <div className="w-3 h-3 rounded-full bg-green-400" />
         </div>
         <div className="flex-1 mx-2 px-2 py-0.5 bg-white rounded text-xs text-gray-500 truncate border">
-          {previewUrl ?? "about:blank"}
+          {previewUrl ?? 'about:blank'}
         </div>
       </div>
       <div className="flex-1 flex items-center justify-center bg-gray-50 text-sm text-gray-400">
@@ -34,7 +34,9 @@ export function BrowserPane({ previewUrl }: BrowserPaneProps) {
 }
 
 export function ScreenshotViewer({ events }: { readonly events?: readonly WorkflowEvent[] }) {
-  const screenshots = events?.filter((e): e is WorkflowEvent & { type: "screenshot" } => e.type === "screenshot") ?? [];
+  const screenshots =
+    events?.filter((e): e is WorkflowEvent & { type: 'screenshot' } => e.type === 'screenshot') ??
+    [];
 
   if (screenshots.length === 0) {
     return (

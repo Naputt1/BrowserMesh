@@ -8,63 +8,165 @@
   "nodes": [
     { "id": "s", "type": "start", "label": "Start" },
     {
-      "id": "page1", "type": "page",
+      "id": "page1",
+      "type": "page",
       "label": "Create tab A",
       "config": { "action": "create", "pageId": "tabA" }
     },
     {
-      "id": "nav1", "type": "navigate",
+      "id": "nav1",
+      "type": "navigate",
       "label": "Navigate tab A",
       "config": { "url": "https://example.com" }
     },
     {
-      "id": "page2", "type": "page",
+      "id": "page2",
+      "type": "page",
       "label": "Create tab B",
       "config": { "action": "create", "pageId": "tabB" }
     },
     {
-      "id": "nav2", "type": "navigate",
+      "id": "nav2",
+      "type": "navigate",
       "label": "Navigate tab B",
       "config": { "url": "https://httpbin.org/get" }
     },
     {
-      "id": "fetch", "type": "fetch",
+      "id": "fetch",
+      "type": "fetch",
       "label": "Fetch from tab B",
-      "config": { "method": "GET", "url": "https://httpbin.org/headers", "actLikeNavigation": false }
+      "config": {
+        "method": "GET",
+        "url": "https://httpbin.org/headers",
+        "actLikeNavigation": false
+      }
     },
     {
-      "id": "sel1", "type": "select",
+      "id": "sel1",
+      "type": "select",
       "label": "Select in tab A",
       "config": { "mode": "one", "selector": "h1" }
     },
     {
-      "id": "ext1", "type": "extract",
+      "id": "ext1",
+      "type": "extract",
       "label": "Extract from tab A",
       "config": { "property": "text" }
     },
     {
-      "id": "out", "type": "output",
+      "id": "out",
+      "type": "output",
       "label": "Output results",
       "config": { "propertyPath": "pageATitle" }
     },
     { "id": "e", "type": "end", "label": "End" }
   ],
   "edges": [
-    { "id": "e1", "source": "s", "sourceHandle": "flow", "target": "page1", "targetHandle": "flow" },
-    { "id": "e2", "source": "page1", "sourceHandle": "flow", "target": "nav1", "targetHandle": "flow" },
-    { "id": "e3", "source": "page1", "sourceHandle": "pageKey", "target": "nav1", "targetHandle": "pageKey" },
-    { "id": "e4", "source": "nav1", "sourceHandle": "flow", "target": "page2", "targetHandle": "flow" },
-    { "id": "e5", "source": "page2", "sourceHandle": "flow", "target": "nav2", "targetHandle": "flow" },
-    { "id": "e6", "source": "page2", "sourceHandle": "pageKey", "target": "nav2", "targetHandle": "pageKey" },
-    { "id": "e7", "source": "nav2", "sourceHandle": "flow", "target": "fetch", "targetHandle": "flow" },
-    { "id": "e8", "source": "page2", "sourceHandle": "pageKey", "target": "fetch", "targetHandle": "pageKey" },
-    { "id": "e9", "source": "fetch", "sourceHandle": "flow", "target": "sel1", "targetHandle": "flow" },
-    { "id": "e10", "source": "page1", "sourceHandle": "pageKey", "target": "sel1", "targetHandle": "pageKey" },
-    { "id": "e11", "source": "sel1", "sourceHandle": "flow", "target": "ext1", "targetHandle": "flow" },
-    { "id": "e12", "source": "sel1", "sourceHandle": "element", "target": "ext1", "targetHandle": "element" },
-    { "id": "e13", "source": "page1", "sourceHandle": "pageKey", "target": "ext1", "targetHandle": "pageKey" },
-    { "id": "e14", "source": "ext1", "sourceHandle": "flow", "target": "out", "targetHandle": "flow" },
-    { "id": "e15", "source": "ext1", "sourceHandle": "value", "target": "out", "targetHandle": "value" },
+    {
+      "id": "e1",
+      "source": "s",
+      "sourceHandle": "flow",
+      "target": "page1",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e2",
+      "source": "page1",
+      "sourceHandle": "flow",
+      "target": "nav1",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e3",
+      "source": "page1",
+      "sourceHandle": "pageKey",
+      "target": "nav1",
+      "targetHandle": "pageKey"
+    },
+    {
+      "id": "e4",
+      "source": "nav1",
+      "sourceHandle": "flow",
+      "target": "page2",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e5",
+      "source": "page2",
+      "sourceHandle": "flow",
+      "target": "nav2",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e6",
+      "source": "page2",
+      "sourceHandle": "pageKey",
+      "target": "nav2",
+      "targetHandle": "pageKey"
+    },
+    {
+      "id": "e7",
+      "source": "nav2",
+      "sourceHandle": "flow",
+      "target": "fetch",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e8",
+      "source": "page2",
+      "sourceHandle": "pageKey",
+      "target": "fetch",
+      "targetHandle": "pageKey"
+    },
+    {
+      "id": "e9",
+      "source": "fetch",
+      "sourceHandle": "flow",
+      "target": "sel1",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e10",
+      "source": "page1",
+      "sourceHandle": "pageKey",
+      "target": "sel1",
+      "targetHandle": "pageKey"
+    },
+    {
+      "id": "e11",
+      "source": "sel1",
+      "sourceHandle": "flow",
+      "target": "ext1",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e12",
+      "source": "sel1",
+      "sourceHandle": "element",
+      "target": "ext1",
+      "targetHandle": "element"
+    },
+    {
+      "id": "e13",
+      "source": "page1",
+      "sourceHandle": "pageKey",
+      "target": "ext1",
+      "targetHandle": "pageKey"
+    },
+    {
+      "id": "e14",
+      "source": "ext1",
+      "sourceHandle": "flow",
+      "target": "out",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e15",
+      "source": "ext1",
+      "sourceHandle": "value",
+      "target": "out",
+      "targetHandle": "value"
+    },
     { "id": "e16", "source": "out", "sourceHandle": "flow", "target": "e", "targetHandle": "flow" }
   ]
 }

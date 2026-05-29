@@ -1,4 +1,4 @@
-import type { NodeHandler } from "../types.js";
+import type { NodeHandler } from '../types.js';
 
 export const switchHandler: NodeHandler = async function* (node, context, inputs, executeSubgraph) {
   const config = node.config ?? {};
@@ -14,6 +14,6 @@ export const switchHandler: NodeHandler = async function* (node, context, inputs
   }
 
   if (executeSubgraph) {
-    yield* executeSubgraph("default");
+    yield* executeSubgraph('default');
   }
 };

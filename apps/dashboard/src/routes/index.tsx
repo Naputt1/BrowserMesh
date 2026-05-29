@@ -1,29 +1,37 @@
-import { createRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Route as rootRoute } from "./__root";
-import { listRunningTasks } from "../lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
+import { createRoute, Link } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
+import { Route as rootRoute } from './__root';
+import { listRunningTasks } from '../lib/api';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/",
+  path: '/',
   component: DashboardHome,
 });
 
 function DashboardHome() {
-  const { data: tasksData, isLoading, refetch } = useQuery({
-    queryKey: ["running-tasks"],
+  const {
+    data: tasksData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['running-tasks'],
     queryFn: listRunningTasks,
     refetchInterval: 5000,
   });
 
   const runningTasks = tasksData?.tasks ?? [];
   const stateBadge = (state: string) => {
-    const variant = state === "running" ? "default" as const
-      : state === "paused" ? "secondary" as const
-      : state === "completed" ? "secondary" as const
-      : "outline" as const;
+    const variant =
+      state === 'running'
+        ? ('default' as const)
+        : state === 'paused'
+          ? ('secondary' as const)
+          : state === 'completed'
+            ? ('secondary' as const)
+            : ('outline' as const);
     return <Badge variant={variant}>{state}</Badge>;
   };
 
@@ -51,7 +59,7 @@ function DashboardHome() {
             <CardTitle className="text-sm text-muted-foreground">Running Tasks</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{isLoading ? "..." : runningTasks.length}</div>
+            <div className="text-3xl font-bold">{isLoading ? '...' : runningTasks.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -60,8 +68,10 @@ function DashboardHome() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${isLoading ? "bg-yellow-400" : "bg-green-500"}`} />
-              <span className="text-sm">{isLoading ? "Checking..." : "Connected"}</span>
+              <div
+                className={`w-2 h-2 rounded-full ${isLoading ? 'bg-yellow-400' : 'bg-green-500'}`}
+              />
+              <span className="text-sm">{isLoading ? 'Checking...' : 'Connected'}</span>
             </div>
           </CardContent>
         </Card>
@@ -70,10 +80,7 @@ function DashboardHome() {
             <CardTitle className="text-sm text-muted-foreground">Quick Action</CardTitle>
           </CardHeader>
           <CardContent>
-            <button
-              onClick={() => refetch()}
-              className="text-sm text-primary hover:underline"
-            >
+            <button onClick={() => refetch()} className="text-sm text-primary hover:underline">
               Refresh status
             </button>
           </CardContent>
@@ -97,8 +104,12 @@ function DashboardHome() {
                   className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                 >
                   <div>
-                    <div className="text-sm font-mono text-muted-foreground">{task.taskId.slice(0, 12)}...</div>
-                    {task.message && <div className="text-xs text-muted-foreground mt-0.5">{task.message}</div>}
+                    <div className="text-sm font-mono text-muted-foreground">
+                      {task.taskId.slice(0, 12)}...
+                    </div>
+                    {task.message && (
+                      <div className="text-xs text-muted-foreground mt-0.5">{task.message}</div>
+                    )}
                   </div>
                   {stateBadge(task.state)}
                 </Link>

@@ -1,4 +1,4 @@
-import type { CustomHandler } from "./interpreter/types.js";
+import type { CustomHandler } from './interpreter/types.js';
 
 export class CustomHandlerRegistry {
   private readonly handlers = new Map<string, CustomHandler>();

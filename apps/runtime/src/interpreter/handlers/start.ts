@@ -1,3 +1,3 @@
-import type { NodeHandler } from "../types.js";
+import type { NodeHandler } from '../types.js';
 
 export const startHandler: NodeHandler = async function* () {};

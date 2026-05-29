@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, type ReactNode } from "react";
-import { ChevronRight } from "lucide-react";
-import { cn } from "../../lib/cn";
+import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { ChevronRight } from 'lucide-react';
+import { cn } from '../../lib/cn';
 
 export type ContextMenuItem = {
   label?: string;
@@ -25,18 +25,18 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === 'Escape') onClose();
     };
     const handleOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         onClose();
       }
     };
-    document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("pointerdown", handleOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('pointerdown', handleOutside);
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("pointerdown", handleOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('pointerdown', handleOutside);
     };
   }, [onClose]);
 
@@ -82,11 +82,11 @@ function MenuItem({ item, onClose }: { item: ContextMenuItem; onClose: () => voi
       <button
         disabled={item.disabled}
         className={cn(
-          "w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-left",
+          'w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-left',
           item.danger
-            ? "text-destructive hover:bg-destructive/10"
-            : "text-popover-foreground hover:bg-accent hover:text-accent-foreground",
-          item.disabled && "opacity-50 cursor-not-allowed",
+            ? 'text-destructive hover:bg-destructive/10'
+            : 'text-popover-foreground hover:bg-accent hover:text-accent-foreground',
+          item.disabled && 'opacity-50 cursor-not-allowed',
         )}
         onClick={() => {
           if (!hasChildren) {
@@ -96,10 +96,7 @@ function MenuItem({ item, onClose }: { item: ContextMenuItem; onClose: () => voi
         }}
       >
         {item.color && (
-          <span
-            className="w-2 h-2 rounded-full shrink-0"
-            style={{ backgroundColor: item.color }}
-          />
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
         )}
         {item.icon}
         <span className="flex-1">{item.label}</span>

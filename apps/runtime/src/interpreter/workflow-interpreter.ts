@@ -1,9 +1,14 @@
-import type { WorkflowDefinition, WorkflowNode, WorkflowEvent, GlobalSettings } from "@browsermesh/workflow";
-import type { Page, ExecutionContext, NodeHandler, CustomHandler } from "./types.js";
-import type { PauseController } from "../pause-controller.js";
-import type { GlobalStateStore } from "../global-state-store.js";
-import type { PageManager } from "../page-manager.js";
-import { defaultHandlerRegistry } from "./handlers/index.js";
+import type {
+  WorkflowDefinition,
+  WorkflowNode,
+  WorkflowEvent,
+  GlobalSettings,
+} from '@browsermesh/workflow';
+import type { Page, ExecutionContext, NodeHandler, CustomHandler } from './types.js';
+import type { PauseController } from '../pause-controller.js';
+import type { GlobalStateStore } from '../global-state-store.js';
+import type { PageManager } from '../page-manager.js';
+import { defaultHandlerRegistry } from './handlers/index.js';
 
 export type InterpreterOptions = {
   readonly workflow: WorkflowDefinition;
@@ -49,21 +54,21 @@ export class WorkflowInterpreter {
 
   async *execute(): AsyncGenerator<WorkflowEvent> {
     if (this.signal.aborted) {
-      yield this.makeEvent("task_failed", {
-        errorCode: "CANCELLED",
-        message: "Task was cancelled before execution started",
+      yield this.makeEvent('task_failed', {
+        errorCode: 'CANCELLED',
+        message: 'Task was cancelled before execution started',
         retryable: false,
       });
       return;
     }
 
-    yield this.makeEvent("task_started", { workflowId: this.workflow.id });
+    yield this.makeEvent('task_started', { workflowId: this.workflow.id });
 
     const startNode = this.findStartNode();
     if (!startNode) {
-      yield this.makeEvent("task_failed", {
-        errorCode: "NO_START_NODE",
-        message: "Workflow must have a start node",
+      yield this.makeEvent('task_failed', {
+        errorCode: 'NO_START_NODE',
+        message: 'Workflow must have a start node',
         retryable: false,
       });
       return;
@@ -71,7 +76,7 @@ export class WorkflowInterpreter {
 
     yield* this.executeFlow(startNode.id);
 
-    yield this.makeEvent("task_completed", { result: { ...this.result } });
+    yield this.makeEvent('task_completed', { result: { ...this.result } });
   }
 
   private async *executeFlow(
@@ -83,18 +88,18 @@ export class WorkflowInterpreter {
 
     while (currentId) {
       if (this.signal.aborted) {
-        yield this.makeEvent("task_failed", {
-          errorCode: "CANCELLED",
-          message: "Task was cancelled during execution",
+        yield this.makeEvent('task_failed', {
+          errorCode: 'CANCELLED',
+          message: 'Task was cancelled during execution',
           retryable: false,
         });
         return;
       }
 
       if (visited.has(currentId)) {
-        yield this.makeEvent("task_failed", {
-          errorCode: "CYCLE_DETECTED",
-          message: "Cycle detected in flow graph",
+        yield this.makeEvent('task_failed', {
+          errorCode: 'CYCLE_DETECTED',
+          message: 'Cycle detected in flow graph',
           retryable: false,
         });
         return;
@@ -103,15 +108,15 @@ export class WorkflowInterpreter {
 
       const node = this.nodeMap.get(currentId);
       if (!node) {
-        yield this.makeEvent("task_failed", {
-          errorCode: "UNKNOWN_NODE",
+        yield this.makeEvent('task_failed', {
+          errorCode: 'UNKNOWN_NODE',
           message: `Node not found: ${currentId}`,
           retryable: false,
         });
         return;
       }
 
-      if (node.type === "end") {
+      if (node.type === 'end') {
         return;
       }
 
@@ -119,7 +124,7 @@ export class WorkflowInterpreter {
       yield* this.executeNode(node, contextOverride);
 
       const nextEdge = this.workflow.edges.find(
-        (e) => e.source === currentId && e.sourceHandle === "flow",
+        (e) => e.source === currentId && e.sourceHandle === 'flow',
       );
       currentId = nextEdge?.target ?? null;
     }
@@ -131,8 +136,8 @@ export class WorkflowInterpreter {
   ): AsyncGenerator<WorkflowEvent> {
     const handler = this.handlerRegistry.get(node.type);
     if (!handler) {
-      yield this.makeEvent("task_failed", {
-        errorCode: "UNKNOWN_NODE_TYPE",
+      yield this.makeEvent('task_failed', {
+        errorCode: 'UNKNOWN_NODE_TYPE',
         message: `No handler registered for node type: ${node.type}`,
         retryable: false,
       });
@@ -145,7 +150,9 @@ export class WorkflowInterpreter {
       this.setNodeOutput(node.id, pin, value);
     };
 
-    const controlSignal = contextOverride?.controlSignal ?? { value: undefined as "break" | "continue" | undefined };
+    const controlSignal = contextOverride?.controlSignal ?? {
+      value: undefined as 'break' | 'continue' | undefined,
+    };
 
     const nodeContext: ExecutionContext = {
       ...baseContext,
@@ -154,39 +161,35 @@ export class WorkflowInterpreter {
       controlSignal,
     };
 
-    yield this.makeEvent("step_started", { stepId: node.id, stepType: node.type });
+    yield this.makeEvent('step_started', { stepId: node.id, stepType: node.type });
 
     try {
-      const gen = handler(
-        node,
-        nodeContext,
-        inputs,
-        (startHandle, childOverride) =>
-          this.executeSubgraph(node.id, startHandle, {
-            ...baseContext,
-            ...contextOverride,
-            ...childOverride,
-            setOutput,
-            controlSignal,
-          }),
+      const gen = handler(node, nodeContext, inputs, (startHandle, childOverride) =>
+        this.executeSubgraph(node.id, startHandle, {
+          ...baseContext,
+          ...contextOverride,
+          ...childOverride,
+          setOutput,
+          controlSignal,
+        }),
       );
 
       for await (const event of gen) {
-        if (event.type === "partial_data") {
+        if (event.type === 'partial_data') {
           this.setResultValue(event.path, event.value);
         }
         yield event;
       }
     } catch (err) {
-      yield this.makeEvent("task_failed", {
-        errorCode: "HANDLER_ERROR",
+      yield this.makeEvent('task_failed', {
+        errorCode: 'HANDLER_ERROR',
         message: err instanceof Error ? err.message : String(err),
         retryable: false,
       });
       return;
     }
 
-    yield this.makeEvent("step_completed", { stepId: node.id });
+    yield this.makeEvent('step_completed', { stepId: node.id });
   }
 
   private async *executeSubgraph(
@@ -205,7 +208,7 @@ export class WorkflowInterpreter {
   private resolveInputs(node: WorkflowNode): Record<string, unknown> {
     const inputs: Record<string, unknown> = {};
     const incoming = this.workflow.edges.filter(
-      (e) => e.target === node.id && e.targetHandle !== "flow",
+      (e) => e.target === node.id && e.targetHandle !== 'flow',
     );
     for (const edge of incoming) {
       const outputs = this.nodeOutputs.get(edge.source);
@@ -217,7 +220,7 @@ export class WorkflowInterpreter {
   }
 
   private findStartNode(): WorkflowNode | undefined {
-    return this.workflow.nodes.find((n) => n.type === "start");
+    return this.workflow.nodes.find((n) => n.type === 'start');
   }
 
   private setNodeOutput(nodeId: string, pin: string, value: unknown): void {
@@ -236,7 +239,7 @@ export class WorkflowInterpreter {
     let obj: any = this.result;
     for (let i = 0; i < segments.length - 1; i++) {
       const seg = segments[i];
-      if (typeof seg === "number") {
+      if (typeof seg === 'number') {
         obj[seg] = obj[seg] ?? {};
         obj = obj[seg];
       } else {
@@ -250,24 +253,24 @@ export class WorkflowInterpreter {
 
   private parsePath(path: string): (string | number)[] {
     const segments: (string | number)[] = [];
-    let current = "";
+    let current = '';
     let inBracket = false;
 
     for (const ch of path) {
-      if (ch === "[") {
+      if (ch === '[') {
         if (current) segments.push(current);
-        current = "";
+        current = '';
         inBracket = true;
-      } else if (ch === "]") {
+      } else if (ch === ']') {
         if (current) {
           const num = Number(current);
           segments.push(isNaN(num) ? current : num);
-          current = "";
+          current = '';
         }
         inBracket = false;
-      } else if (ch === "." && !inBracket) {
+      } else if (ch === '.' && !inBracket) {
         if (current) segments.push(current);
-        current = "";
+        current = '';
       } else {
         current += ch;
       }
@@ -290,9 +293,9 @@ export class WorkflowInterpreter {
     };
   }
 
-  private makeEvent<T extends WorkflowEvent["type"]>(
+  private makeEvent<T extends WorkflowEvent['type']>(
     type: T,
-    props: Omit<Extract<WorkflowEvent, { type: T }>, "type" | "taskId" | "timestamp">,
+    props: Omit<Extract<WorkflowEvent, { type: T }>, 'type' | 'taskId' | 'timestamp'>,
   ): WorkflowEvent {
     return {
       type,

@@ -14,22 +14,30 @@
   "nodes": [
     { "id": "s", "type": "start", "label": "Start" },
     {
-      "id": "nav", "type": "navigate",
+      "id": "nav",
+      "type": "navigate",
       "label": "Open target site",
       "config": { "url": "https://jsonplaceholder.typicode.com" }
     },
     {
-      "id": "fetch", "type": "fetch",
+      "id": "fetch",
+      "type": "fetch",
       "label": "Fetch API data",
-      "config": { "method": "GET", "url": "https://jsonplaceholder.typicode.com/todos/1", "actLikeNavigation": false }
+      "config": {
+        "method": "GET",
+        "url": "https://jsonplaceholder.typicode.com/todos/1",
+        "actLikeNavigation": false
+      }
     },
     {
-      "id": "out_status", "type": "output",
+      "id": "out_status",
+      "type": "output",
       "label": "Output status",
       "config": { "propertyPath": "apiStatus" }
     },
     {
-      "id": "out_body", "type": "output",
+      "id": "out_body",
+      "type": "output",
       "label": "Output body",
       "config": { "propertyPath": "responseBody" }
     },
@@ -37,11 +45,47 @@
   ],
   "edges": [
     { "id": "e1", "source": "s", "sourceHandle": "flow", "target": "nav", "targetHandle": "flow" },
-    { "id": "e2", "source": "nav", "sourceHandle": "flow", "target": "fetch", "targetHandle": "flow" },
-    { "id": "e3", "source": "fetch", "sourceHandle": "flow", "target": "out_status", "targetHandle": "flow" },
-    { "id": "e4", "source": "fetch", "sourceHandle": "response", "target": "out_status", "targetHandle": "value" },
-    { "id": "e5", "source": "out_status", "sourceHandle": "flow", "target": "out_body", "targetHandle": "flow" },
-    { "id": "e6", "source": "fetch", "sourceHandle": "response", "target": "out_body", "targetHandle": "value" },
-    { "id": "e7", "source": "out_body", "sourceHandle": "flow", "target": "e", "targetHandle": "flow" }
+    {
+      "id": "e2",
+      "source": "nav",
+      "sourceHandle": "flow",
+      "target": "fetch",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e3",
+      "source": "fetch",
+      "sourceHandle": "flow",
+      "target": "out_status",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e4",
+      "source": "fetch",
+      "sourceHandle": "response",
+      "target": "out_status",
+      "targetHandle": "value"
+    },
+    {
+      "id": "e5",
+      "source": "out_status",
+      "sourceHandle": "flow",
+      "target": "out_body",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e6",
+      "source": "fetch",
+      "sourceHandle": "response",
+      "target": "out_body",
+      "targetHandle": "value"
+    },
+    {
+      "id": "e7",
+      "source": "out_body",
+      "sourceHandle": "flow",
+      "target": "e",
+      "targetHandle": "flow"
+    }
   ]
 }

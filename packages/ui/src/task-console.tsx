@@ -1,37 +1,37 @@
-import { useRef, useEffect } from "react";
-import type { WorkflowEvent } from "@browsermesh/workflow";
+import { useRef, useEffect } from 'react';
+import type { WorkflowEvent } from '@browsermesh/workflow';
 
 export type TaskConsoleProps = {
   readonly events: readonly WorkflowEvent[];
 };
 
 const eventColors: Record<string, string> = {
-  task_started: "text-blue-600",
-  step_started: "text-amber-600",
-  step_completed: "text-green-600",
-  partial_data: "text-purple-600",
-  log: "text-gray-600",
-  progress: "text-teal-600",
-  task_completed: "text-green-700 font-semibold",
-  task_failed: "text-red-600 font-semibold",
+  task_started: 'text-blue-600',
+  step_started: 'text-amber-600',
+  step_completed: 'text-green-600',
+  partial_data: 'text-purple-600',
+  log: 'text-gray-600',
+  progress: 'text-teal-600',
+  task_completed: 'text-green-700 font-semibold',
+  task_failed: 'text-red-600 font-semibold',
 };
 
 const eventLabels: Record<string, string> = {
-  task_started: "Started",
-  step_started: "Step",
-  step_completed: "Done",
-  partial_data: "Data",
-  log: "Log",
-  progress: "Progress",
-  task_completed: "Completed",
-  task_failed: "Failed",
+  task_started: 'Started',
+  step_started: 'Step',
+  step_completed: 'Done',
+  partial_data: 'Data',
+  log: 'Log',
+  progress: 'Progress',
+  task_completed: 'Completed',
+  task_failed: 'Failed',
 };
 
 export function TaskConsole({ events }: TaskConsoleProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [events.length]);
 
   return (
@@ -44,7 +44,10 @@ export function TaskConsole({ events }: TaskConsoleProps) {
           <div className="text-gray-500 italic p-2">No events yet</div>
         ) : (
           events.map((event, i) => (
-            <div key={i} className={`${eventColors[event.type] ?? "text-gray-400"} hover:bg-gray-800 px-1 py-0.5 rounded`}>
+            <div
+              key={i}
+              className={`${eventColors[event.type] ?? 'text-gray-400'} hover:bg-gray-800 px-1 py-0.5 rounded`}
+            >
               <span className="text-gray-500 mr-2">
                 {new Date(event.timestamp).toLocaleTimeString()}
               </span>
@@ -61,21 +64,21 @@ export function TaskConsole({ events }: TaskConsoleProps) {
 
 function renderEventMessage(event: WorkflowEvent): string {
   switch (event.type) {
-    case "task_started":
+    case 'task_started':
       return event.workflowId;
-    case "step_started":
+    case 'step_started':
       return `${event.stepType}: ${event.stepId}`;
-    case "step_completed":
+    case 'step_completed':
       return event.stepId;
-    case "partial_data":
+    case 'partial_data':
       return `${event.path} = ${JSON.stringify(event.value)}`;
-    case "log":
+    case 'log':
       return event.message;
-    case "progress":
+    case 'progress':
       return `${event.message ?? `${event.completedSteps}/${event.totalSteps} steps`}`;
-    case "task_completed":
-      return event.result ? JSON.stringify(event.result) : "Done";
-    case "task_failed":
+    case 'task_completed':
+      return event.result ? JSON.stringify(event.result) : 'Done';
+    case 'task_failed':
       return event.message;
     default:
       return JSON.stringify(event);

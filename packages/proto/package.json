@@ -9,4 +9,3 @@
     "typecheck": "node scripts/validate-proto.mjs"
   }
 }
-

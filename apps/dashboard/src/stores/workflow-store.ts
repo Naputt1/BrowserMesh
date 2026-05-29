@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import type { WorkflowDefinition, WorkflowEvent } from "@browsermesh/workflow";
+import { create } from 'zustand';
+import type { WorkflowDefinition, WorkflowEvent } from '@browsermesh/workflow';
 
 type StoredWorkflow = {
   id: string;
@@ -15,7 +15,7 @@ interface WorkflowStore {
   getWorkflow: (id: string) => StoredWorkflow | undefined;
 }
 
-const STORAGE_KEY = "browsermesh-workflows";
+const STORAGE_KEY = 'browsermesh-workflows';
 
 function loadWorkflows(): StoredWorkflow[] {
   try {

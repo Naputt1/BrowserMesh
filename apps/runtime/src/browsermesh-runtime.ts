@@ -1,13 +1,13 @@
-import { join } from "node:path";
-import type { WorkflowDefinition, WorkflowEvent, GlobalSettings } from "@browsermesh/workflow";
-import type { GrpcRuntime } from "./grpc/runtime-grpc-server.js";
-import { TaskRegistry } from "./task-registry.js";
-import { CustomHandlerRegistry } from "./custom-handler-registry.js";
-import { BrowserPool } from "./browser-pool.js";
-import { WorkflowInterpreter } from "./interpreter/workflow-interpreter.js";
-import { PauseController } from "./pause-controller.js";
-import { GlobalStateStore } from "./global-state-store.js";
-import { PageManager, DefaultPageFactory } from "./page-manager.js";
+import { join } from 'node:path';
+import type { WorkflowDefinition, WorkflowEvent, GlobalSettings } from '@browsermesh/workflow';
+import type { GrpcRuntime } from './grpc/runtime-grpc-server.js';
+import { TaskRegistry } from './task-registry.js';
+import { CustomHandlerRegistry } from './custom-handler-registry.js';
+import { BrowserPool } from './browser-pool.js';
+import { WorkflowInterpreter } from './interpreter/workflow-interpreter.js';
+import { PauseController } from './pause-controller.js';
+import { GlobalStateStore } from './global-state-store.js';
+import { PageManager, DefaultPageFactory } from './page-manager.js';
 
 export type RuntimeServiceConfig = {
   readonly host: string;
@@ -24,7 +24,7 @@ export class BrowserMeshRuntime implements GrpcRuntime {
   readonly customHandlers = new CustomHandlerRegistry();
   private readonly pauseControllers = new Map<string, PauseController>();
   private readonly stateStores = new Map<string, GlobalStateStore>();
-  private stateDir: string = join(process.cwd(), "state");
+  private stateDir: string = join(process.cwd(), 'state');
 
   setStateDir(dir: string): void {
     this.stateDir = dir;
@@ -88,10 +88,10 @@ export class BrowserMeshRuntime implements GrpcRuntime {
       this.taskRegistry.complete(taskId);
     } catch (err) {
       yield {
-        type: "task_failed" as const,
+        type: 'task_failed' as const,
         taskId,
         timestamp: new Date().toISOString(),
-        errorCode: "RUNTIME_ERROR",
+        errorCode: 'RUNTIME_ERROR',
         message: err instanceof Error ? err.message : String(err),
         retryable: false,
       };
@@ -131,7 +131,9 @@ export class BrowserMeshRuntime implements GrpcRuntime {
     return { taskId: updated.taskId, state: updated.state, message: updated.message };
   }
 
-  async getTaskStatus(taskId: string): Promise<{ taskId: string; state: string; message?: string }> {
+  async getTaskStatus(
+    taskId: string,
+  ): Promise<{ taskId: string; state: string; message?: string }> {
     const info = this.taskRegistry.get(taskId);
     if (!info) throw new Error(`Task not found: ${taskId}`);
     return { taskId: info.taskId, state: info.state, message: info.message };
@@ -160,7 +162,11 @@ export class BrowserMeshRuntime implements GrpcRuntime {
     return { workflowId, state: store.getAll(), recovered: true };
   }
 
-  async setWorkflowState(workflowId: string, state: Record<string, unknown>, commit = false): Promise<WorkflowStateResult> {
+  async setWorkflowState(
+    workflowId: string,
+    state: Record<string, unknown>,
+    commit = false,
+  ): Promise<WorkflowStateResult> {
     const store = await this.getOrCreateStateStore(workflowId);
     for (const [key, value] of Object.entries(state)) {
       store.set(key, value);

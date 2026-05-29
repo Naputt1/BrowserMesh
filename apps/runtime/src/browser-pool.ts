@@ -1,7 +1,7 @@
-import { launch } from "cloakbrowser";
-import type { Browser, BrowserContext, Page as PlaywrightPage } from "playwright-core";
-import type { Page } from "./interpreter/types.js";
-import { PlaywrightPageAdapter } from "./playwright-page-adapter.js";
+import { launch } from 'cloakbrowser';
+import type { Browser, BrowserContext, Page as PlaywrightPage } from 'playwright-core';
+import type { Page } from './interpreter/types.js';
+import { PlaywrightPageAdapter } from './playwright-page-adapter.js';
 
 export type AcquireResult = {
   page: Page;
@@ -32,9 +32,7 @@ export class BrowserPool {
     this.started = true;
   }
 
-  async acquire(
-    sessionId?: string,
-  ): Promise<AcquireResult> {
+  async acquire(sessionId?: string): Promise<AcquireResult> {
     this.ensureStarted();
     const context = await this.browser!.newContext();
     const pwPage = await context.newPage();
@@ -75,7 +73,7 @@ export class BrowserPool {
 
   private ensureStarted(): void {
     if (!this.started || !this.browser) {
-      throw new Error("BrowserPool not started. Call start() first.");
+      throw new Error('BrowserPool not started. Call start() first.');
     }
   }
 }

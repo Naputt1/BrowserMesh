@@ -9,45 +9,99 @@
   "nodes": [
     { "id": "s", "type": "start", "label": "Start" },
     {
-      "id": "state_set", "type": "state",
+      "id": "state_set",
+      "type": "state",
       "label": "Set initial counter",
       "config": { "operation": "set", "key": "counter" }
     },
     {
-      "id": "state_inc1", "type": "state",
+      "id": "state_inc1",
+      "type": "state",
       "label": "Increment counter",
       "config": { "operation": "increment", "key": "counter" }
     },
     {
-      "id": "state_inc2", "type": "state",
+      "id": "state_inc2",
+      "type": "state",
       "label": "Increment again",
       "config": { "operation": "increment", "key": "counter" }
     },
     {
-      "id": "state_get", "type": "state",
+      "id": "state_get",
+      "type": "state",
       "label": "Read final counter",
       "config": { "operation": "get", "key": "counter" }
     },
     {
-      "id": "out", "type": "output",
+      "id": "out",
+      "type": "output",
       "label": "Output counter value",
       "config": { "propertyPath": "counterValue" }
     },
     {
-      "id": "state_del", "type": "state",
+      "id": "state_del",
+      "type": "state",
       "label": "Clean up counter",
       "config": { "operation": "delete", "key": "counter" }
     },
     { "id": "e", "type": "end", "label": "End" }
   ],
   "edges": [
-    { "id": "e1", "source": "s", "sourceHandle": "flow", "target": "state_set", "targetHandle": "flow" },
-    { "id": "e2", "source": "state_set", "sourceHandle": "flow", "target": "state_inc1", "targetHandle": "flow" },
-    { "id": "e3", "source": "state_inc1", "sourceHandle": "flow", "target": "state_inc2", "targetHandle": "flow" },
-    { "id": "e4", "source": "state_inc2", "sourceHandle": "flow", "target": "state_get", "targetHandle": "flow" },
-    { "id": "e5", "source": "state_get", "sourceHandle": "flow", "target": "out", "targetHandle": "flow" },
-    { "id": "e6", "source": "state_get", "sourceHandle": "value", "target": "out", "targetHandle": "value" },
-    { "id": "e7", "source": "out", "sourceHandle": "flow", "target": "state_del", "targetHandle": "flow" },
-    { "id": "e8", "source": "state_del", "sourceHandle": "flow", "target": "e", "targetHandle": "flow" }
+    {
+      "id": "e1",
+      "source": "s",
+      "sourceHandle": "flow",
+      "target": "state_set",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e2",
+      "source": "state_set",
+      "sourceHandle": "flow",
+      "target": "state_inc1",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e3",
+      "source": "state_inc1",
+      "sourceHandle": "flow",
+      "target": "state_inc2",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e4",
+      "source": "state_inc2",
+      "sourceHandle": "flow",
+      "target": "state_get",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e5",
+      "source": "state_get",
+      "sourceHandle": "flow",
+      "target": "out",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e6",
+      "source": "state_get",
+      "sourceHandle": "value",
+      "target": "out",
+      "targetHandle": "value"
+    },
+    {
+      "id": "e7",
+      "source": "out",
+      "sourceHandle": "flow",
+      "target": "state_del",
+      "targetHandle": "flow"
+    },
+    {
+      "id": "e8",
+      "source": "state_del",
+      "sourceHandle": "flow",
+      "target": "e",
+      "targetHandle": "flow"
+    }
   ]
 }

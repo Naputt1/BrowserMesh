@@ -1,5 +1,5 @@
-import { X } from "lucide-react";
-import { useState } from "react";
+import { X } from 'lucide-react';
+import { useState } from 'react';
 
 export type ExtractionMapperProps = {
   readonly typeName: string;
@@ -10,7 +10,7 @@ export function ExtractionMapper({ typeName, scopeId }: ExtractionMapperProps) {
   const [fields, setFields] = useState<Array<{ name: string; selector: string; attr: string }>>([]);
 
   const addField = () => {
-    setFields([...fields, { name: "", selector: "", attr: "text" }]);
+    setFields([...fields, { name: '', selector: '', attr: 'text' }]);
   };
 
   const updateField = (index: number, updates: Partial<(typeof fields)[number]>) => {
@@ -38,7 +38,9 @@ export function ExtractionMapper({ typeName, scopeId }: ExtractionMapperProps) {
       </div>
 
       {fields.length === 0 && (
-        <p className="text-sm text-gray-400 italic">No fields defined. Add a field to start mapping.</p>
+        <p className="text-sm text-gray-400 italic">
+          No fields defined. Add a field to start mapping.
+        </p>
       )}
 
       <div className="space-y-2">
@@ -70,10 +72,7 @@ export function ExtractionMapper({ typeName, scopeId }: ExtractionMapperProps) {
                 <option value="data-*">data-*</option>
               </select>
             </div>
-            <button
-              onClick={() => removeField(i)}
-              className="text-red-500 hover:text-red-700 p-1"
-            >
+            <button onClick={() => removeField(i)} className="text-red-500 hover:text-red-700 p-1">
               <X size={14} />
             </button>
           </div>

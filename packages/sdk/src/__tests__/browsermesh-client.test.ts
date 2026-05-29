@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
-import { BrowserMeshClient } from "../index";
-import type { WorkflowEvent } from "@browsermesh/workflow";
+import { describe, it, expect, vi } from 'vitest';
+import { BrowserMeshClient } from '../index';
+import type { WorkflowEvent } from '@browsermesh/workflow';
 
 function mockGrpcClient() {
   return {
@@ -15,7 +15,7 @@ function mockGrpcClient() {
 
 function createClient(grpcClient: ReturnType<typeof mockGrpcClient>) {
   return new BrowserMeshClient({
-    endpoint: "localhost:50051",
+    endpoint: 'localhost:50051',
     _grpcClient: grpcClient as unknown as object,
   });
 }
@@ -34,162 +34,186 @@ async function* asyncStream(items: object[]) {
   }
 }
 
-describe("BrowserMeshClient — executeWorkflow (streaming)", () => {
-  it("yields decoded events from the gRPC stream", async () => {
+describe('BrowserMeshClient — executeWorkflow (streaming)', () => {
+  it('yields decoded events from the gRPC stream', async () => {
     const mock = mockGrpcClient();
     const timestamp = new Date().toISOString();
     const rawEvents: object[] = [
-      { task_id: "t1", timestamp, task_started: { workflow_id: "w1" } },
-      { task_id: "t1", timestamp, step_started: { step_id: "n1", step_type: "navigate" } },
-      { task_id: "t1", timestamp, step_completed: { step_id: "n1", output_json: undefined } },
+      { task_id: 't1', timestamp, task_started: { workflow_id: 'w1' } },
+      { task_id: 't1', timestamp, step_started: { step_id: 'n1', step_type: 'navigate' } },
+      { task_id: 't1', timestamp, step_completed: { step_id: 'n1', output_json: undefined } },
     ];
     mock.ExecuteWorkflow.mockReturnValue(asyncStream(rawEvents));
 
     const client = createClient(mock);
     const events = await collect(
-      client.executeWorkflow({ workflow: { id: "w1", nodes: [], edges: [] } }),
+      client.executeWorkflow({ workflow: { id: 'w1', nodes: [], edges: [] } }),
     );
 
     expect(events).toHaveLength(3);
-    expect(events[0]).toMatchObject({ type: "task_started", taskId: "t1", workflowId: "w1" });
-    expect(events[1]).toMatchObject({ type: "step_started", stepId: "n1", stepType: "navigate" });
-    expect(events[2]).toMatchObject({ type: "step_completed", stepId: "n1" });
+    expect(events[0]).toMatchObject({ type: 'task_started', taskId: 't1', workflowId: 'w1' });
+    expect(events[1]).toMatchObject({ type: 'step_started', stepId: 'n1', stepType: 'navigate' });
+    expect(events[2]).toMatchObject({ type: 'step_completed', stepId: 'n1' });
     expect(mock.ExecuteWorkflow).toHaveBeenCalledWith({
-      task_id: "",
-      workflow_json: JSON.stringify({ id: "w1", nodes: [], edges: [] }),
+      task_id: '',
+      workflow_json: JSON.stringify({ id: 'w1', nodes: [], edges: [] }),
     });
   });
 
-  it("parses output_json in step_completed events", async () => {
+  it('parses output_json in step_completed events', async () => {
     const mock = mockGrpcClient();
     const timestamp = new Date().toISOString();
     mock.ExecuteWorkflow.mockReturnValue(
       asyncStream([
-        { task_id: "t1", timestamp, step_completed: { step_id: "n1", output_json: JSON.stringify({ result: "ok" }) } },
+        {
+          task_id: 't1',
+          timestamp,
+          step_completed: { step_id: 'n1', output_json: JSON.stringify({ result: 'ok' }) },
+        },
       ]),
     );
 
     const client = createClient(mock);
     const events = await collect(
-      client.executeWorkflow({ taskId: "t1", workflow: { id: "w1", nodes: [], edges: [] } }),
+      client.executeWorkflow({ taskId: 't1', workflow: { id: 'w1', nodes: [], edges: [] } }),
     );
 
-    expect(events[0]).toMatchObject({ type: "step_completed", output: { result: "ok" } });
+    expect(events[0]).toMatchObject({ type: 'step_completed', output: { result: 'ok' } });
   });
 
-  it("handles an empty stream", async () => {
+  it('handles an empty stream', async () => {
     const mock = mockGrpcClient();
     mock.ExecuteWorkflow.mockReturnValue(asyncStream([]));
 
     const client = createClient(mock);
     const events = await collect(
-      client.executeWorkflow({ workflow: { id: "w1", nodes: [], edges: [] } }),
+      client.executeWorkflow({ workflow: { id: 'w1', nodes: [], edges: [] } }),
     );
 
     expect(events).toHaveLength(0);
   });
 
-  it("propagates streaming errors", async () => {
+  it('propagates streaming errors', async () => {
     const mock = mockGrpcClient();
     mock.ExecuteWorkflow.mockReturnValue(
       (async function* () {
-        throw new Error("stream error");
+        throw new Error('stream error');
       })(),
     );
 
     const client = createClient(mock);
     await expect(
-      collect(client.executeWorkflow({ workflow: { id: "w1", nodes: [], edges: [] } })),
-    ).rejects.toThrow("stream error");
+      collect(client.executeWorkflow({ workflow: { id: 'w1', nodes: [], edges: [] } })),
+    ).rejects.toThrow('stream error');
   });
 
-  it("decodes all event types", async () => {
+  it('decodes all event types', async () => {
     const mock = mockGrpcClient();
     const ts = new Date().toISOString();
     const rawEvents: object[] = [
-      { task_id: "t1", timestamp: ts, task_started: { workflow_id: "w1" } },
-      { task_id: "t1", timestamp: ts, step_started: { step_id: "n1", step_type: "click" } },
-      { task_id: "t1", timestamp: ts, step_completed: { step_id: "n1", output_json: '"done"' } },
-      { task_id: "t1", timestamp: ts, partial_data: { path: "title", value_json: '"hello"' } },
-      { task_id: "t1", timestamp: ts, log: { level: "info", message: "log msg" } },
-      { task_id: "t1", timestamp: ts, screenshot: { label: "ss1", data: new Uint8Array([1, 2, 3]), mime_type: "image/png" } },
-      { task_id: "t1", timestamp: ts, progress: { completed_steps: 1, total_steps: 3, message: "1/3" } },
-      { task_id: "t1", timestamp: ts, task_completed: { result_json: '{"ok":true}' } },
-      { task_id: "t1", timestamp: ts, task_failed: { error_code: "E001", message: "failed", retryable: false } },
+      { task_id: 't1', timestamp: ts, task_started: { workflow_id: 'w1' } },
+      { task_id: 't1', timestamp: ts, step_started: { step_id: 'n1', step_type: 'click' } },
+      { task_id: 't1', timestamp: ts, step_completed: { step_id: 'n1', output_json: '"done"' } },
+      { task_id: 't1', timestamp: ts, partial_data: { path: 'title', value_json: '"hello"' } },
+      { task_id: 't1', timestamp: ts, log: { level: 'info', message: 'log msg' } },
+      {
+        task_id: 't1',
+        timestamp: ts,
+        screenshot: { label: 'ss1', data: new Uint8Array([1, 2, 3]), mime_type: 'image/png' },
+      },
+      {
+        task_id: 't1',
+        timestamp: ts,
+        progress: { completed_steps: 1, total_steps: 3, message: '1/3' },
+      },
+      { task_id: 't1', timestamp: ts, task_completed: { result_json: '{"ok":true}' } },
+      {
+        task_id: 't1',
+        timestamp: ts,
+        task_failed: { error_code: 'E001', message: 'failed', retryable: false },
+      },
     ];
     mock.ExecuteWorkflow.mockReturnValue(asyncStream(rawEvents));
 
     const client = createClient(mock);
     const events = await collect(
-      client.executeWorkflow({ workflow: { id: "w1", nodes: [], edges: [] } }),
+      client.executeWorkflow({ workflow: { id: 'w1', nodes: [], edges: [] } }),
     );
 
     expect(events).toHaveLength(9);
-    expect(events[0].type).toBe("task_started");
-    expect(events[1].type).toBe("step_started");
-    expect(events[2].type).toBe("step_completed");
-    expect(events[3].type).toBe("partial_data");
-    expect(events[4].type).toBe("log");
-    expect(events[5].type).toBe("screenshot");
-    expect(events[6].type).toBe("progress");
-    expect(events[7].type).toBe("task_completed");
-    expect(events[8].type).toBe("task_failed");
+    expect(events[0].type).toBe('task_started');
+    expect(events[1].type).toBe('step_started');
+    expect(events[2].type).toBe('step_completed');
+    expect(events[3].type).toBe('partial_data');
+    expect(events[4].type).toBe('log');
+    expect(events[5].type).toBe('screenshot');
+    expect(events[6].type).toBe('progress');
+    expect(events[7].type).toBe('task_completed');
+    expect(events[8].type).toBe('task_failed');
 
-    const failed = events[8] as Extract<WorkflowEvent, { type: "task_failed" }>;
-    expect(failed.errorCode).toBe("E001");
+    const failed = events[8] as Extract<WorkflowEvent, { type: 'task_failed' }>;
+    expect(failed.errorCode).toBe('E001');
     expect(failed.retryable).toBe(false);
   });
 });
 
-describe("BrowserMeshClient — unary RPCs", () => {
-  it("cancelTask calls CancelTask and maps response", async () => {
+describe('BrowserMeshClient — unary RPCs', () => {
+  it('cancelTask calls CancelTask and maps response', async () => {
     const mock = mockGrpcClient();
-    mock.CancelTask.mockImplementation((_req: object, cb: Function) => cb(null, { task_id: "t1", state: "cancelled", message: "by user" }));
+    mock.CancelTask.mockImplementation((_req: object, cb: Function) =>
+      cb(null, { task_id: 't1', state: 'cancelled', message: 'by user' }),
+    );
 
     const client = createClient(mock);
-    const result = await client.cancelTask("t1");
+    const result = await client.cancelTask('t1');
 
-    expect(result).toEqual({ taskId: "t1", state: "cancelled", message: "by user" });
-    expect(mock.CancelTask).toHaveBeenCalledWith({ task_id: "t1" }, expect.any(Function));
+    expect(result).toEqual({ taskId: 't1', state: 'cancelled', message: 'by user' });
+    expect(mock.CancelTask).toHaveBeenCalledWith({ task_id: 't1' }, expect.any(Function));
   });
 
-  it("pauseTask calls PauseTask and maps response", async () => {
+  it('pauseTask calls PauseTask and maps response', async () => {
     const mock = mockGrpcClient();
-    mock.PauseTask.mockImplementation((_req: object, cb: Function) => cb(null, { task_id: "t1", state: "paused", message: "paused by user" }));
+    mock.PauseTask.mockImplementation((_req: object, cb: Function) =>
+      cb(null, { task_id: 't1', state: 'paused', message: 'paused by user' }),
+    );
 
     const client = createClient(mock);
-    const result = await client.pauseTask("t1");
+    const result = await client.pauseTask('t1');
 
-    expect(result).toEqual({ taskId: "t1", state: "paused", message: "paused by user" });
+    expect(result).toEqual({ taskId: 't1', state: 'paused', message: 'paused by user' });
   });
 
-  it("resumeTask calls ResumeTask and maps response", async () => {
+  it('resumeTask calls ResumeTask and maps response', async () => {
     const mock = mockGrpcClient();
-    mock.ResumeTask.mockImplementation((_req: object, cb: Function) => cb(null, { task_id: "t1", state: "running" }));
+    mock.ResumeTask.mockImplementation((_req: object, cb: Function) =>
+      cb(null, { task_id: 't1', state: 'running' }),
+    );
 
     const client = createClient(mock);
-    const result = await client.resumeTask("t1");
+    const result = await client.resumeTask('t1');
 
-    expect(result).toEqual({ taskId: "t1", state: "running", message: undefined });
+    expect(result).toEqual({ taskId: 't1', state: 'running', message: undefined });
   });
 
-  it("getTaskStatus maps response", async () => {
+  it('getTaskStatus maps response', async () => {
     const mock = mockGrpcClient();
-    mock.GetTaskStatus.mockImplementation((_req: object, cb: Function) => cb(null, { task_id: "t1", state: "running" }));
+    mock.GetTaskStatus.mockImplementation((_req: object, cb: Function) =>
+      cb(null, { task_id: 't1', state: 'running' }),
+    );
 
     const client = createClient(mock);
-    const result = await client.getTaskStatus("t1");
+    const result = await client.getTaskStatus('t1');
 
-    expect(result).toEqual({ taskId: "t1", state: "running", message: undefined });
+    expect(result).toEqual({ taskId: 't1', state: 'running', message: undefined });
   });
 
-  it("listRunningTasks calls ListRunningTasks and maps response", async () => {
+  it('listRunningTasks calls ListRunningTasks and maps response', async () => {
     const mock = mockGrpcClient();
     mock.ListRunningTasks.mockImplementation((_req: object, cb: Function) =>
       cb(null, {
         tasks: [
-          { task_id: "t1", state: "running" },
-          { task_id: "t2", state: "paused", message: "waiting" },
+          { task_id: 't1', state: 'running' },
+          { task_id: 't2', state: 'paused', message: 'waiting' },
         ],
       }),
     );
@@ -198,13 +222,15 @@ describe("BrowserMeshClient — unary RPCs", () => {
     const result = await client.listRunningTasks();
 
     expect(result).toHaveLength(2);
-    expect(result[0]).toEqual({ taskId: "t1", state: "running", message: undefined });
-    expect(result[1]).toEqual({ taskId: "t2", state: "paused", message: "waiting" });
+    expect(result[0]).toEqual({ taskId: 't1', state: 'running', message: undefined });
+    expect(result[1]).toEqual({ taskId: 't2', state: 'paused', message: 'waiting' });
   });
 
-  it("listRunningTasks returns empty array for empty response", async () => {
+  it('listRunningTasks returns empty array for empty response', async () => {
     const mock = mockGrpcClient();
-    mock.ListRunningTasks.mockImplementation((_req: object, cb: Function) => cb(null, { tasks: [] }));
+    mock.ListRunningTasks.mockImplementation((_req: object, cb: Function) =>
+      cb(null, { tasks: [] }),
+    );
 
     const client = createClient(mock);
     const result = await client.listRunningTasks();
@@ -213,20 +239,24 @@ describe("BrowserMeshClient — unary RPCs", () => {
   });
 });
 
-describe("BrowserMeshClient — error handling", () => {
-  it("propagates errors from unary calls", async () => {
+describe('BrowserMeshClient — error handling', () => {
+  it('propagates errors from unary calls', async () => {
     const mock = mockGrpcClient();
-    mock.CancelTask.mockImplementation((_req: object, cb: Function) => cb(new Error("not found"), null));
+    mock.CancelTask.mockImplementation((_req: object, cb: Function) =>
+      cb(new Error('not found'), null),
+    );
 
     const client = createClient(mock);
-    await expect(client.cancelTask("unknown")).rejects.toThrow("not found");
+    await expect(client.cancelTask('unknown')).rejects.toThrow('not found');
   });
 
-  it("propagates errors from listRunningTasks", async () => {
+  it('propagates errors from listRunningTasks', async () => {
     const mock = mockGrpcClient();
-    mock.ListRunningTasks.mockImplementation((_req: object, cb: Function) => cb(new Error("server error"), null));
+    mock.ListRunningTasks.mockImplementation((_req: object, cb: Function) =>
+      cb(new Error('server error'), null),
+    );
 
     const client = createClient(mock);
-    await expect(client.listRunningTasks()).rejects.toThrow("server error");
+    await expect(client.listRunningTasks()).rejects.toThrow('server error');
   });
 });
