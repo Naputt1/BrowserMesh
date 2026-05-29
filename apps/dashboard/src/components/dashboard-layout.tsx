@@ -6,11 +6,15 @@ import type { ReactNode } from "react";
 const navItems = [
   { href: "/", label: "Dashboard", icon: Box },
   { href: "/workflows", label: "Workflows", icon: List },
-  { href: "/workflows/new", label: "New Workflow", icon: Play },
   { href: "/tasks", label: "Tasks", icon: List },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-export function DashboardLayout({ children }: { readonly children: ReactNode }) {
+export function DashboardLayout({
+  children,
+}: {
+  readonly children: ReactNode;
+}) {
   const location = useLocation();
 
   return (
@@ -22,8 +26,9 @@ export function DashboardLayout({ children }: { readonly children: ReactNode }) 
         <nav className="p-2 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const active = location.pathname === item.href
-              || (item.href !== "/" && location.pathname.startsWith(item.href));
+            const active =
+              location.pathname === item.href ||
+              (item.href !== "/" && location.pathname.startsWith(item.href));
             return (
               <Link
                 key={item.href}
@@ -41,18 +46,8 @@ export function DashboardLayout({ children }: { readonly children: ReactNode }) 
             );
           })}
         </nav>
-        <div className="absolute bottom-4 left-4 right-4">
-          <button
-            className="flex items-center gap-2 px-3 py-2 rounded-md text-sm w-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <Settings className="h-4 w-4" />
-            Settings
-          </button>
-        </div>
       </aside>
-      <main className="flex-1 overflow-auto">
-        {children}
-      </main>
+      <main className="flex-1 overflow-auto">{children}</main>
     </div>
   );
 }

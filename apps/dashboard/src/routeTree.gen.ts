@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkflowsIndexRouteImport } from './routes/workflows/index'
 import { Route as TasksIndexRouteImport } from './routes/tasks/index'
 import { Route as WorkflowsNewRouteImport } from './routes/workflows/new'
 import { Route as TasksIdRouteImport } from './routes/tasks/$id'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,6 +49,7 @@ const TasksIdRoute = TasksIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRoute
   '/tasks/$id': typeof TasksIdRoute
   '/workflows/new': typeof WorkflowsNewRoute
   '/tasks/': typeof TasksIndexRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRoute
   '/tasks/$id': typeof TasksIdRoute
   '/workflows/new': typeof WorkflowsNewRoute
   '/tasks': typeof TasksIndexRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/settings': typeof SettingsRoute
   '/tasks/$id': typeof TasksIdRoute
   '/workflows/new': typeof WorkflowsNewRoute
   '/tasks/': typeof TasksIndexRoute
@@ -65,12 +74,25 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/tasks/$id' | '/workflows/new' | '/tasks/' | '/workflows/'
+  fullPaths:
+    | '/'
+    | '/settings'
+    | '/tasks/$id'
+    | '/workflows/new'
+    | '/tasks/'
+    | '/workflows/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/tasks/$id' | '/workflows/new' | '/tasks' | '/workflows'
+  to:
+    | '/'
+    | '/settings'
+    | '/tasks/$id'
+    | '/workflows/new'
+    | '/tasks'
+    | '/workflows'
   id:
     | '__root__'
     | '/'
+    | '/settings'
     | '/tasks/$id'
     | '/workflows/new'
     | '/tasks/'
@@ -79,6 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SettingsRoute: typeof SettingsRoute
   TasksIdRoute: typeof TasksIdRoute
   WorkflowsNewRoute: typeof WorkflowsNewRoute
   TasksIndexRoute: typeof TasksIndexRoute
@@ -87,6 +110,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -127,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SettingsRoute: SettingsRoute,
   TasksIdRoute: TasksIdRoute,
   WorkflowsNewRoute: WorkflowsNewRoute,
   TasksIndexRoute: TasksIndexRoute,
