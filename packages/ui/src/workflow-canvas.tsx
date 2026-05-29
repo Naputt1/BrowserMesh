@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ReactFlow,
   Background,
-  Controls,
   MiniMap,
   BackgroundVariant,
   useNodesState,
@@ -75,12 +74,16 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
     onChange(wf);
   }, [onChange, workflow]);
 
-  const handleNodeClick = useCallback((_event: React.MouseEvent, node: RFNode) => {
-    onSelectNode?.(node.id);
+  const handleNodeClick = useCallback((event: React.MouseEvent, node: RFNode) => {
+    if (!event.shiftKey) {
+      onSelectNode?.(node.id);
+    }
   }, [onSelectNode]);
 
-  const handlePaneClick = useCallback(() => {
-    onSelectNode?.(null);
+  const handlePaneClick = useCallback((event: React.MouseEvent | MouseEvent) => {
+    if (!event.shiftKey) {
+      onSelectNode?.(null);
+    }
   }, [onSelectNode]);
 
   const onConnect = useCallback((connection: Connection) => {
@@ -271,7 +274,7 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
 
     const curNodes = instanceRef.current.getNodes();
     const curEdges = instanceRef.current.getEdges();
-    const updatedNodes = [...curNodes, ...newNodes];
+    const updatedNodes = [...curNodes.map((n) => ({ ...n, selected: false })), ...newNodes];
     const updatedEdges = [...curEdges, ...newEdges];
 
     setNodes(updatedNodes);
@@ -332,6 +335,8 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
         onNodesDelete={onNodesDelete}
         onEdgesDelete={onEdgesDelete}
         nodeTypes={nodeTypes}
+        panOnDrag={[1]}
+        selectionOnDrag
         fitView
         minZoom={0.3}
         maxZoom={2}
@@ -341,7 +346,6 @@ export function WorkflowCanvas({ workflow, onChange, readonly, onInit, onSelectN
         className="bg-gray-50"
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
-        <Controls />
         <MiniMap
           nodeColor={(node: RFNode) => getNodeColor(node.data.nodeType)}
           nodeStrokeColor={(node: RFNode) => getNodeColor(node.data.nodeType)}
