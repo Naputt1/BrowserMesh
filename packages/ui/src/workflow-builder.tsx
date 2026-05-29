@@ -13,8 +13,6 @@ export type WorkflowBuilderProps = {
   readonly onWorkflowChange?: (workflow: WorkflowDefinition) => void;
 };
 
-let nodeCounter = 0;
-
 const DEFAULT_WORKFLOW: WorkflowDefinition = {
   id: crypto.randomUUID(),
   nodes: [{ id: "start_auto", type: "start", label: "Start", config: {} }],
@@ -30,6 +28,8 @@ export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderP
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const reactFlowRef = useRef<ReactFlowInstance<RFNode, RFEdge> | null>(null);
+  const workflowRef = useRef(workflowState);
+  workflowRef.current = workflowState;
 
   const historyRef = useRef<WorkflowDefinition[]>([]);
   const historyIndexRef = useRef(-1);
@@ -103,10 +103,10 @@ export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderP
   const handleAddNode = useCallback((type: NodeType, position?: { x: number; y: number }) => {
     if (type === "start") return;
 
-    const existing = workflowState ?? { id: crypto.randomUUID(), nodes: [], edges: [] };
+    const existing = workflowRef.current ?? { id: crypto.randomUUID(), nodes: [], edges: [] };
     const hasStart = existing.nodes.some((n) => n.type === "start");
 
-    const id = `node_${++nodeCounter}`;
+    const id = crypto.randomUUID();
     const newNode: WorkflowNode = {
       id,
       type,
@@ -123,29 +123,31 @@ export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderP
     };
 
     handleChange(updated as WorkflowDefinition);
-  }, [workflowState, handleChange]);
+  }, [handleChange]);
 
   const handleUpdateNode = useCallback((id: string, updates: { label?: string; config?: Record<string, unknown> }) => {
-    if (!workflowState) return;
+    const wf = workflowRef.current;
+    if (!wf) return;
     const updated = {
-      ...workflowState,
-      nodes: workflowState.nodes.map((n) =>
+      ...wf,
+      nodes: wf.nodes.map((n) =>
         n.id === id ? { ...n, ...updates, config: updates.config ?? n.config } : n
       ),
     };
     handleChange(updated);
-  }, [workflowState, handleChange]);
+  }, [handleChange]);
 
   const handleDeleteNode = useCallback((id: string) => {
-    if (!workflowState) return;
+    const wf = workflowRef.current;
+    if (!wf) return;
     const updated = {
-      ...workflowState,
-      nodes: workflowState.nodes.filter((n) => n.id !== id),
-      edges: workflowState.edges.filter((e) => e.source !== id && e.target !== id),
+      ...wf,
+      nodes: wf.nodes.filter((n) => n.id !== id),
+      edges: wf.edges.filter((e) => e.source !== id && e.target !== id),
     };
     setSelectedNodeId(null);
     handleChange(updated);
-  }, [workflowState, handleChange]);
+  }, [handleChange]);
 
   const selectedNode = workflowState
     ? (() => {
@@ -155,20 +157,22 @@ export function WorkflowBuilder({ workflow, onWorkflowChange }: WorkflowBuilderP
     : null;
 
   const handleExport = useCallback(() => {
-    if (!workflowState) return;
-    const blob = new Blob([JSON.stringify(workflowState, null, 2)], { type: "application/json" });
+    const wf = workflowRef.current;
+    if (!wf) return;
+    const blob = new Blob([JSON.stringify(wf, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `workflow-${workflowState.id}.json`;
+    a.download = `workflow-${wf.id}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [workflowState]);
+  }, []);
 
   const handleSettingsChange = useCallback((settings: GlobalSettings) => {
-    if (!workflowState) return;
-    handleChange({ ...workflowState, settings });
-  }, [workflowState, handleChange]);
+    const wf = workflowRef.current;
+    if (!wf) return;
+    handleChange({ ...wf, settings });
+  }, [handleChange]);
 
   const handleImport = useCallback(() => {
     const input = document.createElement("input");
