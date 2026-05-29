@@ -7,7 +7,7 @@ import type { WorkflowDefinition, WorkflowEvent, WorkflowNode } from "@browserme
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const DEFAULT_PROTO_PATH = resolve(__dirname, "../../packages/proto/browsermesh/v1/runtime.proto");
+const DEFAULT_PROTO_PATH = resolve(__dirname, "./runtime.proto");
 
 export type BrowserMeshClientOptions = {
   readonly endpoint: string;
