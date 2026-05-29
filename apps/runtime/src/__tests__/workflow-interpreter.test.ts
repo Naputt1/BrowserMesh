@@ -558,7 +558,7 @@ describe("WorkflowInterpreter — scroll", () => {
       }),
     }));
     await collect(intr.execute());
-    expect(page.evaluate).toHaveBeenCalledWith(expect.stringContaining("scrollTo(0, 500)"));
+    expect(page.evaluate).toHaveBeenCalledWith(expect.stringContaining("window.scrollBy(0, window.innerHeight / 2)"));
   });
 
   it("scrolls element into view when selector is provided", async () => {

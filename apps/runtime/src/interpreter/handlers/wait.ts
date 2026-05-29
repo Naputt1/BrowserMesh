@@ -8,7 +8,7 @@ export const waitHandler: NodeHandler = async function* (node, context, inputs) 
   const selector = config.selector as string | undefined;
 
   if (selector) {
-    await (context.currentElement ?? page).locator(selector).waitFor();
+    await (context.currentElement ?? page).locator(selector).waitFor({ state: "visible" });
   } else if (durationMs != null) {
     await new Promise((resolve) => setTimeout(resolve, durationMs));
   } else {
