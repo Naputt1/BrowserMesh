@@ -1,0 +1,135 @@
+{
+  "id": "logic-nodes-demo",
+  "name": "Logic & Control Flow Nodes Demo",
+  "settings": {
+    "timing": { "minDelayMs": 0, "maxDelayMs": 0 },
+    "outputType": {
+      "kind": "object",
+      "fields": [
+        { "name": "isAdult", "type": { "kind": "boolean" } },
+        { "name": "adultAndActive", "type": { "kind": "boolean" } },
+        { "name": "notActive", "type": { "kind": "boolean" } },
+        { "name": "eitherCondition", "type": { "kind": "boolean" } },
+        { "name": "processedNames", "type": { "kind": "array", "elementType": { "kind": "string" } } }
+      ]
+    }
+  },
+  "nodes": [
+    { "id": "s", "type": "start", "label": "Start" },
+
+    { "id": "src_age", "type": "state", "label": "Set age = 25", "config": { "operation": "set", "key": "age", "value": 25 } },
+    { "id": "src_18", "type": "state", "label": "Const: 18", "config": { "operation": "set", "key": "_18", "value": 18 } },
+    { "id": "src_active", "type": "state", "label": "Set active = true", "config": { "operation": "set", "key": "active", "value": true } },
+    { "id": "src_role", "type": "state", "label": "Set role = 'admin'", "config": { "operation": "set", "key": "role", "value": "admin" } },
+    { "id": "src_skip", "type": "state", "label": "Const: 'skip'", "config": { "operation": "set", "key": "_skip", "value": "skip" } },
+    { "id": "src_5", "type": "state", "label": "Const: 5", "config": { "operation": "set", "key": "_5", "value": 5 } },
+
+    { "id": "cmp_age", "type": "compare", "label": "age >= 18?", "config": { "operator": ">=" } },
+    { "id": "and_active", "type": "and", "label": "Adult AND Active?" },
+    { "id": "not_active", "type": "not", "label": "NOT Active" },
+    { "id": "or_cond", "type": "or", "label": "Either Condition?" },
+
+    { "id": "if_adult", "type": "if", "label": "If Active Adult" },
+
+    { "id": "out_cmp", "type": "output", "label": "Log isAdult", "config": { "propertyPath": "isAdult" } },
+    { "id": "out_and", "type": "output", "label": "Log adultAndActive", "config": { "propertyPath": "adultAndActive" } },
+    { "id": "out_not", "type": "output", "label": "Log notActive", "config": { "propertyPath": "notActive" } },
+    { "id": "out_or", "type": "output", "label": "Log eitherCondition", "config": { "propertyPath": "eitherCondition" } },
+
+    { "id": "sw_role", "type": "switch", "label": "Route by Role",
+      "config": { "cases": [
+        { "label": "Admin", "value": "admin" },
+        { "label": "User", "value": "user" }
+      ]}
+    },
+
+    { "id": "sel_items", "type": "select", "label": "Select Items", "config": { "mode": "all", "selector": ".item" } },
+    { "id": "loop", "type": "loop", "label": "Process Items" },
+    { "id": "ext_name", "type": "extract", "label": "Extract Name", "config": { "property": "text" } },
+    { "id": "cmp_skip", "type": "compare", "label": "text === 'skip'?", "config": { "operator": "==" } },
+    { "id": "if_skip", "type": "if", "label": "Skip Item?" },
+    { "id": "continue_node", "type": "continue", "label": "Continue" },
+    { "id": "cmp_max", "type": "compare", "label": "index > 5?", "config": { "operator": ">" } },
+    { "id": "if_max", "type": "if", "label": "Stop Early?" },
+    { "id": "break_node", "type": "break", "label": "Break Loop" },
+    { "id": "out_name", "type": "output", "label": "Save Name", "config": { "propertyPath": "processedNames" } },
+
+    { "id": "e", "type": "end", "label": "End" }
+  ],
+  "edges": [
+    { "id": "e_s_src_age", "source": "s", "sourceHandle": "flow", "target": "src_age", "targetHandle": "flow" },
+    { "id": "e_src_age_src_18", "source": "src_age", "sourceHandle": "flow", "target": "src_18", "targetHandle": "flow" },
+    { "id": "e_src_18_src_active", "source": "src_18", "sourceHandle": "flow", "target": "src_active", "targetHandle": "flow" },
+    { "id": "e_src_active_src_skip", "source": "src_active", "sourceHandle": "flow", "target": "src_skip", "targetHandle": "flow" },
+    { "id": "e_src_skip_src_5", "source": "src_skip", "sourceHandle": "flow", "target": "src_5", "targetHandle": "flow" },
+    { "id": "e_src_5_src_role", "source": "src_5", "sourceHandle": "flow", "target": "src_role", "targetHandle": "flow" },
+
+    { "id": "e_src_role_cmp_age", "source": "src_role", "sourceHandle": "flow", "target": "cmp_age", "targetHandle": "flow" },
+    { "id": "e_src_age_val_cmp_left", "source": "src_age", "sourceHandle": "value", "target": "cmp_age", "targetHandle": "left" },
+    { "id": "e_src_18_val_cmp_right", "source": "src_18", "sourceHandle": "value", "target": "cmp_age", "targetHandle": "right" },
+
+    { "id": "e_cmp_flow_and", "source": "cmp_age", "sourceHandle": "flow", "target": "and_active", "targetHandle": "flow" },
+    { "id": "e_cmp_result_and_a", "source": "cmp_age", "sourceHandle": "result", "target": "and_active", "targetHandle": "a" },
+    { "id": "e_src_active_val_and_b", "source": "src_active", "sourceHandle": "value", "target": "and_active", "targetHandle": "b" },
+
+    { "id": "e_and_flow_not", "source": "and_active", "sourceHandle": "flow", "target": "not_active", "targetHandle": "flow" },
+    { "id": "e_src_active_val_not_val", "source": "src_active", "sourceHandle": "value", "target": "not_active", "targetHandle": "value" },
+
+    { "id": "e_not_flow_or", "source": "not_active", "sourceHandle": "flow", "target": "or_cond", "targetHandle": "flow" },
+    { "id": "e_and_result_or_a", "source": "and_active", "sourceHandle": "result", "target": "or_cond", "targetHandle": "a" },
+    { "id": "e_not_result_or_b", "source": "not_active", "sourceHandle": "result", "target": "or_cond", "targetHandle": "b" },
+
+    { "id": "e_or_flow_if", "source": "or_cond", "sourceHandle": "flow", "target": "if_adult", "targetHandle": "flow" },
+    { "id": "e_and_result_if_cond", "source": "and_active", "sourceHandle": "result", "target": "if_adult", "targetHandle": "condition" },
+
+    { "id": "e_if_true_out_cmp", "source": "if_adult", "sourceHandle": "true", "target": "out_cmp", "targetHandle": "flow" },
+    { "id": "e_if_false_out_cmp", "source": "if_adult", "sourceHandle": "false", "target": "out_cmp", "targetHandle": "flow" },
+    { "id": "e_cmp_result_out_cmp", "source": "cmp_age", "sourceHandle": "result", "target": "out_cmp", "targetHandle": "value" },
+
+    { "id": "e_out_cmp_out_and", "source": "out_cmp", "sourceHandle": "flow", "target": "out_and", "targetHandle": "flow" },
+    { "id": "e_and_result_out_and", "source": "and_active", "sourceHandle": "result", "target": "out_and", "targetHandle": "value" },
+
+    { "id": "e_out_and_out_not", "source": "out_and", "sourceHandle": "flow", "target": "out_not", "targetHandle": "flow" },
+    { "id": "e_not_result_out_not", "source": "not_active", "sourceHandle": "result", "target": "out_not", "targetHandle": "value" },
+
+    { "id": "e_out_not_out_or", "source": "out_not", "sourceHandle": "flow", "target": "out_or", "targetHandle": "flow" },
+    { "id": "e_or_result_out_or", "source": "or_cond", "sourceHandle": "result", "target": "out_or", "targetHandle": "value" },
+
+    { "id": "e_out_or_sw_role", "source": "out_or", "sourceHandle": "flow", "target": "sw_role", "targetHandle": "flow" },
+    { "id": "e_src_role_val_sw_val", "source": "src_role", "sourceHandle": "value", "target": "sw_role", "targetHandle": "value" },
+
+    { "id": "e_sw_case0_sel", "source": "sw_role", "sourceHandle": "case_0", "target": "sel_items", "targetHandle": "flow" },
+    { "id": "e_sw_case1_sel", "source": "sw_role", "sourceHandle": "case_1", "target": "sel_items", "targetHandle": "flow" },
+    { "id": "e_sw_default_sel", "source": "sw_role", "sourceHandle": "default", "target": "sel_items", "targetHandle": "flow" },
+
+    { "id": "e_sel_loop_flow", "source": "sel_items", "sourceHandle": "flow", "target": "loop", "targetHandle": "flow" },
+    { "id": "e_sel_elem_loop_items", "source": "sel_items", "sourceHandle": "element", "target": "loop", "targetHandle": "items" },
+
+    { "id": "e_loop_body_ext", "source": "loop", "sourceHandle": "body", "target": "ext_name", "targetHandle": "flow" },
+    { "id": "e_loop_item_ext_elem", "source": "loop", "sourceHandle": "item", "target": "ext_name", "targetHandle": "element" },
+
+    { "id": "e_ext_flow_cmp_skip", "source": "ext_name", "sourceHandle": "flow", "target": "cmp_skip", "targetHandle": "flow" },
+    { "id": "e_ext_val_cmp_skip_left", "source": "ext_name", "sourceHandle": "value", "target": "cmp_skip", "targetHandle": "left" },
+    { "id": "e_src_skip_val_cmp_skip_right", "source": "src_skip", "sourceHandle": "value", "target": "cmp_skip", "targetHandle": "right" },
+
+    { "id": "e_cmp_skip_flow_if_skip", "source": "cmp_skip", "sourceHandle": "flow", "target": "if_skip", "targetHandle": "flow" },
+    { "id": "e_cmp_skip_result_if_skip_cond", "source": "cmp_skip", "sourceHandle": "result", "target": "if_skip", "targetHandle": "condition" },
+
+    { "id": "e_if_skip_true_cont", "source": "if_skip", "sourceHandle": "true", "target": "continue_node", "targetHandle": "flow" },
+
+    { "id": "e_if_skip_false_cmp_max", "source": "if_skip", "sourceHandle": "false", "target": "cmp_max", "targetHandle": "flow" },
+    { "id": "e_loop_index_cmp_max_left", "source": "loop", "sourceHandle": "index", "target": "cmp_max", "targetHandle": "left" },
+    { "id": "e_src_5_val_cmp_max_right", "source": "src_5", "sourceHandle": "value", "target": "cmp_max", "targetHandle": "right" },
+
+    { "id": "e_cmp_max_flow_if_max", "source": "cmp_max", "sourceHandle": "flow", "target": "if_max", "targetHandle": "flow" },
+    { "id": "e_cmp_max_result_if_max_cond", "source": "cmp_max", "sourceHandle": "result", "target": "if_max", "targetHandle": "condition" },
+
+    { "id": "e_if_max_true_break", "source": "if_max", "sourceHandle": "true", "target": "break_node", "targetHandle": "flow" },
+
+    { "id": "e_if_max_false_out_name", "source": "if_max", "sourceHandle": "false", "target": "out_name", "targetHandle": "flow" },
+    { "id": "e_ext_val_out_name_val", "source": "ext_name", "sourceHandle": "value", "target": "out_name", "targetHandle": "value" },
+    { "id": "e_loop_idx_out_name", "source": "loop", "sourceHandle": "index", "target": "out_name", "targetHandle": "index" },
+
+    { "id": "e_loop_flow_end", "source": "loop", "sourceHandle": "flow", "target": "e", "targetHandle": "flow" }
+  ]
+}

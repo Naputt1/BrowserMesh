@@ -15,6 +15,14 @@ import { fetchHandler } from "./fetch.js";
 import { listenHandler } from "./listen.js";
 import { stateHandler } from "./state.js";
 import { pageHandler } from "./page.js";
+import { compareHandler } from "./compare.js";
+import { andHandler } from "./and.js";
+import { orHandler } from "./or.js";
+import { notHandler } from "./not.js";
+import { ifHandler } from "./if.js";
+import { switchHandler } from "./switch.js";
+import { breakHandler } from "./break.js";
+import { continueHandler } from "./continue.js";
 
 export type { NodeHandler } from "../types.js";
 
@@ -35,4 +43,12 @@ export const defaultHandlerRegistry: ReadonlyMap<string, NodeHandler> = new Map(
   ["listen", listenHandler],
   ["state", stateHandler],
   ["page", pageHandler],
+  ["compare", compareHandler],
+  ["and", andHandler],
+  ["or", orHandler],
+  ["not", notHandler],
+  ["if", ifHandler],
+  ["switch", switchHandler],
+  ["break", breakHandler],
+  ["continue", continueHandler],
 ]);

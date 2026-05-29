@@ -37,6 +37,7 @@ export interface ExecutionContext {
   readonly globalSettings?: GlobalSettings;
   readonly stateStore?: GlobalStateStore;
   readonly pageManager?: PageManager;
+  controlSignal?: { value: "break" | "continue" | undefined };
   setOutput(pin: string, value: unknown): void;
 }
 

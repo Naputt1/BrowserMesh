@@ -14,7 +14,15 @@ export type NodeType =
   | "fetch"
   | "listen"
   | "state"
-  | "page";
+  | "page"
+  | "if"
+  | "switch"
+  | "and"
+  | "or"
+  | "not"
+  | "break"
+  | "compare"
+  | "continue";
 
 export type PinType = "flow" | "data";
 
@@ -288,6 +296,108 @@ export const NODE_DEFINITIONS: Record<NodeType, NodeTypeDefinition> = {
     outputs: [
       pin("flow", "flow", { required: true }),
       pin("pageKey", "data", { label: "Page Key", required: true, dataType: { kind: "string" } }),
+    ],
+  },
+  break: {
+    type: "break",
+    label: "Break",
+    color: "#ef4444",
+    category: "flow",
+    inputs: [pin("flow", "flow", { required: true })],
+    outputs: [],
+  },
+  compare: {
+    type: "compare",
+    label: "Compare",
+    color: "#6366f1",
+    category: "data",
+    inputs: [
+      pin("flow", "flow", { required: true }),
+      pin("left", "data", { label: "Left", required: true }),
+      pin("right", "data", { label: "Right", required: true }),
+    ],
+    outputs: [
+      pin("flow", "flow", { required: true }),
+      pin("result", "data", { label: "Result", required: true, dataType: { kind: "boolean" } }),
+    ],
+  },
+  and: {
+    type: "and",
+    label: "And",
+    color: "#06b6d4",
+    category: "data",
+    inputs: [
+      pin("flow", "flow", { required: true }),
+      pin("a", "data", { label: "A", required: true, dataType: { kind: "boolean" } }),
+      pin("b", "data", { label: "B", required: true, dataType: { kind: "boolean" } }),
+    ],
+    outputs: [
+      pin("flow", "flow", { required: true }),
+      pin("result", "data", { label: "Result", required: true, dataType: { kind: "boolean" } }),
+    ],
+  },
+  or: {
+    type: "or",
+    label: "Or",
+    color: "#f59e0b",
+    category: "data",
+    inputs: [
+      pin("flow", "flow", { required: true }),
+      pin("a", "data", { label: "A", required: true, dataType: { kind: "boolean" } }),
+      pin("b", "data", { label: "B", required: true, dataType: { kind: "boolean" } }),
+    ],
+    outputs: [
+      pin("flow", "flow", { required: true }),
+      pin("result", "data", { label: "Result", required: true, dataType: { kind: "boolean" } }),
+    ],
+  },
+  not: {
+    type: "not",
+    label: "Not",
+    color: "#ec4899",
+    category: "data",
+    inputs: [
+      pin("flow", "flow", { required: true }),
+      pin("value", "data", { label: "Value", required: true, dataType: { kind: "boolean" } }),
+    ],
+    outputs: [
+      pin("flow", "flow", { required: true }),
+      pin("result", "data", { label: "Result", required: true, dataType: { kind: "boolean" } }),
+    ],
+  },
+  continue: {
+    type: "continue",
+    label: "Continue",
+    color: "#10b981",
+    category: "flow",
+    inputs: [pin("flow", "flow", { required: true })],
+    outputs: [],
+  },
+  if: {
+    type: "if",
+    label: "If",
+    color: "#f59e0b",
+    category: "flow",
+    inputs: [
+      pin("flow", "flow", { required: true }),
+      pin("condition", "data", { label: "Condition", required: true, dataType: { kind: "boolean" } }),
+    ],
+    outputs: [
+      pin("true", "flow", { label: "True" }),
+      pin("false", "flow", { label: "False" }),
+    ],
+  },
+  switch: {
+    type: "switch",
+    label: "Switch",
+    color: "#8b5cf6",
+    category: "flow",
+    inputs: [
+      pin("flow", "flow", { required: true }),
+      pin("value", "data", { label: "Value", required: true }),
+    ],
+    outputs: [
+      pin("default", "flow", { label: "Default" }),
     ],
   },
 };
