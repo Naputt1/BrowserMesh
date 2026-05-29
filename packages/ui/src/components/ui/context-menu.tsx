@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "../../lib/cn";
 
 export type ContextMenuItem = {
@@ -26,17 +27,23 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
+    const handleOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handleOutside);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handleOutside);
+    };
   }, [onClose]);
 
   return (
-    <>
-      <div className="fixed inset-0 z-[9998]" onClick={onClose} onContextMenu={(e) => e.preventDefault()} />
-      <div ref={ref} className="fixed z-[9999]" style={{ left: x, top: y }}>
-        <MenuList items={items} onClose={onClose} />
-      </div>
-    </>
+    <div ref={ref} className="fixed z-[9999]" style={{ left: x, top: y }}>
+      <MenuList items={items} onClose={onClose} />
+    </div>
   );
 }
 
@@ -96,7 +103,7 @@ function MenuItem({ item, onClose }: { item: ContextMenuItem; onClose: () => voi
         )}
         {item.icon}
         <span className="flex-1">{item.label}</span>
-        {hasChildren && <span className="text-muted-foreground text-xs ml-2">▸</span>}
+        {hasChildren && <ChevronRight className="text-muted-foreground ml-2" size={14} />}
       </button>
       {hasChildren && showChildren && (
         <div className="absolute left-full top-0 ml-0.5">

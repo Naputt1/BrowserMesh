@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useState, useMemo } from "react";
 import type { DataType, NodeType } from "@browsermesh/workflow";
 import { NODE_DEFINITIONS } from "@browsermesh/workflow";
@@ -541,9 +542,9 @@ function KVPairEditor({
             />
             <button
               onClick={() => onChange(pairs.filter((_, j) => j !== i))}
-              className="text-xs text-red-500 hover:text-red-700 px-1"
+              className="text-red-500 hover:text-red-700 p-1"
             >
-              ✕
+              <X size={14} />
             </button>
           </div>
         ))}

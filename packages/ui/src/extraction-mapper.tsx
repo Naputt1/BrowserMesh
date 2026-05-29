@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useState } from "react";
 
 export type ExtractionMapperProps = {
@@ -71,9 +72,9 @@ export function ExtractionMapper({ typeName, scopeId }: ExtractionMapperProps) {
             </div>
             <button
               onClick={() => removeField(i)}
-              className="text-red-500 hover:text-red-700 text-xs p-1"
+              className="text-red-500 hover:text-red-700 p-1"
             >
-              ✕
+              <X size={14} />
             </button>
           </div>
         ))}
