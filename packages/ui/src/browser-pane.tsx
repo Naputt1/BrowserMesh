@@ -2,9 +2,10 @@ import type { WorkflowEvent } from '@browsermesh/workflow';
 
 export type BrowserPaneProps = {
   readonly previewUrl?: string;
+  readonly screenshotSrc?: string;
 };
 
-export function BrowserPane({ previewUrl }: BrowserPaneProps) {
+export function BrowserPane({ previewUrl, screenshotSrc }: BrowserPaneProps) {
   return (
     <div className="bg-white rounded-lg border overflow-hidden flex flex-col h-full">
       <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 border-b">
@@ -17,8 +18,10 @@ export function BrowserPane({ previewUrl }: BrowserPaneProps) {
           {previewUrl ?? 'about:blank'}
         </div>
       </div>
-      <div className="flex-1 flex items-center justify-center bg-gray-50 text-sm text-gray-400">
-        {previewUrl ? (
+      <div className="flex-1 flex items-center justify-center bg-gray-50 text-sm text-gray-400 overflow-hidden">
+        {screenshotSrc ? (
+          <img src={screenshotSrc} alt="Page preview" className="w-full h-full object-contain" />
+        ) : previewUrl ? (
           <iframe
             src={previewUrl}
             className="w-full h-full border-0"

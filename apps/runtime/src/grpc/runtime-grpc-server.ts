@@ -333,6 +333,11 @@ export class RuntimeGrpcServer {
             retryable: event.retryable,
           },
         };
+      case 'step_paused':
+        return {
+          ...base,
+          step_paused: { step_id: event.stepId, step_type: event.stepType },
+        };
     }
   }
 }

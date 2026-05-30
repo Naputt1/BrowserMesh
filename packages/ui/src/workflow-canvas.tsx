@@ -37,6 +37,7 @@ export type WorkflowCanvasProps = {
   onAddNode?: (type: NodeType, position?: { x: number; y: number }) => void;
   onUndo?: () => void;
   onRedo?: () => void;
+  highlightedNodeId?: string | null;
 };
 
 export function WorkflowCanvas({
@@ -48,6 +49,7 @@ export function WorkflowCanvas({
   onAddNode,
   onUndo,
   onRedo,
+  highlightedNodeId,
 }: WorkflowCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -87,6 +89,15 @@ export function WorkflowCanvas({
     setNodes(converted.nodes);
     setEdges(converted.edges);
   }, [workflow]);
+
+  useEffect(() => {
+    setNodes((nds) =>
+      nds.map((n) => ({
+        ...n,
+        data: { ...n.data, highlighted: n.id === highlightedNodeId },
+      })),
+    );
+  }, [highlightedNodeId]);
 
   const emitChange = useCallback(
     (newNodes: RFNode[], newEdges: RFEdge[]) => {

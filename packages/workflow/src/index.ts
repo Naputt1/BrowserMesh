@@ -417,6 +417,7 @@ export type WorkflowEvent =
   | TaskStartedEvent
   | StepStartedEvent
   | StepCompletedEvent
+  | StepPausedEvent
   | PartialDataEvent
   | LogEvent
   | ScreenshotEvent
@@ -442,6 +443,11 @@ export type StepStartedEvent = WorkflowEventBase<'step_started'> & {
 export type StepCompletedEvent = WorkflowEventBase<'step_completed'> & {
   readonly stepId: string;
   readonly output?: unknown;
+};
+
+export type StepPausedEvent = WorkflowEventBase<'step_paused'> & {
+  readonly stepId: string;
+  readonly stepType: NodeType;
 };
 
 export type PartialDataEvent = WorkflowEventBase<'partial_data'> & {

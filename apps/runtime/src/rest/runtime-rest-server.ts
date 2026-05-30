@@ -1,6 +1,9 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { request as httpRequest } from 'node:http';
 import type { BrowserMeshRuntime } from '../browsermesh-runtime.js';
 import type { WorkflowDefinition, WorkflowEvent } from '@browsermesh/workflow';
+import type { AuthConfig } from '../auth-helper.js';
+import { setupCdpProxy } from '../cdp-proxy.js';
 
 export class RuntimeRestServer {
   private server: ReturnType<typeof createServer>;
@@ -13,6 +16,7 @@ export class RuntimeRestServer {
   constructor(runtime: BrowserMeshRuntime) {
     this.runtime = runtime;
     this.server = createServer((req, res) => this.handleRequest(req, res));
+    setupCdpProxy(this.server, (taskId) => runtime.getDebugCdpUrl(taskId));
   }
 
   start(host: string, port: number): Promise<void> {
@@ -50,6 +54,10 @@ export class RuntimeRestServer {
 
       if (method === 'POST' && path === '/api/workflows/execute') {
         return await this.handleExecuteWorkflow(req, res);
+      }
+
+      if (method === 'POST' && path === '/api/debug/start') {
+        return await this.handleStartDebug(req, res);
       }
 
       if (method === 'GET' && path === '/api/tasks') {
@@ -95,6 +103,26 @@ export class RuntimeRestServer {
 
       if (stateMatch && method === 'POST') {
         return await this.handleSetState(stateMatch[1], req, res);
+      }
+
+      const debugStopMatch = path.match(/^\/api\/debug\/([^/]+)\/stop$/);
+      const debugAuthMatch = path.match(/^\/api\/debug\/([^/]+)\/auth$/);
+      const debugDevtoolsMatch = path.match(/^\/api\/debug\/([^/]+)\/devtools\/(.+)$/);
+
+      if (debugStopMatch && method === 'POST') {
+        return await this.handleStopDebug(debugStopMatch[1], res);
+      }
+
+      if (debugAuthMatch && method === 'POST') {
+        return await this.handleDebugAuth(debugAuthMatch[1], req, res);
+      }
+
+      if (debugDevtoolsMatch && method === 'GET') {
+        return await this.handleDebugDevtools(debugDevtoolsMatch[1], debugDevtoolsMatch[2], req, res);
+      }
+
+      if (method === 'GET' && path.startsWith('/json')) {
+        return await this.handleJsonProxy(path, req, res);
       }
 
       writeJson(res, 404, { error: 'Not found' });
@@ -188,6 +216,148 @@ export class RuntimeRestServer {
     } catch (err) {
       writeJson(res, 404, { error: err instanceof Error ? err.message : 'Task not found' });
     }
+  }
+
+  private async handleStartDebug(req: IncomingMessage, res: ServerResponse): Promise<void> {
+    const body = JSON.parse(await readBody(req)) as {
+      workflow: WorkflowDefinition;
+    };
+    const result = await this.runtime.startDebugSession(body.workflow);
+    writeJson(res, 200, {
+      taskId: result.taskId,
+      cdpUrl: result.cdpUrl,
+      cdpPort: result.cdpPort,
+    });
+  }
+
+  private async handleStopDebug(taskId: string, res: ServerResponse): Promise<void> {
+    try {
+      await this.runtime.stopDebugSession(taskId);
+      writeJson(res, 200, { taskId, state: 'cancelled' });
+    } catch (err) {
+      writeJson(res, 404, { error: err instanceof Error ? err.message : 'Debug session not found' });
+    }
+  }
+
+  private async handleDebugAuth(taskId: string, req: IncomingMessage, res: ServerResponse): Promise<void> {
+    try {
+      const body = JSON.parse(await readBody(req)) as AuthConfig;
+      await this.runtime.injectDebugAuth(taskId, body);
+      writeJson(res, 200, { taskId, auth: true });
+    } catch (err) {
+      writeJson(res, 404, { error: err instanceof Error ? err.message : 'Failed to apply auth' });
+    }
+  }
+
+  private async handleDebugDevtools(taskId: string, filePath: string, req: IncomingMessage, res: ServerResponse): Promise<void> {
+    const cdpPort = this.runtime.getDebugCdpPort(taskId);
+    if (!cdpPort) {
+      writeJson(res, 404, { error: 'Debug session not found' });
+      return;
+    }
+
+    const query = (req.url ?? '').includes('?') ? (req.url ?? '').slice((req.url ?? '').indexOf('?')) : '';
+    const targetUrl = `http://127.0.0.1:${cdpPort}/devtools/${filePath}${query}`;
+
+    console.error(`[devtools-proxy] Request: ${filePath} -> ${targetUrl}`);
+
+    return new Promise((resolve) => {
+      const proxyReq = httpRequest(targetUrl, (proxyRes) => {
+        console.error(`[devtools-proxy] Response for "${filePath}": status=${proxyRes.statusCode}, contentType=${proxyRes.headers['content-type']}`);
+
+        const isHtml = (proxyRes.headers['content-type'] ?? '').includes('text/html');
+
+        if (isHtml) {
+          const headers: Record<string, string> = { 'Access-Control-Allow-Origin': '*' };
+          for (const [k, v] of Object.entries(proxyRes.headers)) {
+            const lk = k.toLowerCase();
+            if (lk === 'access-control-allow-origin' || lk === 'transfer-encoding' || lk === 'content-security-policy') continue;
+            if (v !== undefined) headers[k] = Array.isArray(v) ? v.join(', ') : String(v);
+          }
+
+          const chunks: Buffer[] = [];
+          proxyRes.on('data', (c: Buffer) => chunks.push(c));
+          proxyRes.on('end', () => {
+            const body = Buffer.concat(chunks).toString('utf-8');
+            const modifiedBody = body.replace(/<meta[^>]+http-equiv=["']Content-Security-Policy["'][^>]*>/gi, '');
+            headers['content-length'] = String(Buffer.byteLength(modifiedBody, 'utf-8'));
+            res.writeHead(proxyRes.statusCode ?? 200, headers);
+            res.end(modifiedBody);
+            resolve();
+          });
+        } else {
+          const headers: Record<string, string> = {};
+          for (const [k, v] of Object.entries(proxyRes.headers)) {
+            const lk = k.toLowerCase();
+            if (lk === 'content-security-policy') continue;
+            if (v !== undefined) headers[k] = Array.isArray(v) ? v.join(', ') : String(v);
+          }
+
+          res.writeHead(proxyRes.statusCode ?? 200, headers);
+          proxyRes.pipe(res);
+          proxyRes.on('end', resolve);
+        }
+      });
+      proxyReq.on('error', (err) => {
+        console.error(`[devtools-proxy] Request to Chromium failed for "${targetUrl}":`, err);
+        writeJson(res, 502, { error: 'Failed to proxy devtools request' });
+        resolve();
+      });
+      proxyReq.end();
+    });
+  }
+
+  private async handleJsonProxy(path: string, req: IncomingMessage, res: ServerResponse): Promise<void> {
+    const taskIds = this.runtime.getDebugTaskIds();
+    if (taskIds.length === 0) {
+      writeJson(res, 404, { error: 'No active debug session' });
+      return;
+    }
+
+    const taskId = taskIds[0];
+    const cdpPort = this.runtime.getDebugCdpPort(taskId);
+    if (!cdpPort) {
+      writeJson(res, 404, { error: 'Debug session not found' });
+      return;
+    }
+
+    const targetUrl = `http://127.0.0.1:${cdpPort}${path}`;
+
+    return new Promise((resolve) => {
+      const proxyReq = httpRequest(targetUrl, (proxyRes) => {
+        const chunks: Buffer[] = [];
+        proxyRes.on('data', (c: Buffer) => chunks.push(c));
+        proxyRes.on('end', () => {
+          const body = Buffer.concat(chunks).toString('utf-8');
+
+          let modifiedBody = body;
+          if (path === '/json/version') {
+            try {
+              const json = JSON.parse(body);
+              json.webSocketDebuggerUrl = `ws://localhost:3000/api/debug/${taskId}/cdp`;
+              modifiedBody = JSON.stringify(json);
+            } catch { /* pass through unmodified */ }
+          }
+
+          const headers: Record<string, string> = { 'Access-Control-Allow-Origin': '*' };
+          for (const [k, v] of Object.entries(proxyRes.headers)) {
+            const lk = k.toLowerCase();
+            if (lk === 'access-control-allow-origin' || lk === 'transfer-encoding' || lk === 'content-security-policy') continue;
+            if (v !== undefined) headers[k] = Array.isArray(v) ? v.join(', ') : String(v);
+          }
+          headers['Content-Length'] = String(Buffer.byteLength(modifiedBody, 'utf-8'));
+
+          res.writeHead(proxyRes.statusCode ?? 200, headers);
+          res.end(modifiedBody);
+          resolve();
+        });
+      });
+      proxyReq.on('error', () => {
+        writeJson(res, 502, { error: 'Failed to proxy json request' });
+        resolve();
+      });
+      proxyReq.end();
+    });
   }
 
   private async handleGetState(workflowId: string, res: ServerResponse): Promise<void> {

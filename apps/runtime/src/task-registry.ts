@@ -1,4 +1,4 @@
-export type TaskState = 'pending' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
+export type TaskState = 'pending' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled' | 'debug';
 
 export type TaskInfo = {
   readonly taskId: string;
@@ -99,6 +99,20 @@ export class TaskRegistry {
       }
     }
     return result;
+  }
+
+  startDebug(taskId: string, workflowId: string, cleanup?: () => Promise<void>): TaskInfo {
+    const now = new Date().toISOString();
+    const info: TaskInfo = {
+      taskId,
+      workflowId,
+      state: 'debug',
+      createdAt: now,
+      updatedAt: now,
+      cleanup,
+    };
+    this.tasks.set(taskId, info);
+    return info;
   }
 
   remove(taskId: string): boolean {

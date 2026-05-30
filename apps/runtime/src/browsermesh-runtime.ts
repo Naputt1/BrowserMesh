@@ -1,5 +1,6 @@
 import { join } from 'node:path';
 import type { WorkflowDefinition, WorkflowEvent, GlobalSettings } from '@browsermesh/workflow';
+import type { Page as PlaywrightPage, BrowserContext } from 'playwright-core';
 import type { GrpcRuntime } from './grpc/runtime-grpc-server.js';
 import { TaskRegistry } from './task-registry.js';
 import { CustomHandlerRegistry } from './custom-handler-registry.js';
@@ -8,6 +9,7 @@ import { WorkflowInterpreter } from './interpreter/workflow-interpreter.js';
 import { PauseController } from './pause-controller.js';
 import { GlobalStateStore } from './global-state-store.js';
 import { PageManager, DefaultPageFactory } from './page-manager.js';
+import { applyAuth, type AuthConfig } from './auth-helper.js';
 
 export type RuntimeServiceConfig = {
   readonly host: string;
@@ -19,11 +21,21 @@ export type ExecuteWorkflowInput = {
   readonly taskId?: string;
 };
 
+export type DebugSessionInfo = {
+  readonly taskId: string;
+  readonly workflowId: string;
+  readonly page: PlaywrightPage;
+  readonly context: BrowserContext;
+  readonly cdpUrl: string;
+  readonly cdpPort: number;
+};
+
 export class BrowserMeshRuntime implements GrpcRuntime {
   readonly taskRegistry = new TaskRegistry();
   readonly customHandlers = new CustomHandlerRegistry();
   private readonly pauseControllers = new Map<string, PauseController>();
   private readonly stateStores = new Map<string, GlobalStateStore>();
+  private readonly debugSessions = new Map<string, DebugSessionInfo>();
   private stateDir: string = join(process.cwd(), 'state');
 
   setStateDir(dir: string): void {
@@ -105,9 +117,64 @@ export class BrowserMeshRuntime implements GrpcRuntime {
     }
   }
 
+  async startDebugSession(
+    workflow: WorkflowDefinition,
+  ): Promise<{ taskId: string; cdpUrl: string; cdpPort: number }> {
+    const taskId = crypto.randomUUID();
+    const { context, pwPage, cdpUrl, cdpPort } = await this.browserPool.startDebug();
+
+    const session: DebugSessionInfo = {
+      taskId,
+      workflowId: workflow.id,
+      page: pwPage,
+      context,
+      cdpUrl,
+      cdpPort,
+    };
+    this.debugSessions.set(taskId, session);
+    this.taskRegistry.startDebug(taskId, workflow.id);
+
+    return { taskId, cdpUrl, cdpPort };
+  }
+
+  async stopDebugSession(taskId: string): Promise<void> {
+    const session = this.debugSessions.get(taskId);
+    if (!session) throw new Error(`Debug session not found: ${taskId}`);
+
+    this.debugSessions.delete(taskId);
+    this.taskRegistry.cancel(taskId);
+
+    if (this.debugSessions.size === 0) {
+      this.browserPool.stopDebug();
+    }
+  }
+
+  async injectDebugAuth(taskId: string, authConfig: AuthConfig): Promise<void> {
+    const session = this.debugSessions.get(taskId);
+    if (!session) throw new Error(`Debug session not found: ${taskId}`);
+
+    await applyAuth(session.page, authConfig);
+  }
+
+  getDebugCdpUrl(taskId: string): string | null {
+    return this.debugSessions.get(taskId)?.cdpUrl ?? null;
+  }
+
+  getDebugCdpPort(taskId: string): number | null {
+    return this.debugSessions.get(taskId)?.cdpPort ?? null;
+  }
+
+  getDebugTaskIds(): string[] {
+    return [...this.debugSessions.keys()];
+  }
+
   async cancelTask(taskId: string): Promise<{ taskId: string; state: string; message?: string }> {
     const info = this.taskRegistry.get(taskId);
     if (!info) throw new Error(`Task not found: ${taskId}`);
+    if (info.state === 'debug') {
+      await this.stopDebugSession(taskId);
+      return { taskId, state: 'cancelled' };
+    }
     await info.cleanup?.();
     const updated = this.taskRegistry.cancel(taskId);
     return { taskId: updated.taskId, state: updated.state, message: updated.message };
