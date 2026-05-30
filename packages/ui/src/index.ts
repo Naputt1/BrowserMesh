@@ -27,3 +27,6 @@ export type { NodeConfigPanelProps } from './node-config-panel';
 
 export { GlobalSettingsPanel } from './global-settings-panel';
 export type { GlobalSettingsPanelProps } from './global-settings-panel';
+
+export { DebugPanel, DebugController, DebugInterpreter, CDPClient, DebugStateStore } from './debug';
+export type { DebugExecutionContext, DebugNodeHandler, DebugSessionInfo } from './debug';

@@ -18,6 +18,7 @@ export type WorkflowBuilderProps = {
   readonly events?: readonly WorkflowEvent[];
   readonly onWorkflowChange?: (workflow: WorkflowDefinition) => void;
   readonly onError?: (error: string) => void;
+  readonly currentNodeId?: string | null;
 };
 
 const DEFAULT_WORKFLOW: WorkflowDefinition = {
@@ -28,7 +29,7 @@ const DEFAULT_WORKFLOW: WorkflowDefinition = {
 
 const MAX_HISTORY = 50;
 
-export function WorkflowBuilder({ workflow, onWorkflowChange, onError }: WorkflowBuilderProps) {
+export function WorkflowBuilder({ workflow, onWorkflowChange, onError, currentNodeId }: WorkflowBuilderProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [workflowState, setWorkflowState] = useState<WorkflowDefinition | undefined>(
     workflow ?? DEFAULT_WORKFLOW,
@@ -254,6 +255,7 @@ export function WorkflowBuilder({ workflow, onWorkflowChange, onError }: Workflo
             onAddNode={handleAddNode}
             onUndo={handleUndo}
             onRedo={handleRedo}
+            highlightedNodeId={currentNodeId}
           />
         </div>
         {showSettings ? (

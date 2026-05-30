@@ -17,6 +17,7 @@ export type RFNode = Node<{
   pinDataTypes?: Record<string, DataType>;
   pageId?: string;
   multiPage?: boolean;
+  highlighted?: boolean;
 }>;
 export type RFEdge = Edge;
 

@@ -72,10 +72,11 @@ export function WorkflowNode({ data, selected }: NodeProps<RFNode>) {
   return (
     <div
       className={cn(
-        'relative px-12 py-3 rounded-lg border-2 bg-white shadow-sm min-w-[180px]',
+        'relative px-12 py-3 rounded-lg border-2 bg-white shadow-sm min-w-[180px] transition-all duration-150',
         selected ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200',
+        data.highlighted && !selected ? 'ring-2 ring-yellow-400 border-yellow-400 shadow-lg shadow-yellow-100' : '',
       )}
-      style={{ borderLeftColor: color, borderLeftWidth: 4 }}
+      style={{ borderLeftColor: data.highlighted ? '#eab308' : color, borderLeftWidth: 4 }}
     >
       {/* --- INPUTS (left side) --- */}
       {flowInputs.map((pin, i) => {

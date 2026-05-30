@@ -1,6 +1,6 @@
 import { createRoute, useNavigate, useSearch } from '@tanstack/react-router';
 import { Route as rootRoute } from '../__root';
-import { WorkflowBuilder, TaskConsole, ScreenshotViewer } from '@browsermesh/ui';
+import { WorkflowBuilder, TaskConsole, ScreenshotViewer, DebugPanel } from '@browsermesh/ui';
 import { useWorkflowStore, useTaskStore } from '../../stores/workflow-store';
 import { useTaskEvents } from '../../hooks/use-task-events';
 import { executeWorkflow } from '../../lib/api';
@@ -27,7 +27,9 @@ function NewWorkflowPage() {
   const saveWorkflow = useWorkflowStore((s) => s.saveWorkflow);
   const clearEvents = useTaskStore((s) => s.clearEvents);
   const [running, setRunning] = useState(false);
+  const [debugActive, setDebugActive] = useState(false);
   const [taskId, setTaskId] = useState<string | null>(null);
+  const [currentNodeId, setCurrentNodeId] = useState<string | null>(null);
   const [workflowDef, setWorkflowDef] = useState<WorkflowDefinition | undefined>(() =>
     loadId ? getWorkflow(loadId)?.workflow : undefined,
   );
@@ -80,6 +82,15 @@ function NewWorkflowPage() {
     }
   };
 
+  const handleStartDebug = () => {
+    setDebugActive(true);
+  };
+
+  const handleStopDebug = () => {
+    setDebugActive(false);
+    setCurrentNodeId(null);
+  };
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between px-4 py-2 border-b bg-white shrink-0">
@@ -92,8 +103,15 @@ function NewWorkflowPage() {
             Back
           </button>
           <button
+            onClick={handleStartDebug}
+            disabled={debugActive}
+            className="px-3 py-1.5 text-xs font-medium rounded bg-purple-500 text-white hover:bg-purple-600 disabled:opacity-50 transition-colors"
+          >
+            Debug
+          </button>
+          <button
             onClick={handleRun}
-            disabled={running}
+            disabled={running || debugActive}
             className="px-3 py-1.5 text-xs font-medium rounded bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             {running ? 'Starting...' : 'Run Workflow'}
@@ -103,8 +121,33 @@ function NewWorkflowPage() {
 
       <div className="flex-1 flex flex-col min-h-0">
         <div className="flex-1 min-h-0">
-          <WorkflowBuilder workflow={workflowDef} onWorkflowChange={handleWorkflowChange} />
+          <WorkflowBuilder
+            workflow={workflowDef}
+            onWorkflowChange={handleWorkflowChange}
+            currentNodeId={currentNodeId}
+          />
         </div>
+
+        {debugActive && workflowDef && (
+          <div className="border-t bg-white shrink-0 max-h-[60vh] overflow-y-auto">
+            <div className="px-4 py-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold">Debug</h3>
+                <button
+                  onClick={handleStopDebug}
+                  className="px-2 py-1 text-xs font-medium rounded border hover:bg-gray-50 transition-colors"
+                >
+                  Close Debug
+                </button>
+              </div>
+              <DebugPanel
+                workflow={workflowDef}
+                runtimeUrl={window.location.origin}
+                onCurrentStepChange={setCurrentNodeId}
+              />
+            </div>
+          </div>
+        )}
 
         {taskId && (
           <div className="border-t bg-white shrink-0 max-h-[50vh] overflow-y-auto">
