@@ -16,6 +16,7 @@ export function DebugPanel({ workflow, runtimeUrl, onEvent, onCurrentStepChange 
   const [currentStep, setCurrentStep] = useState<string | null>(null);
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [toolboxFailed, setToolboxFailed] = useState(false);
   const screenshotIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -44,6 +45,7 @@ export function DebugPanel({ workflow, runtimeUrl, onEvent, onCurrentStepChange 
 
   const handleStart = useCallback(async () => {
     setError(null);
+    setToolboxFailed(false);
     try {
       const controller = controllerRef.current;
       if (!controller) return;
@@ -113,6 +115,7 @@ export function DebugPanel({ workflow, runtimeUrl, onEvent, onCurrentStepChange 
     stopScreenshotPolling();
   }, [stopScreenshotPolling]);
   const devToolsFrontendUrl = controllerRef.current?.devToolsFrontendUrl ?? null;
+  const devToolsToolboxUrl = controllerRef.current?.devToolsToolboxUrl ?? null;
 
   return (
     <div className="space-y-4">
@@ -157,19 +160,37 @@ export function DebugPanel({ workflow, runtimeUrl, onEvent, onCurrentStepChange 
       )}
 
       {(running || done) && (
-        <div className="border rounded-lg overflow-hidden bg-gray-50 flex flex-col h-[400px]">
-          <div className="px-3 py-1.5 bg-gray-100 border-b text-xs font-medium text-gray-600 flex items-center justify-between shrink-0">
-            <span>Live Page Preview</span>
-            {running && <span className="text-green-500 text-[10px] animate-pulse">● Live</span>}
-          </div>
-          <div className="flex-1 overflow-auto p-4 flex items-center justify-center">
-            {screenshot ? (
-              <img src={screenshot} alt="Page preview" className="max-w-full max-h-full object-contain rounded shadow border" />
-            ) : (
-              <span className="text-xs text-gray-400">Waiting for page content...</span>
-            )}
-          </div>
-        </div>
+        <>
+          {devToolsToolboxUrl && !toolboxFailed ? (
+            <div className="border rounded-lg overflow-hidden flex flex-col h-[400px]">
+              <div className="px-3 py-1.5 bg-gray-100 border-b text-xs font-medium text-gray-600 flex items-center justify-between shrink-0">
+                <span>Interactive Live View</span>
+                {running && <span className="text-green-500 text-[10px] animate-pulse">● Live</span>}
+              </div>
+              <iframe
+                src={devToolsToolboxUrl}
+                className="w-full flex-1 border-0 block"
+                title="Interactive Live View"
+                sandbox="allow-scripts allow-same-origin"
+                onError={() => setToolboxFailed(true)}
+              />
+            </div>
+          ) : (
+            <div className="border rounded-lg overflow-hidden bg-gray-50 flex flex-col h-[400px]">
+              <div className="px-3 py-1.5 bg-gray-100 border-b text-xs font-medium text-gray-600 flex items-center justify-between shrink-0">
+                <span>Live Page Preview</span>
+                {running && <span className="text-green-500 text-[10px] animate-pulse">● Live</span>}
+              </div>
+              <div className="flex-1 overflow-auto p-4 flex items-center justify-center">
+                {screenshot ? (
+                  <img src={screenshot} alt="Page preview" className="max-w-full max-h-full object-contain rounded shadow border" />
+                ) : (
+                  <span className="text-xs text-gray-400">Waiting for page content...</span>
+                )}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {devToolsFrontendUrl && (
@@ -179,7 +200,7 @@ export function DebugPanel({ workflow, runtimeUrl, onEvent, onCurrentStepChange 
           </div>
           <iframe
             src={devToolsFrontendUrl}
-            className="w-full flex-1 border-0"
+            className="w-full flex-1 border-0 block"
             title="DevTools"
             allow="autofocus"
             sandbox="allow-scripts allow-same-origin"

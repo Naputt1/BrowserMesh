@@ -47,9 +47,14 @@ export class DebugController {
 
   get devToolsFrontendUrl(): string | null {
     if (!this.taskId || !this.targetId) return null;
-    const wsProtocol = this.runtimeUrl.startsWith('https') ? 'wss' : 'ws';
-    const pageProxyWs = `${wsProtocol}://${this.runtimeUrl.replace(/^https?:\/\//, '')}/api/debug/${this.taskId}/devtools/page/${this.targetId}`;
-    return `${this.runtimeUrl}/api/debug/${this.taskId}/devtools/inspector.html?ws=${encodeURIComponent(pageProxyWs)}`;
+    const pageProxyHostPath = `${this.runtimeUrl.replace(/^https?:\/\//, '')}/api/debug/${this.taskId}/devtools/page/${this.targetId}`;
+    return `${this.runtimeUrl}/api/debug/${this.taskId}/devtools/inspector.html?ws=${encodeURIComponent(pageProxyHostPath)}`;
+  }
+
+  get devToolsToolboxUrl(): string | null {
+    if (!this.taskId || !this.targetId) return null;
+    const pageProxyHostPath = `${this.runtimeUrl.replace(/^https?:\/\//, '')}/api/debug/${this.taskId}/devtools/page/${this.targetId}`;
+    return `${this.runtimeUrl}/api/debug/${this.taskId}/devtools/toolbox.html?ws=${encodeURIComponent(pageProxyHostPath)}`;
   }
 
   get events(): readonly WorkflowEvent[] {

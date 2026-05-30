@@ -9,14 +9,17 @@ export function setupCdpProxy(httpServer: Server, resolveCdpUrl: CdpUrlResolver)
 
   httpServer.on('upgrade', (req: IncomingMessage, socket, head) => {
     const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
+    console.error(`[cdp-proxy] Upgrade request: ${url.pathname}`);
     const match = url.pathname.match(/^\/api\/debug\/([^/]+)\/(cdp|devtools\/page\/[^/]+)$/);
     if (!match) {
+      console.error(`[cdp-proxy] Unmatched path: ${url.pathname}`);
       socket.destroy();
       return;
     }
 
     const taskId = match[1];
     const subPath = match[2];
+    console.error(`[cdp-proxy] Matched: task=${taskId}, subPath=${subPath}`);
     const browserCdpUrl = resolveCdpUrl(taskId);
     if (!browserCdpUrl) {
       console.error(`[cdp-proxy] Debug session not found: ${taskId}`);
@@ -25,6 +28,7 @@ export function setupCdpProxy(httpServer: Server, resolveCdpUrl: CdpUrlResolver)
       return;
     }
 
+    console.error(`[cdp-proxy] Resolved CDP URL: ${browserCdpUrl}`);
     let targetWsUrl = browserCdpUrl;
     if (subPath !== 'cdp') {
       try {
@@ -37,6 +41,7 @@ export function setupCdpProxy(httpServer: Server, resolveCdpUrl: CdpUrlResolver)
         return;
       }
     }
+    console.error(`[cdp-proxy] Target WS URL: ${targetWsUrl}`);
 
     wss.handleUpgrade(req, socket, head, (clientWs) => {
       let browserWs: WebSocket;
