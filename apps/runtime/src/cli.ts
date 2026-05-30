@@ -3,11 +3,13 @@ import { BrowserPool } from './browser-pool.js';
 import { BrowserMeshRuntime } from './browsermesh-runtime.js';
 import { RuntimeGrpcServer } from './grpc/runtime-grpc-server.js';
 import { RuntimeRestServer } from './rest/runtime-rest-server.js';
+import { initLogFile, closeLogFile } from './logger.js';
 
 type Args = {
   host: string;
   grpcPort: number;
   restPort: number;
+  logFile?: string;
 };
 
 function parseArgs(): Args {
@@ -15,6 +17,7 @@ function parseArgs(): Args {
   let host = process.env.HOST ?? '0.0.0.0';
   let grpcPort = parseInt(process.env.GRPC_PORT ?? '50051', 10);
   let restPort = parseInt(process.env.REST_PORT ?? '50052', 10);
+  let logFile = process.env.LOG_FILE ?? undefined;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--host' && i + 1 < args.length) {
@@ -23,20 +26,27 @@ function parseArgs(): Args {
       grpcPort = parseInt(args[++i], 10);
     } else if (args[i] === '--rest-port' && i + 1 < args.length) {
       restPort = parseInt(args[++i], 10);
+    } else if (args[i] === '--log-file' && i + 1 < args.length) {
+      logFile = args[++i];
     } else if (args[i] === '--help' || args[i] === '-h') {
       console.log('Usage: browsermesh-runtime [options]');
       console.log('  --host <host>         Host to bind to (default: 0.0.0.0)');
       console.log('  --grpc-port <port>    gRPC port (default: 50051)');
       console.log('  --rest-port <port>    REST port (default: 50052)');
+      console.log('  --log-file <path>     Write logs to a file');
       process.exit(0);
     }
   }
 
-  return { host, grpcPort, restPort };
+  return { host, grpcPort, restPort, logFile };
 }
 
 async function main(): Promise<void> {
-  const { host, grpcPort, restPort } = parseArgs();
+  const { host, grpcPort, restPort, logFile } = parseArgs();
+
+  if (logFile) {
+    initLogFile(logFile);
+  }
 
   const pool = new BrowserPool();
   await pool.start();
@@ -56,6 +66,7 @@ async function main(): Promise<void> {
     await grpcServer.shutdown();
     await restServer.shutdown();
     await pool.shutdown();
+    closeLogFile();
     process.exit(0);
   };
 
