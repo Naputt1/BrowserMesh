@@ -134,6 +134,68 @@ export class CDPClient {
     await this.send('Page.navigate', { url }, sessionId);
   }
 
+  async startScreencast(
+    onFrame: (data: string) => void,
+    options?: { format?: string; quality?: number; maxWidth?: number; maxHeight?: number },
+    sessionId?: string,
+  ): Promise<void> {
+    const handler = (params: unknown, sid?: string) => {
+      const frame = params as { data: string; sessionId: number };
+      const ackSid = sid ?? sessionId;
+      this.send('Page.screencastFrameAck', { sessionId: frame.sessionId }, ackSid).catch(() => {});
+      onFrame(frame.data);
+    };
+    this.on('Page.screencastFrame', handler);
+    await this.send('Page.startScreencast', {
+      format: options?.format ?? 'jpeg',
+      quality: options?.quality ?? 80,
+      maxWidth: options?.maxWidth ?? 1280,
+      maxHeight: options?.maxHeight ?? 720,
+      everyNthFrame: 1,
+    }, sessionId);
+  }
+
+  async stopScreencast(sessionId?: string): Promise<void> {
+    try {
+      await this.send('Page.stopScreencast', undefined, sessionId);
+    } catch { /* ignore */ }
+  }
+
+  async dispatchMouseEvent(
+    type: 'mousePressed' | 'mouseReleased' | 'mouseMoved',
+    x: number,
+    y: number,
+    button: 'left' | 'middle' | 'right' = 'left',
+    clickCount = 1,
+    sessionId?: string,
+  ): Promise<void> {
+    await this.send('Input.dispatchMouseEvent', { type, x, y, button, clickCount }, sessionId);
+  }
+
+  async dispatchWheelEvent(
+    x: number,
+    y: number,
+    deltaX: number,
+    deltaY: number,
+    sessionId?: string,
+  ): Promise<void> {
+    await this.send('Input.dispatchMouseEvent', { type: 'mouseWheel', x, y, deltaX, deltaY }, sessionId);
+  }
+
+  async dispatchKeyEvent(
+    type: 'keyDown' | 'keyUp' | 'char',
+    text: string,
+    sessionId?: string,
+  ): Promise<void> {
+    await this.send('Input.dispatchKeyEvent', {
+      type,
+      text,
+      unicodeText: text,
+      key: text,
+      windowsVirtualKeyCode: text.charCodeAt(0),
+    }, sessionId);
+  }
+
   close(): void {
     this._closed = true;
     this.ws.close();

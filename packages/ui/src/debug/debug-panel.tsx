@@ -14,38 +14,22 @@ export function DebugPanel({ workflow, runtimeUrl, onEvent, onCurrentStepChange 
   const [running, setRunning] = useState(false);
   const [done, setDone] = useState(false);
   const [currentStep, setCurrentStep] = useState<string | null>(null);
-  const [screenshot, setScreenshot] = useState<string | null>(null);
+  const [screencastFrame, setScreencastFrame] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [toolboxFailed, setToolboxFailed] = useState(false);
-  const screenshotIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  const frameSizeRef = useRef<{ w: number; h: number } | null>(null);
 
   useEffect(() => {
     const controller = new DebugController({ runtimeUrl });
     controllerRef.current = controller;
     return () => {
       controller.stop();
-      if (screenshotIntervalRef.current) clearInterval(screenshotIntervalRef.current);
     };
   }, [runtimeUrl]);
 
-  const startScreenshotPolling = useCallback(() => {
-    if (screenshotIntervalRef.current) clearInterval(screenshotIntervalRef.current);
-    screenshotIntervalRef.current = setInterval(async () => {
-      const img = await controllerRef.current?.captureScreenshot();
-      if (img) setScreenshot(`data:image/png;base64,${img}`);
-    }, 1000);
-  }, []);
-
-  const stopScreenshotPolling = useCallback(() => {
-    if (screenshotIntervalRef.current) {
-      clearInterval(screenshotIntervalRef.current);
-      screenshotIntervalRef.current = null;
-    }
-  }, []);
-
   const handleStart = useCallback(async () => {
     setError(null);
-    setToolboxFailed(false);
+    setScreencastFrame(null);
     try {
       const controller = controllerRef.current;
       if (!controller) return;
@@ -54,8 +38,9 @@ export function DebugPanel({ workflow, runtimeUrl, onEvent, onCurrentStepChange 
       setRunning(true);
       setDone(false);
 
-      controllerRef.current = controller;
-      startScreenshotPolling();
+      await controller.startScreencast((data) => {
+        setScreencastFrame(`data:image/jpeg;base64,${data}`);
+      });
 
       controller.execute(true);
 
@@ -75,14 +60,14 @@ export function DebugPanel({ workflow, runtimeUrl, onEvent, onCurrentStepChange 
           if (lastEvent.type === 'task_completed' || lastEvent.type === 'task_failed') {
             setDone(true);
             setRunning(false);
-            stopScreenshotPolling();
+            controller.stopScreencast();
             clearInterval(pollInterval);
           }
         }
         if (controller.isDone) {
           setDone(true);
           setRunning(false);
-          stopScreenshotPolling();
+          controller.stopScreencast();
           clearInterval(pollInterval);
         }
       }, 200);
@@ -90,7 +75,7 @@ export function DebugPanel({ workflow, runtimeUrl, onEvent, onCurrentStepChange 
       setError(err instanceof Error ? err.message : String(err));
       setRunning(false);
     }
-  }, [workflow, onEvent, onCurrentStepChange, currentStep, startScreenshotPolling, stopScreenshotPolling]);
+  }, [workflow, onEvent, onCurrentStepChange, currentStep]);
 
   const handleStep = useCallback(async () => {
     try {
@@ -109,13 +94,51 @@ export function DebugPanel({ workflow, runtimeUrl, onEvent, onCurrentStepChange 
   }, []);
 
   const handleStop = useCallback(async () => {
+    await controllerRef.current?.stopScreencast();
     await controllerRef.current?.stop();
     setRunning(false);
     setDone(true);
-    stopScreenshotPolling();
-  }, [stopScreenshotPolling]);
+  }, []);
+
+  const mapToViewport = useCallback((clientX: number, clientY: number): { x: number; y: number } | null => {
+    const img = imgRef.current;
+    const frameSize = frameSizeRef.current;
+    if (!img || !frameSize) return null;
+
+    const rect = img.getBoundingClientRect();
+    const px = clientX - rect.left;
+    const py = clientY - rect.top;
+
+    const scale = Math.max(rect.width / frameSize.w, rect.height / frameSize.h);
+    const displayedW = frameSize.w * scale;
+    const displayedH = frameSize.h * scale;
+    const offsetX = (rect.width - displayedW) / 2;
+    const offsetY = (rect.height - displayedH) / 2;
+
+    return {
+      x: Math.round((px - offsetX) / scale),
+      y: Math.round((py - offsetY) / scale),
+    };
+  }, []);
+
+  const handleImgLoad = useCallback(() => {
+    const img = imgRef.current;
+    if (img) {
+      frameSizeRef.current = { w: img.naturalWidth, h: img.naturalHeight };
+    }
+  }, []);
+
+  const handleImgClick = useCallback((e: React.MouseEvent<HTMLImageElement>) => {
+    const vp = mapToViewport(e.clientX, e.clientY);
+    if (vp) controllerRef.current?.click(vp.x, vp.y);
+  }, [mapToViewport]);
+
+  const handleImgWheel = useCallback((e: React.WheelEvent<HTMLImageElement>) => {
+    const vp = mapToViewport(e.clientX, e.clientY);
+    if (vp) controllerRef.current?.scroll(vp.x, vp.y, e.deltaX, e.deltaY);
+  }, [mapToViewport]);
+
   const devToolsFrontendUrl = controllerRef.current?.devToolsFrontendUrl ?? null;
-  const devToolsToolboxUrl = controllerRef.current?.devToolsToolboxUrl ?? null;
 
   return (
     <div className="space-y-4">
@@ -160,37 +183,29 @@ export function DebugPanel({ workflow, runtimeUrl, onEvent, onCurrentStepChange 
       )}
 
       {(running || done) && (
-        <>
-          {devToolsToolboxUrl && !toolboxFailed ? (
-            <div className="border rounded-lg overflow-hidden flex flex-col h-[400px]">
-              <div className="px-3 py-1.5 bg-gray-100 border-b text-xs font-medium text-gray-600 flex items-center justify-between shrink-0">
-                <span>Interactive Live View</span>
-                {running && <span className="text-green-500 text-[10px] animate-pulse">● Live</span>}
-              </div>
-              <iframe
-                src={devToolsToolboxUrl}
-                className="w-full flex-1 border-0 block"
-                title="Interactive Live View"
-                sandbox="allow-scripts allow-same-origin"
-                onError={() => setToolboxFailed(true)}
+        <div className="border rounded-lg overflow-hidden bg-gray-50 flex flex-col h-[400px]">
+          <div className="px-3 py-1.5 bg-gray-100 border-b text-xs font-medium text-gray-600 flex items-center justify-between shrink-0">
+            <span>Live Page Preview</span>
+            {running && <span className="text-green-500 text-[10px] animate-pulse">● Live</span>}
+          </div>
+          <div className="flex-1 overflow-hidden bg-black relative">
+            {screencastFrame ? (
+              <img
+                ref={imgRef}
+                src={screencastFrame}
+                alt="Page preview"
+                className="w-full h-full object-cover cursor-crosshair"
+                onClick={handleImgClick}
+                onWheel={handleImgWheel}
+                onLoad={handleImgLoad}
               />
-            </div>
-          ) : (
-            <div className="border rounded-lg overflow-hidden bg-gray-50 flex flex-col h-[400px]">
-              <div className="px-3 py-1.5 bg-gray-100 border-b text-xs font-medium text-gray-600 flex items-center justify-between shrink-0">
-                <span>Live Page Preview</span>
-                {running && <span className="text-green-500 text-[10px] animate-pulse">● Live</span>}
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">
+                Waiting for page content...
               </div>
-              <div className="flex-1 overflow-auto p-4 flex items-center justify-center">
-                {screenshot ? (
-                  <img src={screenshot} alt="Page preview" className="max-w-full max-h-full object-contain rounded shadow border" />
-                ) : (
-                  <span className="text-xs text-gray-400">Waiting for page content...</span>
-                )}
-              </div>
-            </div>
-          )}
-        </>
+            )}
+          </div>
+        </div>
       )}
 
       {devToolsFrontendUrl && (

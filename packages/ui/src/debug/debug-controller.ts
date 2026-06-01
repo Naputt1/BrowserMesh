@@ -154,6 +154,37 @@ export class DebugController {
     });
   }
 
+  async startScreencast(onFrame: (data: string) => void): Promise<void> {
+    if (!this.cdp || !this.cdp.connected) throw new Error('CDP not connected');
+    await this.cdp.startScreencast(onFrame, undefined, this.sessionId ?? undefined);
+  }
+
+  async stopScreencast(): Promise<void> {
+    await this.cdp?.stopScreencast(this.sessionId ?? undefined);
+  }
+
+  async click(x: number, y: number): Promise<void> {
+    if (!this.cdp || !this.cdp.connected) return;
+    const sid = this.sessionId ?? undefined;
+    await this.cdp.dispatchMouseEvent('mousePressed', x, y, 'left', 1, sid);
+    await this.cdp.dispatchMouseEvent('mouseReleased', x, y, 'left', 1, sid);
+  }
+
+  async scroll(x: number, y: number, deltaX: number, deltaY: number): Promise<void> {
+    if (!this.cdp || !this.cdp.connected) return;
+    await this.cdp.dispatchWheelEvent(x, y, deltaX, deltaY, this.sessionId ?? undefined);
+  }
+
+  async type(text: string): Promise<void> {
+    if (!this.cdp || !this.cdp.connected) return;
+    const sid = this.sessionId ?? undefined;
+    for (const char of text) {
+      await this.cdp.dispatchKeyEvent('keyDown', char, sid);
+      await this.cdp.dispatchKeyEvent('char', char, sid);
+      await this.cdp.dispatchKeyEvent('keyUp', char, sid);
+    }
+  }
+
   async captureScreenshot(): Promise<string | null> {
     if (!this.cdp || !this.cdp.connected) return null;
     try {

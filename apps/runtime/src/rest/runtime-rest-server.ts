@@ -279,9 +279,7 @@ export class RuntimeRestServer {
           proxyRes.on('data', (c: Buffer) => chunks.push(c));
           proxyRes.on('end', () => {
             const body = Buffer.concat(chunks).toString('utf-8');
-            const modifiedBody = body
-              .replace(/<meta[^>]+http-equiv=["']Content-Security-Policy["'][^>]*>/gi, '')
-              .replace('</head>', '<style>.screencast-viewport{margin:0!important;padding:0!important;width:100%!important;height:100%!important}</style></head>');
+            const modifiedBody = body.replace(/<meta[^>]+http-equiv=["']Content-Security-Policy["'][^>]*>/gi, '');
             headers['content-length'] = String(Buffer.byteLength(modifiedBody, 'utf-8'));
             res.writeHead(proxyRes.statusCode ?? 200, headers);
             res.end(modifiedBody);
