@@ -89,6 +89,8 @@ export type WorkflowDefinition = {
   readonly edges: readonly WorkflowEdge[];
 };
 
+export type WorkflowIR = WorkflowDefinition;
+
 export type NodeTypeDefinition = {
   readonly type: NodeType;
   readonly label: string;

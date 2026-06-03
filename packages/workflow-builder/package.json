@@ -1,0 +1,30 @@
+{
+  "name": "@browsermesh/workflow-builder",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@browsermesh/runtime-loader": "workspace:^",
+    "@browsermesh/workflow": "workspace:*"
+  },
+  "devDependencies": {
+    "@browsermesh/sdk": "workspace:^",
+    "typescript": "^5.8.0",
+    "vitest": "^4.1.7"
+  }
+}
