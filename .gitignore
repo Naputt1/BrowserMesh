@@ -4,4 +4,6 @@ dist/
 *.tsbuildinfo
 .DS_Store
 state/
+.browsermesh-wrappers/
+*.ir.json
 

@@ -1,6 +1,7 @@
 {
   "name": "browsermesh",
   "version": "0.0.0",
+  "description": "TypeScript-based workflow engine that compiles to a JSON execution graph and runs on a custom runtime for browser automation.",
   "private": true,
   "packageManager": "pnpm@10.0.0",
   "scripts": {
