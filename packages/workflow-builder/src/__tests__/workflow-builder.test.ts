@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createWorkflow, WorkflowBuilder, GraphBuilder } from '../index.js';
+import { createWorkflow, WorkflowBuilder, GraphBuilder, WorkflowHandle } from '../index.js';
 import type { WorkflowIR } from '@browsermesh/workflow';
 
 describe('GraphBuilder', () => {
@@ -200,5 +200,31 @@ describe('WorkflowBuilder.IR output', () => {
     const parsed = JSON.parse(json) as WorkflowIR;
     expect(parsed.nodes.length).toBe(ir.nodes.length);
     expect(parsed.edges.length).toBe(ir.edges.length);
+  });
+});
+
+describe('WorkflowHandle — state management', () => {
+  it('getState throws when no IR is available', async () => {
+    const handle = new WorkflowHandle(null);
+    await expect(handle.getState()).rejects.toThrow('No workflow IR available');
+  });
+
+  it('save throws when no IR is available', async () => {
+    const handle = new WorkflowHandle(null);
+    await expect(handle.save({})).rejects.toThrow('No workflow IR available');
+  });
+
+  it('preserves TState type parameter', () => {
+    interface MyState {
+      page: number;
+      cursor: string;
+    }
+    const handle = createWorkflow<{ title: string }, MyState>((wf) => {
+      const page = wf.createPage().navigate({ url: 'https://example.com' });
+      const title = page.select({ selector: 'h1' }).text('title');
+      return { title };
+    });
+    const ir = handle.getIR()!;
+    expect(ir.nodes.length).toBeGreaterThan(0);
   });
 });

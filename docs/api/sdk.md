@@ -24,6 +24,12 @@ class BrowserMeshClient {
   resumeTask(taskId: string): Promise<TaskStatusResult>;
   getTaskStatus(taskId: string): Promise<TaskStatusResult>;
   listRunningTasks(): Promise<TaskStatusResult[]>;
+  getWorkflowState<T = unknown>(workflowId: string): Promise<WorkflowStateResult<T>>;
+  setWorkflowState<T = unknown>(
+    workflowId: string,
+    state: T,
+    options?: SetWorkflowStateOptions,
+  ): Promise<WorkflowStateResult<T>>;
 }
 ```
 
@@ -52,6 +58,24 @@ type TaskStatusResult = {
   taskId: string;
   state: string;               // e.g., 'running', 'paused', 'completed', 'failed'
   message?: string;
+};
+```
+
+### WorkflowStateResult
+
+```typescript
+type WorkflowStateResult<T = unknown> = {
+  workflowId: string;
+  state: T;                    // Any JSON-serializable value
+  recovered: boolean;          // True if state was recovered from crash backup
+};
+```
+
+### SetWorkflowStateOptions
+
+```typescript
+type SetWorkflowStateOptions = {
+  commit?: boolean;            // Persist to disk immediately (default: false)
 };
 ```
 
@@ -85,6 +109,35 @@ for await (const event of client.executeWorkflow({ workflow })) {
       break;
   }
 }
+```
+
+### State Persistence
+
+The runtime persists state per workflow ID. Use `getWorkflowState` to retrieve state from previous runs and `setWorkflowState` to save state for future runs. The generic `<T>` parameter provides type-safe access — any JSON-serializable type is valid.
+
+**Object state:**
+
+```typescript
+interface PaginationState {
+  page: number;
+  cursor: string;
+}
+
+const result = await client.getWorkflowState<PaginationState>('stateful-scraper');
+console.log(result.state.page); // typed as number
+
+await client.setWorkflowState<PaginationState>('stateful-scraper', {
+  page: 1,
+  cursor: 'abc',
+});
+```
+
+**Primitive state:**
+
+```typescript
+// A counter workflow with just a number
+const result = await client.getWorkflowState<number>('counter');
+await client.setWorkflowState('counter', (result.state ?? 0) + 1);
 ```
 
 ### Manage Task Lifecycle

@@ -2,6 +2,10 @@ import type { GraphBuilder } from './graph-builder.js';
 import { ElementHandleSelector } from './element-handle.js';
 import { TrackedValue } from './tracked-value.js';
 
+export type NavigateOptions = {
+  url: string | TrackedValue;
+};
+
 export class PageBuilder {
   constructor(
     private readonly graph: GraphBuilder,
@@ -9,13 +13,18 @@ export class PageBuilder {
     readonly pageKey: string,
   ) {}
 
-  navigate(opts: { url: string }): this {
+  navigate(opts: NavigateOptions): this {
+    const url = opts.url;
     const navigateNodeId = this.graph.addNode(
       'navigate',
-      { url: opts.url },
-      `Navigate to ${opts.url}`,
+      url instanceof TrackedValue ? {} : { url },
+      url instanceof TrackedValue ? 'Navigate' : `Navigate to ${url}`,
       this.pageKey,
     );
+
+    if (url instanceof TrackedValue) {
+      this.graph.addEdge(url.outputNodeId, 'value', navigateNodeId, 'url');
+    }
 
     this.graph.addEdge(this.pageNodeId, 'pageKey', navigateNodeId, 'pageKey');
     this.graph.connectFlow(navigateNodeId);
