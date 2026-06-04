@@ -52,9 +52,7 @@ describe('e2e compiler pipeline', () => {
     );
     expect(loopBodyEdge).toBeDefined();
 
-    const flowFromStart = ir.edges.find(
-      (e) => e.sourceHandle === 'flow',
-    );
+    const flowFromStart = ir.edges.find((e) => e.sourceHandle === 'flow');
     expect(flowFromStart).toBeDefined();
 
     const rewritten = `import __ir from './workflow.ir.json';\nimport { createWorkflowLoader } from '@browsermesh/workflow-builder';\n\nexport const ${result!.exportName} = createWorkflowLoader(__ir);\n`;

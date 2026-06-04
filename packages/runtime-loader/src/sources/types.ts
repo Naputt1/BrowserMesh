@@ -22,9 +22,4 @@ export type InlineSource = {
   readonly ir: WorkflowIR;
 };
 
-export type WorkflowSource =
-  | WorkflowIR
-  | S3Source
-  | UrlSource
-  | InlineSource
-  | string;
+export type WorkflowSource = WorkflowIR | S3Source | UrlSource | InlineSource | string;

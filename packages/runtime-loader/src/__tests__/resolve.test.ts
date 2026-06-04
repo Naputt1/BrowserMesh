@@ -37,15 +37,15 @@ describe('validateWorkflowIR', () => {
   });
 
   it('rejects non-array nodes', () => {
-    expect(() =>
-      validateWorkflowIR({ ...validIR, nodes: 'not-array' }),
-    ).toThrow(WorkflowValidationError);
+    expect(() => validateWorkflowIR({ ...validIR, nodes: 'not-array' })).toThrow(
+      WorkflowValidationError,
+    );
   });
 
   it('rejects non-array edges', () => {
-    expect(() =>
-      validateWorkflowIR({ ...validIR, edges: 'not-array' }),
-    ).toThrow(WorkflowValidationError);
+    expect(() => validateWorkflowIR({ ...validIR, edges: 'not-array' })).toThrow(
+      WorkflowValidationError,
+    );
   });
 
   it('rejects unknown node type', () => {
@@ -62,7 +62,13 @@ describe('validateWorkflowIR', () => {
       validateWorkflowIR({
         ...validIR,
         edges: [
-          { id: 'e1', source: 'nonexistent', sourceHandle: 'flow', target: 'n2', targetHandle: 'flow' },
+          {
+            id: 'e1',
+            source: 'nonexistent',
+            sourceHandle: 'flow',
+            target: 'n2',
+            targetHandle: 'flow',
+          },
         ],
       }),
     ).toThrow(WorkflowValidationError);
@@ -73,7 +79,13 @@ describe('validateWorkflowIR', () => {
       validateWorkflowIR({
         ...validIR,
         edges: [
-          { id: 'e1', source: 'n1', sourceHandle: 'flow', target: 'nonexistent', targetHandle: 'flow' },
+          {
+            id: 'e1',
+            source: 'n1',
+            sourceHandle: 'flow',
+            target: 'nonexistent',
+            targetHandle: 'flow',
+          },
         ],
       }),
     ).toThrow(WorkflowValidationError);
@@ -97,15 +109,13 @@ describe('resolveWorkflow', () => {
   });
 
   it('rejects invalid JSON string', async () => {
-    await expect(resolveWorkflow('not json at all')).rejects.toThrow(
-      WorkflowValidationError,
-    );
+    await expect(resolveWorkflow('not json at all')).rejects.toThrow(WorkflowValidationError);
   });
 
   it('rejects unknown source type', async () => {
-    await expect(
-      resolveWorkflow({ type: 'unknown' } as any),
-    ).rejects.toThrow(WorkflowValidationError);
+    await expect(resolveWorkflow({ type: 'unknown' } as any)).rejects.toThrow(
+      WorkflowValidationError,
+    );
   });
 
   it('resolves URL source (mocked fetch)', async () => {
@@ -143,17 +153,17 @@ describe('resolveWorkflow', () => {
     globalThis.fetch = async () => new Response(null, { status: 404 });
 
     try {
-      await expect(
-        resolveWorkflow('https://example.com/missing.json'),
-      ).rejects.toThrow(WorkflowValidationError);
+      await expect(resolveWorkflow('https://example.com/missing.json')).rejects.toThrow(
+        WorkflowValidationError,
+      );
     } finally {
       globalThis.fetch = originalFetch;
     }
   });
 
   it('rejects S3 source when SDK is not installed', async () => {
-    await expect(
-      resolveWorkflow({ type: 's3', bucket: 'test', key: 'wf.json' }),
-    ).rejects.toThrow(WorkflowValidationError);
+    await expect(resolveWorkflow({ type: 's3', bucket: 'test', key: 'wf.json' })).rejects.toThrow(
+      WorkflowValidationError,
+    );
   });
 });

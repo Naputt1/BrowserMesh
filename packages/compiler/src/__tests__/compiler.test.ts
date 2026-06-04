@@ -1,5 +1,11 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import { extractWorkflow, compileSource, rewriteSource, getIrFilename, cleanupWrappers } from '../compiler.js';
+import {
+  extractWorkflow,
+  compileSource,
+  rewriteSource,
+  getIrFilename,
+  cleanupWrappers,
+} from '../compiler.js';
 
 afterAll(async () => {
   await cleanupWrappers();

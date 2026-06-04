@@ -14,7 +14,7 @@ export async function resolveFromUrl(
   const response = await fetch(url, {
     method: 'GET',
     headers: {
-      'Accept': 'application/json',
+      Accept: 'application/json',
       ...headers,
     },
   });
@@ -27,9 +27,7 @@ export async function resolveFromUrl(
 
   const contentType = response.headers.get('content-type') ?? '';
   if (!contentType.includes('json') && !contentType.includes('text')) {
-    throw new WorkflowValidationError(
-      `Expected JSON response from ${url}, got ${contentType}`,
-    );
+    throw new WorkflowValidationError(`Expected JSON response from ${url}, got ${contentType}`);
   }
 
   const text = await response.text();
@@ -38,9 +36,7 @@ export async function resolveFromUrl(
   try {
     parsed = JSON.parse(text);
   } catch {
-    throw new WorkflowValidationError(
-      `Invalid JSON response from ${url}: ${text.slice(0, 200)}`,
-    );
+    throw new WorkflowValidationError(`Invalid JSON response from ${url}: ${text.slice(0, 200)}`);
   }
 
   return validateWorkflowIR(parsed);

@@ -282,10 +282,7 @@ describe('BrowserMeshClient — state management', () => {
       state: { page: 3, items: ['a', 'b'] },
       recovered: false,
     });
-    expect(mock.GetWorkflowState).toHaveBeenCalledWith(
-      { workflow_id: 'w1' },
-      expect.any(Function),
-    );
+    expect(mock.GetWorkflowState).toHaveBeenCalledWith({ workflow_id: 'w1' }, expect.any(Function));
   });
 
   it('getWorkflowState works with primitive number state', async () => {

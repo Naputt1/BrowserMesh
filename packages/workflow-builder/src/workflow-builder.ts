@@ -37,11 +37,7 @@ export class WorkflowBuilder<TState = unknown> {
    *   wf.setState(state);
    */
   getState(): TrackedValue<TState> {
-    const nodeId = this.graph.addNode(
-      'state',
-      { operation: 'get', key: '__value__' },
-      'Get state',
-    );
+    const nodeId = this.graph.addNode('state', { operation: 'get', key: '__value__' }, 'Get state');
     this.graph.connectFlow(nodeId);
     return new TrackedValue('[state]', nodeId) as TrackedValue<TState>;
   }
@@ -58,7 +54,11 @@ export class WorkflowBuilder<TState = unknown> {
    */
   setState(value: TrackedValue<TState> | TState): this {
     if (value instanceof TrackedValue) {
-      const nodeId = this.graph.addNode('state', { operation: 'set', key: '__value__' }, 'Set state');
+      const nodeId = this.graph.addNode(
+        'state',
+        { operation: 'set', key: '__value__' },
+        'Set state',
+      );
       this.graph.addEdge(value.outputNodeId, 'value', nodeId, 'value');
       this.graph.connectFlow(nodeId);
     } else {
@@ -129,7 +129,7 @@ export class WorkflowHandle<TOutput = unknown, TState = unknown> {
     if (!ir) {
       throw new Error(
         'No workflow IR available. Either compile the workflow first, ' +
-        'or provide a source option (URL, S3, inline, etc.).',
+          'or provide a source option (URL, S3, inline, etc.).',
       );
     }
 
@@ -169,7 +169,7 @@ export class WorkflowHandle<TOutput = unknown, TState = unknown> {
     if (!ir) {
       throw new Error(
         'No workflow IR available. Either compile the workflow first, ' +
-        'or use createWorkflowLoader with a valid IR.',
+          'or use createWorkflowLoader with a valid IR.',
       );
     }
 
@@ -190,12 +190,15 @@ export class WorkflowHandle<TOutput = unknown, TState = unknown> {
    *   await wf.save({ page: 2, cursor: 'xyz' });
    *   await wf.save({ page: 1 }, { commit: true });
    */
-  async save(state: TState, options?: { readonly endpoint?: string; readonly commit?: boolean }): Promise<void> {
+  async save(
+    state: TState,
+    options?: { readonly endpoint?: string; readonly commit?: boolean },
+  ): Promise<void> {
     const ir = this.ir;
     if (!ir) {
       throw new Error(
         'No workflow IR available. Either compile the workflow first, ' +
-        'or use createWorkflowLoader with a valid IR.',
+          'or use createWorkflowLoader with a valid IR.',
       );
     }
 
@@ -217,7 +220,8 @@ function deriveOutputType(obj: unknown): DataType {
   if (typeof obj === 'number') return { kind: 'number' as const };
   if (typeof obj === 'boolean') return { kind: 'boolean' as const };
   if (Array.isArray(obj)) {
-    const elementType: DataType = obj.length > 0 ? deriveOutputType(obj[0]) : { kind: 'string' as const };
+    const elementType: DataType =
+      obj.length > 0 ? deriveOutputType(obj[0]) : { kind: 'string' as const };
     return { kind: 'array' as const, elementType };
   }
   if (typeof obj === 'object') {

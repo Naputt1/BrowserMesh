@@ -69,12 +69,9 @@ function NewWorkflowPage() {
   >[];
   const result = completedEvent[0]?.result;
 
-  const handleWorkflowChange = useCallback(
-    (wf: WorkflowDefinition) => {
-      setWorkflowDef(wf);
-    },
-    [],
-  );
+  const handleWorkflowChange = useCallback((wf: WorkflowDefinition) => {
+    setWorkflowDef(wf);
+  }, []);
 
   const handleSave = async () => {
     if (!workflowDef) return;
@@ -82,9 +79,7 @@ function NewWorkflowPage() {
       await saveWorkflowApi({ workflow: workflowDef });
       toast.success('Workflow saved');
     } catch (err) {
-      toast.error(
-        'Failed to save: ' + (err instanceof Error ? err.message : String(err)),
-      );
+      toast.error('Failed to save: ' + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -98,7 +93,9 @@ function NewWorkflowPage() {
       setTaskId(result.taskId);
       clearEvents(result.taskId);
     } catch (err) {
-      toast.error('Failed to start workflow: ' + (err instanceof Error ? err.message : String(err)));
+      toast.error(
+        'Failed to start workflow: ' + (err instanceof Error ? err.message : String(err)),
+      );
     } finally {
       setRunning(false);
     }

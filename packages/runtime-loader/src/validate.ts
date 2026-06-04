@@ -36,10 +36,30 @@ export function validateWorkflowIR(value: unknown): WorkflowIR {
     nodeIds.add(node.id);
 
     const validTypes = [
-      'start', 'end', 'navigate', 'click', 'type', 'wait', 'scroll',
-      'select', 'extract', 'output', 'loop', 'custom', 'fetch', 'listen',
-      'state', 'page', 'if', 'switch', 'and', 'or', 'not', 'break',
-      'compare', 'continue',
+      'start',
+      'end',
+      'navigate',
+      'click',
+      'type',
+      'wait',
+      'scroll',
+      'select',
+      'extract',
+      'output',
+      'loop',
+      'custom',
+      'fetch',
+      'listen',
+      'state',
+      'page',
+      'if',
+      'switch',
+      'and',
+      'or',
+      'not',
+      'break',
+      'compare',
+      'continue',
     ];
     if (!validTypes.includes(node.type as string)) {
       throw new WorkflowValidationError(

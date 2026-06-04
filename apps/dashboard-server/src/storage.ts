@@ -1,4 +1,11 @@
-import { readFileSync, writeFileSync, readdirSync, mkdirSync, existsSync, unlinkSync } from 'node:fs';
+import {
+  readFileSync,
+  writeFileSync,
+  readdirSync,
+  mkdirSync,
+  existsSync,
+  unlinkSync,
+} from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { WorkflowRecord } from './types.js';
 
@@ -24,9 +31,7 @@ export function listWorkflows(): WorkflowRecord[] {
       // skip corrupted files
     }
   }
-  workflows.sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-  );
+  workflows.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   return workflows;
 }
 

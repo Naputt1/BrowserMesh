@@ -1,12 +1,7 @@
 import { Hono } from 'hono';
 import type { WorkflowIR } from '@browsermesh/workflow';
 import type { WorkflowRecord } from '../types.js';
-import {
-  listWorkflows,
-  getWorkflow,
-  saveWorkflow,
-  deleteWorkflow,
-} from '../storage.js';
+import { listWorkflows, getWorkflow, saveWorkflow, deleteWorkflow } from '../storage.js';
 import { listCompiledWorkflows } from '../compiled.js';
 
 const app = new Hono();
@@ -26,9 +21,7 @@ app.get('/', (c) => {
   });
 
   const merged = [...compiled, ...visual];
-  merged.sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-  );
+  merged.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   return c.json(merged);
 });
 
@@ -89,10 +82,7 @@ app.post('/compile', async (c) => {
     const compiled = await compileSource(body.source, 'workflow.ts');
 
     if (!compiled) {
-      return c.json(
-        { error: 'No createWorkflow call found in source' },
-        400,
-      );
+      return c.json({ error: 'No createWorkflow call found in source' }, 400);
     }
 
     const now = new Date().toISOString();

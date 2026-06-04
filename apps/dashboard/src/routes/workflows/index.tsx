@@ -64,10 +64,7 @@ function WorkflowsPage() {
                 Create a visual workflow
               </Link>
               <span className="text-muted-foreground text-sm">or</span>
-              <Link
-                to="/workflows/ts"
-                className="text-sm text-primary hover:underline"
-              >
+              <Link to="/workflows/ts" className="text-sm text-primary hover:underline">
                 Create a TS workflow
               </Link>
             </div>

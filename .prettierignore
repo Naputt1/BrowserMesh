@@ -6,3 +6,4 @@ dist/
 state/
 pnpm-lock.yaml
 *.gen.ts
+*.md
