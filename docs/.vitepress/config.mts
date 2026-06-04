@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress';
 
 export default defineConfig({
   title: 'BrowserMesh',
+  base: '/BrowserMesh/',
   description:
     'A unified browser automation platform where workflows compile to a JSON execution graph for deterministic execution.',
 
