@@ -26,6 +26,21 @@ export type TaskStatusResult = {
   readonly message?: string;
 };
 
+/** Result of a workflow state operation. The `state` field holds any JSON-serializable value. */
+export type WorkflowStateResult<T = unknown> = {
+  readonly workflowId: string;
+  /** The persisted state value (any JSON-serializable type — object, array, number, string, boolean, etc.). */
+  readonly state: T;
+  /** True if the state was recovered from a crash-recovery backup after a runtime restart. */
+  readonly recovered: boolean;
+};
+
+/** Options for persisting workflow state. */
+export type SetWorkflowStateOptions = {
+  /** Immediately flush the state to disk (default: false — uses debounced backup). */
+  readonly commit?: boolean;
+};
+
 export class BrowserMeshClient {
   private readonly client: {
     ExecuteWorkflow(request: object): AsyncIterable<object>;
@@ -34,6 +49,14 @@ export class BrowserMeshClient {
     ResumeTask(request: object, callback: (err: Error | null, response: object) => void): void;
     GetTaskStatus(request: object, callback: (err: Error | null, response: object) => void): void;
     ListRunningTasks(
+      request: object,
+      callback: (err: Error | null, response: object) => void,
+    ): void;
+    GetWorkflowState(
+      request: object,
+      callback: (err: Error | null, response: object) => void,
+    ): void;
+    SetWorkflowState(
       request: object,
       callback: (err: Error | null, response: object) => void,
     ): void;
@@ -111,6 +134,51 @@ export class BrowserMeshClient {
     });
   }
 
+  /**
+   * Retrieve persisted state for a workflow.
+   *
+   * State can be any JSON-serializable value — an object, number, boolean, string, array, etc.
+   * The generic `<T>` provides type-safe access to the returned state.
+   *
+   * @example
+   *   const result = await client.getWorkflowState<{ page: number }>('my-workflow');
+   *   console.log(result.state.page);
+   *
+   * @example
+   *   const count = await client.getWorkflowState<number>('counter');
+   */
+  getWorkflowState<T = unknown>(workflowId: string): Promise<WorkflowStateResult<T>> {
+    return this.stateUnaryCall<T>('GetWorkflowState', { workflow_id: workflowId });
+  }
+
+  /**
+   * Persist state for a workflow. The state value is serialized with `JSON.stringify`
+   * and stored on the runtime server.
+   *
+   * Any JSON-serializable type is valid — objects, numbers, booleans, strings, arrays.
+   * The generic `<T>` ensures the saved value matches the expected shape.
+   *
+   * @example
+   *   await client.setWorkflowState('my-workflow', { page: 3, cursor: 'abc' });
+   *
+   * @example
+   *   await client.setWorkflowState('counter', 42);
+   *
+   * @example
+   *   await client.setWorkflowState('my-workflow', { page: 1 }, { commit: true });
+   */
+  setWorkflowState<T = unknown>(
+    workflowId: string,
+    state: T,
+    options?: SetWorkflowStateOptions,
+  ): Promise<WorkflowStateResult<T>> {
+    return this.stateUnaryCall<T>('SetWorkflowState', {
+      workflow_id: workflowId,
+      state_json: JSON.stringify(state),
+      commit: options?.commit ?? false,
+    });
+  }
+
   private unaryCall(
     method: 'CancelTask' | 'PauseTask' | 'ResumeTask' | 'GetTaskStatus',
     request: object,
@@ -131,6 +199,35 @@ export class BrowserMeshClient {
             state: raw.state,
             message: raw.message ?? undefined,
           });
+        }
+      });
+    });
+  }
+
+  private stateUnaryCall<T>(
+    method: 'GetWorkflowState' | 'SetWorkflowState',
+    request: object,
+  ): Promise<WorkflowStateResult<T>> {
+    return new Promise((resolve, reject) => {
+      (
+        this.client[method] as (
+          req: object,
+          cb: (err: Error | null, response: object) => void,
+        ) => void
+      )(request, (err: Error | null, response: object) => {
+        if (err) {
+          reject(err);
+        } else {
+          const raw = response as {
+            workflow_id: string;
+            state_json: string;
+            recovered: boolean;
+          };
+          resolve({
+            workflowId: raw.workflow_id,
+            state: raw.state_json ? JSON.parse(raw.state_json) : undefined,
+            recovered: raw.recovered,
+          } as WorkflowStateResult<T>);
         }
       });
     });

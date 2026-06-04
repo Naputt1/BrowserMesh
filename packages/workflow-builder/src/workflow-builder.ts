@@ -3,7 +3,7 @@ import { GraphBuilder } from './graph-builder.js';
 import { PageBuilder } from './page-builder.js';
 import { TrackedValue } from './tracked-value.js';
 
-export class WorkflowBuilder {
+export class WorkflowBuilder<TState = unknown> {
   readonly graph: GraphBuilder = new GraphBuilder();
   private startNodeId: string | null = null;
   private endNodeId: string | null = null;
@@ -24,6 +24,52 @@ export class WorkflowBuilder {
   addEndNode(): void {
     this.endNodeId = this.graph.addNode('end', {}, 'End');
     this.graph.connectFlow(this.endNodeId);
+  }
+
+  /**
+   * Read the persisted state value into the workflow data flow.
+   *
+   * Inserts a `state` node (operation: `get`) into the IR graph. The returned
+   * `TrackedValue<TState>` can be wired into `setState()` or other nodes.
+   *
+   * @example
+   *   const state = wf.getState();
+   *   wf.setState(state);
+   */
+  getState(): TrackedValue<TState> {
+    const nodeId = this.graph.addNode(
+      'state',
+      { operation: 'get', key: '__value__' },
+      'Get state',
+    );
+    this.graph.connectFlow(nodeId);
+    return new TrackedValue('[state]', nodeId) as TrackedValue<TState>;
+  }
+
+  /**
+   * Persist a value back to the workflow state.
+   *
+   * Accepts either a literal JSON-serializable value (stored in the node config)
+   * or a `TrackedValue` from `getState()` (creates a data edge for run-time wiring).
+   *
+   * @example
+   *   wf.setState({ page: 1, cursor: 'abc' });
+   *   wf.setState(state);  // state is a TrackedValue from getState()
+   */
+  setState(value: TrackedValue<TState> | TState): this {
+    if (value instanceof TrackedValue) {
+      const nodeId = this.graph.addNode('state', { operation: 'set', key: '__value__' }, 'Set state');
+      this.graph.addEdge(value.outputNodeId, 'value', nodeId, 'value');
+      this.graph.connectFlow(nodeId);
+    } else {
+      const nodeId = this.graph.addNode(
+        'state',
+        { operation: 'set', key: '__value__', value },
+        'Set state',
+      );
+      this.graph.connectFlow(nodeId);
+    }
+    return this;
   }
 
   toIR(workflowName?: string): WorkflowIR {
@@ -63,6 +109,15 @@ export class WorkflowHandle<TOutput = unknown, TState = unknown> {
     return this.ir;
   }
 
+  /**
+   * Execute the workflow on a BrowserMesh runtime server.
+   *
+   * Streams workflow events and returns the typed output on completion.
+   * Throws if the workflow fails.
+   *
+   * @example
+   *   const result = await wf.run({ endpoint: 'localhost:50051' });
+   */
   async run(options?: WorkflowOptions): Promise<TOutput> {
     let ir = this.ir;
 
@@ -98,6 +153,56 @@ export class WorkflowHandle<TOutput = unknown, TState = unknown> {
     }
 
     return result as TOutput;
+  }
+
+  /**
+   * Retrieve the persisted state for this workflow from the runtime server.
+   *
+   * The returned value is typed via the `TState` generic on `createWorkflow`.
+   *
+   * @example
+   *   const state = await wf.getState();
+   *   console.log(state.page);
+   */
+  async getState(options?: { readonly endpoint?: string }): Promise<TState> {
+    const ir = this.ir;
+    if (!ir) {
+      throw new Error(
+        'No workflow IR available. Either compile the workflow first, ' +
+        'or use createWorkflowLoader with a valid IR.',
+      );
+    }
+
+    const { BrowserMeshClient } = await import('@browsermesh/sdk');
+    const endpoint = options?.endpoint ?? 'localhost:50051';
+    const client = new BrowserMeshClient({ endpoint });
+    const result = await client.getWorkflowState<TState>(ir.id);
+    return result.state;
+  }
+
+  /**
+   * Persist state for this workflow on the runtime server.
+   *
+   * The state value is typed via the `TState` generic on `createWorkflow`.
+   * Use `commit: true` to flush to disk immediately.
+   *
+   * @example
+   *   await wf.save({ page: 2, cursor: 'xyz' });
+   *   await wf.save({ page: 1 }, { commit: true });
+   */
+  async save(state: TState, options?: { readonly endpoint?: string; readonly commit?: boolean }): Promise<void> {
+    const ir = this.ir;
+    if (!ir) {
+      throw new Error(
+        'No workflow IR available. Either compile the workflow first, ' +
+        'or use createWorkflowLoader with a valid IR.',
+      );
+    }
+
+    const { BrowserMeshClient } = await import('@browsermesh/sdk');
+    const endpoint = options?.endpoint ?? 'localhost:50051';
+    const client = new BrowserMeshClient({ endpoint });
+    await client.setWorkflowState(ir.id, state, options);
   }
 }
 
@@ -156,10 +261,10 @@ function assignOutputPaths(
 }
 
 function createWorkflowHandle<TOutput, TState>(
-  builderFn: (wf: WorkflowBuilder) => TOutput,
+  builderFn: (wf: WorkflowBuilder<TState>) => TOutput,
   name?: string,
 ): WorkflowHandle<TOutput, TState> {
-  const wf = new WorkflowBuilder();
+  const wf = new WorkflowBuilder<TState>();
   wf.addStartNode();
 
   const output = builderFn(wf);
@@ -181,7 +286,7 @@ function createWorkflowHandle<TOutput, TState>(
 }
 
 export function createWorkflow<TOutput = unknown, TState = unknown>(
-  builderFn: (wf: WorkflowBuilder) => TOutput,
+  builderFn: (wf: WorkflowBuilder<TState>) => TOutput,
 ): WorkflowHandle<TOutput, TState> {
   return createWorkflowHandle<TOutput, TState>(builderFn);
 }

@@ -10,6 +10,8 @@ function mockGrpcClient() {
     ResumeTask: vi.fn(),
     GetTaskStatus: vi.fn(),
     ListRunningTasks: vi.fn(),
+    GetWorkflowState: vi.fn(),
+    SetWorkflowState: vi.fn(),
   };
 }
 
@@ -258,5 +260,114 @@ describe('BrowserMeshClient — error handling', () => {
 
     const client = createClient(mock);
     await expect(client.listRunningTasks()).rejects.toThrow('server error');
+  });
+});
+
+describe('BrowserMeshClient — state management', () => {
+  it('getWorkflowState returns parsed state', async () => {
+    const mock = mockGrpcClient();
+    mock.GetWorkflowState.mockImplementation((_req: object, cb: Function) =>
+      cb(null, {
+        workflow_id: 'w1',
+        state_json: JSON.stringify({ page: 3, items: ['a', 'b'] }),
+        recovered: false,
+      }),
+    );
+
+    const client = createClient(mock);
+    const result = await client.getWorkflowState('w1');
+
+    expect(result).toEqual({
+      workflowId: 'w1',
+      state: { page: 3, items: ['a', 'b'] },
+      recovered: false,
+    });
+    expect(mock.GetWorkflowState).toHaveBeenCalledWith(
+      { workflow_id: 'w1' },
+      expect.any(Function),
+    );
+  });
+
+  it('getWorkflowState works with primitive number state', async () => {
+    const mock = mockGrpcClient();
+    mock.GetWorkflowState.mockImplementation((_req: object, cb: Function) =>
+      cb(null, { workflow_id: 'counter', state_json: '42', recovered: true }),
+    );
+
+    const client = createClient(mock);
+    const result = await client.getWorkflowState<number>('counter');
+
+    expect(result.state).toBe(42);
+  });
+
+  it('getWorkflowState returns undefined state when state_json is empty', async () => {
+    const mock = mockGrpcClient();
+    mock.GetWorkflowState.mockImplementation((_req: object, cb: Function) =>
+      cb(null, { workflow_id: 'empty', state_json: '', recovered: false }),
+    );
+
+    const client = createClient(mock);
+    const result = await client.getWorkflowState('empty');
+
+    expect(result.state).toBeUndefined();
+  });
+
+  it('setWorkflowState serializes and sends state', async () => {
+    const mock = mockGrpcClient();
+    mock.SetWorkflowState.mockImplementation((_req: object, cb: Function) =>
+      cb(null, {
+        workflow_id: 'w1',
+        state_json: JSON.stringify({ page: 4 }),
+        recovered: false,
+      }),
+    );
+
+    const client = createClient(mock);
+    const result = await client.setWorkflowState('w1', { page: 4 }, { commit: true });
+
+    expect(result).toEqual({
+      workflowId: 'w1',
+      state: { page: 4 },
+      recovered: false,
+    });
+    expect(mock.SetWorkflowState).toHaveBeenCalledWith(
+      { workflow_id: 'w1', state_json: '{"page":4}', commit: true },
+      expect.any(Function),
+    );
+  });
+
+  it('setWorkflowState defaults commit to false', async () => {
+    const mock = mockGrpcClient();
+    mock.SetWorkflowState.mockImplementation((_req: object, cb: Function) =>
+      cb(null, { workflow_id: 'w1', state_json: '{}', recovered: false }),
+    );
+
+    const client = createClient(mock);
+    await client.setWorkflowState('w1', {});
+
+    expect(mock.SetWorkflowState).toHaveBeenCalledWith(
+      { workflow_id: 'w1', state_json: '{}', commit: false },
+      expect.any(Function),
+    );
+  });
+
+  it('propagates errors from getWorkflowState', async () => {
+    const mock = mockGrpcClient();
+    mock.GetWorkflowState.mockImplementation((_req: object, cb: Function) =>
+      cb(new Error('workflow not found'), null),
+    );
+
+    const client = createClient(mock);
+    await expect(client.getWorkflowState('unknown')).rejects.toThrow('workflow not found');
+  });
+
+  it('propagates errors from setWorkflowState', async () => {
+    const mock = mockGrpcClient();
+    mock.SetWorkflowState.mockImplementation((_req: object, cb: Function) =>
+      cb(new Error('permission denied'), null),
+    );
+
+    const client = createClient(mock);
+    await expect(client.setWorkflowState('w1', {})).rejects.toThrow('permission denied');
   });
 });
