@@ -82,9 +82,7 @@ function TsWorkflowPage() {
       setCompiled(result);
       toast.success('Compilation successful');
     } catch (err) {
-      toast.error(
-        'Compilation failed: ' + (err instanceof Error ? err.message : String(err)),
-      );
+      toast.error('Compilation failed: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setCompiling(false);
     }
@@ -106,9 +104,7 @@ function TsWorkflowPage() {
       toast.success('Workflow saved');
       navigate({ to: '/workflows' });
     } catch (err) {
-      toast.error(
-        'Failed to save: ' + (err instanceof Error ? err.message : String(err)),
-      );
+      toast.error('Failed to save: ' + (err instanceof Error ? err.message : String(err)));
     }
   };
 

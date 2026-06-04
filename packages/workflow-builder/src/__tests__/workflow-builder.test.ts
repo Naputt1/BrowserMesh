@@ -136,9 +136,7 @@ describe('createWorkflow with loops', () => {
     const loopNode = ir.nodes.find((n) => n.type === 'loop');
     expect(loopNode).toBeDefined();
 
-    const bodyEdge = ir.edges.find(
-      (e) => e.source === loopNode!.id && e.sourceHandle === 'body',
-    );
+    const bodyEdge = ir.edges.find((e) => e.source === loopNode!.id && e.sourceHandle === 'body');
     expect(bodyEdge).toBeDefined();
 
     const itemDataEdge = ir.edges.find(
@@ -169,9 +167,7 @@ describe('createWorkflow with loops', () => {
     const ir = workflow.getIR()!;
     const outputNodes = ir.nodes.filter((n) => n.type === 'output');
     expect(outputNodes.length).toBeGreaterThan(0);
-    const loopOutput = outputNodes.find(
-      (n) => n.config?.propertyPath === 'data[]',
-    );
+    const loopOutput = outputNodes.find((n) => n.config?.propertyPath === 'data[]');
     expect(loopOutput).toBeDefined();
   });
 });

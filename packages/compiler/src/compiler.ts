@@ -85,7 +85,10 @@ export function extractWorkflow(source: string): ExtractResult | null {
 
 function stripTypeAnnotations(code: string): string {
   let result = code;
-  result = result.replace(/:\s*(string|number|boolean|void|null|undefined|any|never|unknown)\b/g, '');
+  result = result.replace(
+    /:\s*(string|number|boolean|void|null|undefined|any|never|unknown)\b/g,
+    '',
+  );
   result = result.replace(/:\s*\{\s*[^}]+\s*\}/g, '');
   result = result.replace(/:\s*readonly\s*/g, '');
   result = result.replace(
@@ -152,7 +155,9 @@ export function rewriteSource(
     `export const ${compiled.exportName} = createWorkflowLoader(__ir)`,
   ].join('\n');
 
-  return source.slice(0, compiled.fullMatchStart) + replacement + source.slice(compiled.fullMatchEnd);
+  return (
+    source.slice(0, compiled.fullMatchStart) + replacement + source.slice(compiled.fullMatchEnd)
+  );
 }
 
 export function getIrFilename(sourcePath: string): string {
@@ -160,10 +165,7 @@ export function getIrFilename(sourcePath: string): string {
   return `${base}.ir.json`;
 }
 
-export async function compileFile(
-  filepath: string,
-  outDir?: string,
-): Promise<CompiledWorkflow> {
+export async function compileFile(filepath: string, outDir?: string): Promise<CompiledWorkflow> {
   const source = readFileSync(filepath, 'utf-8');
   const compiled = await compileSource(source, filepath);
   if (!compiled) {

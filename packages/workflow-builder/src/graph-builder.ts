@@ -46,12 +46,7 @@ export class GraphBuilder {
     return id;
   }
 
-  addEdge(
-    source: string,
-    sourceHandle: string,
-    target: string,
-    targetHandle: string,
-  ): void {
+  addEdge(source: string, sourceHandle: string, target: string, targetHandle: string): void {
     const id = `e_${++this._counter}`;
     this._edges.push({ id, source, sourceHandle, target, targetHandle });
   }
@@ -103,7 +98,12 @@ export class GraphBuilder {
     return this._loopScopes[this._loopScopes.length - 1].loopNodeId;
   }
 
-  connectDataInLoop(source: string, sourceHandle: string, target: string, targetHandle: string): void {
+  connectDataInLoop(
+    source: string,
+    sourceHandle: string,
+    target: string,
+    targetHandle: string,
+  ): void {
     this.addEdge(source, sourceHandle, target, targetHandle);
   }
 

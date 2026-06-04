@@ -69,9 +69,7 @@ export function loadWorkflowManifest(manifestPath?: string): WorkflowIR[] {
     throw new WorkflowValidationError('Manifest must contain a "workflows" array');
   }
 
-  const baseDir = manifest.baseDir
-    ? resolve(manifest.baseDir)
-    : resolve(resolvedPath, '..');
+  const baseDir = manifest.baseDir ? resolve(manifest.baseDir) : resolve(resolvedPath, '..');
 
   const results: WorkflowIR[] = [];
 

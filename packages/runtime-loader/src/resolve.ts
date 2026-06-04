@@ -18,17 +18,13 @@ function isWorkflowIR(value: unknown): value is WorkflowIR {
 
 function isS3Source(value: unknown): value is S3Source {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    (value as Record<string, unknown>).type === 's3'
+    typeof value === 'object' && value !== null && (value as Record<string, unknown>).type === 's3'
   );
 }
 
 function isUrlSource(value: unknown): value is UrlSource {
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    (value as Record<string, unknown>).type === 'url'
+    typeof value === 'object' && value !== null && (value as Record<string, unknown>).type === 'url'
   );
 }
 
@@ -86,7 +82,5 @@ export async function resolveWorkflow(source: WorkflowSource): Promise<WorkflowI
     return validateWorkflowIR(source.ir);
   }
 
-  throw new WorkflowValidationError(
-    `Unknown workflow source type: ${JSON.stringify(source)}`,
-  );
+  throw new WorkflowValidationError(`Unknown workflow source type: ${JSON.stringify(source)}`);
 }

@@ -100,12 +100,7 @@ export class PageBuilder {
     return this;
   }
 
-  extract(opts: {
-    selector: string;
-    property: string;
-    attribute?: string;
-    path?: string;
-  }): string {
+  extract(opts: { selector: string; property: string; attribute?: string; path?: string }): string {
     const selectNodeId = this.graph.addNode(
       'select',
       { selector: opts.selector, mode: 'one' },
@@ -141,11 +136,7 @@ export class PageBuilder {
   }
 
   fetch(opts: { url: string }): string {
-    const fetchNodeId = this.graph.addNode(
-      'fetch',
-      { url: opts.url },
-      `Fetch ${opts.url}`,
-    );
+    const fetchNodeId = this.graph.addNode('fetch', { url: opts.url }, `Fetch ${opts.url}`);
 
     this.graph.addEdge(this.pageNodeId, 'pageKey', fetchNodeId, 'pageKey');
     this.graph.connectFlow(fetchNodeId);

@@ -13,7 +13,7 @@ export async function resolveFromS3(source: S3Source): Promise<WorkflowIR> {
   } catch {
     throw new WorkflowValidationError(
       '@aws-sdk/client-s3 is not available. Install it to use S3 workflow sources. ' +
-      'Run: npm install @aws-sdk/client-s3',
+        'Run: npm install @aws-sdk/client-s3',
     );
   }
 

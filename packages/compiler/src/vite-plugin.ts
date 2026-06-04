@@ -16,7 +16,11 @@ function scanFiles(dir: string, recursive: boolean): string[] {
     for (const entry of readdirSync(dir)) {
       const fullPath = resolve(dir, entry);
       let stat;
-      try { stat = statSync(fullPath); } catch { continue; }
+      try {
+        stat = statSync(fullPath);
+      } catch {
+        continue;
+      }
       if (stat.isDirectory()) {
         if (recursive) results.push(...scanFiles(fullPath, true));
       } else if (entry.endsWith('.ts') || entry.endsWith('.mts')) {
@@ -76,9 +80,8 @@ export function browsermesh(options?: BrowserMeshCompilerOptions): Plugin {
       if (Object.keys(entries).length === 0) return;
 
       const existingInput = (userConfig.build as any)?.rollupOptions?.input ?? {};
-      const buildInput = typeof existingInput === 'object' && !Array.isArray(existingInput)
-        ? existingInput
-        : {};
+      const buildInput =
+        typeof existingInput === 'object' && !Array.isArray(existingInput) ? existingInput : {};
 
       return {
         build: {

@@ -41,10 +41,7 @@ function addExtractOutputNodes(
   return outputNodeId;
 }
 
-function addClickNode(
-  graph: GraphBuilder,
-  elementSourceId: string,
-): string {
+function addClickNode(graph: GraphBuilder, elementSourceId: string): string {
   const isInLoop = graph.isInLoop();
   const loopNodeId = graph.currentLoopNodeId();
 
@@ -92,9 +89,7 @@ export class ElementHandleSelector extends ElementHandle {
   }
 
   selectAll(): LoopItems {
-    const node = this.graph['_nodes'].find(
-      (n: { id: string }) => n.id === this.nodeId,
-    );
+    const node = this.graph['_nodes'].find((n: { id: string }) => n.id === this.nodeId);
     if (node) {
       const config = node.config ?? {};
       config.mode = 'all';
