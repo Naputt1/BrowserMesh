@@ -13,6 +13,11 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
+      '/dashboard-api': {
+        target: 'http://localhost:50055',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/dashboard-api/, '/api'),
+      },
       '/api': {
         target: 'http://localhost:50052',
         changeOrigin: true,

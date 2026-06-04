@@ -1,6 +1,60 @@
 import type { WorkflowDefinition, WorkflowEvent } from '@browsermesh/workflow';
 
 const BASE = '/api';
+const DASHBOARD_BASE = '/dashboard-api';
+
+export type WorkflowRecord = {
+  id: string;
+  name: string;
+  type: 'visual' | 'compiled';
+  workflow: WorkflowDefinition;
+  source?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function listWorkflows(): Promise<WorkflowRecord[]> {
+  const res = await fetch(`${DASHBOARD_BASE}/workflows`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function getWorkflow(id: string): Promise<WorkflowRecord> {
+  const res = await fetch(`${DASHBOARD_BASE}/workflows/${id}`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function saveWorkflow(record: {
+  id?: string;
+  name?: string;
+  workflow: WorkflowDefinition;
+  type?: 'visual' | 'compiled';
+  source?: string;
+}): Promise<WorkflowRecord> {
+  const res = await fetch(`${DASHBOARD_BASE}/workflows`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(record),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function deleteWorkflow(id: string): Promise<void> {
+  const res = await fetch(`${DASHBOARD_BASE}/workflows/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(await res.text());
+}
+
+export async function compileWorkflow(source: string, name?: string): Promise<WorkflowRecord> {
+  const res = await fetch(`${DASHBOARD_BASE}/workflows/compile`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ source, name }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
 
 export async function executeWorkflow(
   workflow: WorkflowDefinition,
