@@ -11,11 +11,15 @@
     "lint": "turbo run lint",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "devDependencies": {
     "prettier": "^3.8.3",
     "turbo": "^2.5.0",
-    "typescript": "^5.8.0"
+    "typescript": "^5.8.0",
+    "vitepress": "^1.6.4"
   }
 }
