@@ -4,7 +4,7 @@ import { WorkflowBuilder, TaskConsole, ScreenshotViewer } from '@browsermesh/ui'
 import { useWorkflowStore, useTaskStore } from '../../stores/workflow-store';
 import { useTaskEvents } from '../../hooks/use-task-events';
 import { executeWorkflow } from '../../lib/api';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import type { WorkflowDefinition, WorkflowEvent } from '@browsermesh/workflow';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
@@ -23,14 +23,24 @@ export const Route = createRoute({
 function NewWorkflowPage() {
   const navigate = useNavigate();
   const { load: loadId } = useSearch({ from: Route.id });
-  const getWorkflow = useWorkflowStore((s) => s.getWorkflow);
-  const saveWorkflow = useWorkflowStore((s) => s.saveWorkflow);
+  const getLocalWorkflow = useWorkflowStore((s) => s.getLocalWorkflow);
+  const saveWorkflowApi = useWorkflowStore((s) => s.saveWorkflow);
+  const loadWorkflows = useWorkflowStore((s) => s.loadWorkflows);
+  const loaded = useWorkflowStore((s) => s.loaded);
   const clearEvents = useTaskStore((s) => s.clearEvents);
   const [running, setRunning] = useState(false);
   const [taskId, setTaskId] = useState<string | null>(null);
-  const [workflowDef, setWorkflowDef] = useState<WorkflowDefinition | undefined>(() =>
-    loadId ? getWorkflow(loadId)?.workflow : undefined,
-  );
+  const [workflowDef, setWorkflowDef] = useState<WorkflowDefinition | undefined>();
+
+  useEffect(() => {
+    (async () => {
+      if (!loaded) await loadWorkflows();
+      if (loadId) {
+        const local = getLocalWorkflow(loadId);
+        if (local) setWorkflowDef(local.workflow);
+      }
+    })();
+  }, [loadId, loaded, loadWorkflows, getLocalWorkflow]);
 
   const events = useTaskStore((s) =>
     taskId ? (s.eventsByTaskId[taskId] ?? EMPTY_EVENTS) : EMPTY_EVENTS,
@@ -59,13 +69,27 @@ function NewWorkflowPage() {
   >[];
   const result = completedEvent[0]?.result;
 
-  const handleWorkflowChange = (wf: WorkflowDefinition) => {
-    setWorkflowDef(wf);
-    saveWorkflow(wf);
+  const handleWorkflowChange = useCallback(
+    (wf: WorkflowDefinition) => {
+      setWorkflowDef(wf);
+    },
+    [],
+  );
+
+  const handleSave = async () => {
+    if (!workflowDef) return;
+    try {
+      await saveWorkflowApi({ workflow: workflowDef });
+      toast.success('Workflow saved');
+    } catch (err) {
+      toast.error(
+        'Failed to save: ' + (err instanceof Error ? err.message : String(err)),
+      );
+    }
   };
 
   const handleRun = async () => {
-    const wf = workflowDef ?? useWorkflowStore.getState().workflows[0]?.workflow;
+    const wf = workflowDef;
     if (!wf) return;
 
     setRunning(true);
@@ -90,6 +114,12 @@ function NewWorkflowPage() {
             className="px-3 py-1.5 text-xs font-medium rounded border hover:bg-gray-50 transition-colors"
           >
             Back
+          </button>
+          <button
+            onClick={handleSave}
+            className="px-3 py-1.5 text-xs font-medium rounded bg-green-600 text-white hover:bg-green-700 transition-colors"
+          >
+            Save
           </button>
           <button
             onClick={handleRun}
