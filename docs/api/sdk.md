@@ -84,8 +84,7 @@ type SetWorkflowStateOptions = {
 ### Execute a Workflow
 
 ```typescript
-import { BrowserMeshClient } from '@browsermesh/sdk';
-import { resolveWorkflow } from '@browsermesh/runtime-loader';
+import { BrowserMeshClient, resolveWorkflow } from '@browsermesh/sdk/node';
 
 const client = new BrowserMeshClient({ endpoint: 'localhost:50051' });
 const workflow = await resolveWorkflow('./my-workflow.ir.json');

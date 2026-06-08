@@ -25,8 +25,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@browsermesh/workflow": "workspace:*",
-    "@browsermesh/workflow-builder": "workspace:*"
+    "@browsermesh/sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

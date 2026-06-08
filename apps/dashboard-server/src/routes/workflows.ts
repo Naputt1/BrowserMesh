@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import type { WorkflowIR } from '@browsermesh/workflow';
+import type { WorkflowIR } from '@browsermesh/sdk';
 import type { WorkflowRecord } from '../types.js';
 import { listWorkflows, getWorkflow, saveWorkflow, deleteWorkflow } from '../storage.js';
 import { listCompiledWorkflows } from '../compiled.js';

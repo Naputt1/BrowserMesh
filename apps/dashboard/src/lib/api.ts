@@ -1,4 +1,4 @@
-import type { WorkflowDefinition, WorkflowEvent } from '@browsermesh/workflow';
+import type { WorkflowDefinition, WorkflowEvent } from '@browsermesh/sdk';
 
 const BASE = '/api';
 const DASHBOARD_BASE = '/dashboard-api';

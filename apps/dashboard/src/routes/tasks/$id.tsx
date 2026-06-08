@@ -5,7 +5,7 @@ import { useTaskEvents } from '../../hooks/use-task-events';
 import { cancelTask, pauseTask, resumeTask } from '../../lib/api';
 import { TaskConsole, ScreenshotViewer } from '@browsermesh/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import type { WorkflowEvent } from '@browsermesh/workflow';
+import type { WorkflowEvent } from '@browsermesh/sdk';
 
 const EMPTY_EVENTS: readonly WorkflowEvent[] = [];
 

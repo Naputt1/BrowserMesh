@@ -1,6 +1,6 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import type { NodeType, PinDescriptor, DataType } from '@browsermesh/workflow';
-import { NODE_DEFINITIONS } from '@browsermesh/workflow';
+import type { NodeType, PinDescriptor, DataType } from '@browsermesh/sdk';
+import { NODE_DEFINITIONS } from '@browsermesh/sdk';
 import { cn } from './lib/cn';
 import { getNodeColor, getPinColor, type RFNode } from './lib/workflow-converter';
 

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { WorkflowDefinition, WorkflowEvent } from '@browsermesh/workflow';
+import type { WorkflowDefinition, WorkflowEvent } from '@browsermesh/sdk';
 
 type StoredWorkflow = {
   id: string;

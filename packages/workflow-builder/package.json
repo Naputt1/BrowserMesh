@@ -25,7 +25,6 @@
     "@browsermesh/workflow": "workspace:*"
   },
   "devDependencies": {
-    "@browsermesh/sdk": "workspace:^",
     "typescript": "^5.8.0",
     "vitest": "^4.1.7"
   }

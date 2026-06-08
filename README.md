@@ -35,7 +35,7 @@ graph TB
 ### Code-First Workflow Definition
 
 ```typescript
-import { createWorkflow } from '@browsermesh/workflow-builder';
+import { createWorkflow } from '@browsermesh/sdk';
 
 const workflow = createWorkflow<{ title: string; prices: string[] }>((wf) => {
   const page = wf
@@ -70,35 +70,31 @@ The `@browsermesh/compiler` Vite plugin detects `createWorkflow()` calls, evalua
 ```typescript
 // Compiled output:
 import __ir from './workflow.ir.json';
-import { createWorkflowLoader } from '@browsermesh/workflow-builder';
+import { createWorkflowLoader } from '@browsermesh/sdk';
 export const workflow = createWorkflowLoader(__ir);
 ```
 
 ### Execution
 
 ```typescript
-// Run with compiled IR
-await workflow.run({ endpoint: 'localhost:50051' });
+import { BrowserMeshClient } from '@browsermesh/sdk/node';
 
-// Run with remote source
-await workflow.run({
-  source: 'https://cdn.example.com/workflows/scrape.json',
-  endpoint: 'localhost:50051',
-});
+const client = new BrowserMeshClient({ endpoint: 'localhost:50051' });
+const result = await workflow.run({ client });
 ```
 
 ## Source Resolution
 
-Any of these source formats resolve to the same `WorkflowIR` at runtime:
+WorkflowIR can be loaded from any supported source and executed:
 
-| Source | Example |
-|--------|---------|
-| Compiled sidecar | `workflow.run()` (uses embedded IR) |
-| Remote URL | `workflow.run({ source: 'https://cdn/...' })` |
-| S3 bucket | `workflow.run({ source: { type: 's3', bucket: '...', key: '...' } })` |
-| Inline object | `workflow.run({ source: { type: 'inline', ir: { ... } } })` |
-| Local file | `workflow.run({ source: './workflow.ir.json' })` |
-| JSON string | `workflow.run({ source: '{"id":"...","nodes":[], ...}' })` |
+| Source | Loader |
+|--------|--------|
+| Compiled sidecar | `createWorkflowLoader(__ir)` (embedded IR) |
+| Remote URL | `resolveWorkflow('https://cdn/...')` |
+| S3 bucket | `resolveWorkflow({ type: 's3', bucket: '...', key: '...' })` |
+| Inline object | `resolveWorkflow({ type: 'inline', ir: { ... } })` |
+| Local file | `resolveWorkflow('./workflow.ir.json')` |
+| JSON string | `resolveWorkflow('{"id":"...","nodes":[], ...}')` |
 
 All converge on `WorkflowIR → Runtime Engine → Streaming Execution`.
 
@@ -106,11 +102,8 @@ All converge on `WorkflowIR → Runtime Engine → Streaming Execution`.
 
 | Package | Description |
 |---------|-------------|
-| `@browsermesh/workflow` | Shared types: `WorkflowIR`, node/edge definitions, events |
-| `@browsermesh/workflow-builder` | Fluent TypeScript API: `createWorkflow()`, `PageBuilder`, loops |
+| `@browsermesh/sdk` | Unified SDK — types, workflow builder, runtime client, source resolution |
 | `@browsermesh/compiler` | Vite plugin + build-time compiler: TS → `.ir.json` sidecar |
-| `@browsermesh/runtime-loader` | Source resolution: URL, S3, inline, local — with IR validation |
-| `@browsermesh/sdk` | gRPC client for runtime execution |
 | `@browsermesh/ui` | Embeddable React components for visual workflow authoring |
 | `apps/runtime` | Standalone gRPC/REST runtime server (Playwright-based) |
 | `apps/dashboard` | Dashboard application |

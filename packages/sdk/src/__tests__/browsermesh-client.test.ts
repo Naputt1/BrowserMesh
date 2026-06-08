@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { BrowserMeshClient } from '../index';
-import type { WorkflowEvent } from '@browsermesh/workflow';
+import { BrowserMeshClient } from '../client.js';
+import type { WorkflowEvent } from '@browsermesh/sdk';
 
 function mockGrpcClient() {
   return {

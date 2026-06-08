@@ -4,7 +4,7 @@ import type {
   TimingControls,
   DataType,
   DataTypeField,
-} from '@browsermesh/workflow';
+} from '@browsermesh/sdk';
 
 export type GlobalSettingsPanelProps = {
   settings?: GlobalSettings;

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { subscribeTaskEvents } from '../lib/api';
 import { useTaskStore } from '../stores/workflow-store';
-import type { WorkflowEvent } from '@browsermesh/workflow';
+import type { WorkflowEvent } from '@browsermesh/sdk';
 
 export function useTaskEvents(taskId: string | null) {
   const addEvent = useTaskStore((s) => s.addEvent);

@@ -5,7 +5,7 @@ The fluent TypeScript API for authoring workflows. Provides `createWorkflow()`, 
 ## Installation
 
 ```sh
-pnpm add @browsermesh/workflow-builder
+pnpm add @browsermesh/sdk
 ```
 
 ## Exports
@@ -47,9 +47,9 @@ Returned by `createWorkflow()`. Provides runtime execution and state persistence
 ```typescript
 class WorkflowHandle<TOutput = unknown, TState = unknown> {
   getIR(): WorkflowIR | null;
-  run(options?: { endpoint?: string; taskId?: string; source?: WorkflowSource }): Promise<TOutput>;
-  getState(options?: { endpoint?: string }): Promise<TState>;
-  save(state: TState, options?: { endpoint?: string; commit?: boolean }): Promise<void>;
+  run(options?: { client?: RuntimeClient; taskId?: string }): Promise<TOutput>;
+  getState(options?: { client?: RuntimeClient }): Promise<TState>;
+  save(state: TState, options?: { client?: RuntimeClient; commit?: boolean }): Promise<void>;
 }
 ```
 
@@ -58,7 +58,8 @@ The `TState` type parameter flows from `createWorkflow<TOutput, TState>()` and p
 **Example — wiring state through the workflow:**
 
 ```typescript
-import { createWorkflow } from '@browsermesh/workflow-builder';
+import { createWorkflow } from '@browsermesh/sdk';
+import { BrowserMeshClient } from '@browsermesh/sdk/node';
 
 interface MyState { page: number; items: string[] }
 
@@ -76,17 +77,19 @@ const wf = createWorkflow<{ title: string }, MyState>((wf) => {
   return { title };
 });
 
+const client = new BrowserMeshClient({ endpoint: 'localhost:50051' });
+
 // Get persisted state from previous run (via WorkflowHandle)
-const state = await wf.getState({ endpoint: 'localhost:50051' });
+const state = await wf.getState({ client });
 // state is typed as MyState
 
 // Run the workflow
-const result = await wf.run({ endpoint: 'localhost:50051' });
+const result = await wf.run({ client });
 
 // Save updated state for next run
 await wf.save(
   { page: (state?.page ?? 0) + 1, items: [result.title] },
-  { endpoint: 'localhost:50051', commit: true },
+  { client, commit: true },
 );
 ```
 
@@ -173,7 +176,7 @@ class TrackedValue {
 
 ### createWorkflowLoader()
 
-Lightweight loader for precompiled IR:
+Lightweight loader for precompiled IR (re-exported from `@browsermesh/sdk`):
 
 ```typescript
 function createWorkflowLoader<TOutput = unknown, TState = unknown>(

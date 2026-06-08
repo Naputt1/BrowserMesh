@@ -1,7 +1,7 @@
 import { X } from 'lucide-react';
 import { useState, useMemo } from 'react';
-import type { DataType, NodeType } from '@browsermesh/workflow';
-import { NODE_DEFINITIONS } from '@browsermesh/workflow';
+import type { DataType, NodeType } from '@browsermesh/sdk';
+import { NODE_DEFINITIONS } from '@browsermesh/sdk';
 
 export type NodeConfigPanelProps = {
   node: { id: string; label: string; type: NodeType; config: Record<string, unknown> } | null;

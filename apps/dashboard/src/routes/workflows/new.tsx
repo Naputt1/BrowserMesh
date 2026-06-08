@@ -6,7 +6,7 @@ import { useTaskEvents } from '../../hooks/use-task-events';
 import { executeWorkflow } from '../../lib/api';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import type { WorkflowDefinition, WorkflowEvent } from '@browsermesh/workflow';
+import type { WorkflowDefinition, WorkflowEvent } from '@browsermesh/sdk';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 
 const EMPTY_EVENTS: readonly WorkflowEvent[] = [];

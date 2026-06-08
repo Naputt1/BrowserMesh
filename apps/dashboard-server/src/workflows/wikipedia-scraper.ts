@@ -1,4 +1,4 @@
-import { createWorkflow } from '@browsermesh/workflow-builder';
+import { createWorkflow } from '@browsermesh/sdk';
 
 export default createWorkflow((wf) => {
   const page = wf.createPage();

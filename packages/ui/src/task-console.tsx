@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import type { WorkflowEvent } from '@browsermesh/workflow';
+import type { WorkflowEvent } from '@browsermesh/sdk';
 
 export type TaskConsoleProps = {
   readonly events: readonly WorkflowEvent[];

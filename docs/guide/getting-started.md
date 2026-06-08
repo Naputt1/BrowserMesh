@@ -33,7 +33,7 @@ pnpm build
 Create a `scrape.ts` file:
 
 ```typescript
-import { createWorkflow } from '@browsermesh/workflow-builder';
+import { createWorkflow } from '@browsermesh/sdk';
 
 const workflow = createWorkflow<{ title: string; prices: string[] }>((wf) => {
   const page = wf.createPage().navigate({ url: 'https://books.toscrape.com' });
@@ -66,7 +66,7 @@ The output module will look like:
 
 ```typescript
 import __ir from './scrape.ir.json';
-import { createWorkflowLoader } from '@browsermesh/workflow-builder';
+import { createWorkflowLoader } from '@browsermesh/sdk';
 export const workflow = createWorkflowLoader(__ir);
 ```
 
@@ -82,7 +82,10 @@ pnpm dev
 Then execute the workflow:
 
 ```typescript
-await workflow.run({ endpoint: 'localhost:50051' });
+import { BrowserMeshClient } from '@browsermesh/sdk/node';
+
+const client = new BrowserMeshClient({ endpoint: 'localhost:50051' });
+const result = await workflow.run({ client });
 ```
 
 ## Run Without Compilation
@@ -90,8 +93,7 @@ await workflow.run({ endpoint: 'localhost:50051' });
 For ad-hoc execution, use the runtime loader directly:
 
 ```typescript
-import { resolveWorkflow } from '@browsermesh/runtime-loader';
-import { BrowserMeshClient } from '@browsermesh/sdk';
+import { BrowserMeshClient, resolveWorkflow } from '@browsermesh/sdk/node';
 
 const ir = await resolveWorkflow('./scrape.ir.json');
 const client = new BrowserMeshClient({ endpoint: 'localhost:50051' });

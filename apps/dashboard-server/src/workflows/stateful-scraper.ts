@@ -1,4 +1,4 @@
-import { createWorkflow } from '@browsermesh/workflow-builder';
+import { createWorkflow } from '@browsermesh/sdk';
 
 export default createWorkflow<{ books: { title: string; price: string }[] }, { runCount: number }>(
   (wf) => {

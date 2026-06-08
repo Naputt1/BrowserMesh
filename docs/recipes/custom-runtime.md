@@ -20,7 +20,7 @@ await runtime.start();
 ## Execute a Workflow
 
 ```typescript
-import { resolveWorkflow } from '@browsermesh/runtime-loader';
+import { resolveWorkflow } from '@browsermesh/sdk/node';
 
 const ir = await resolveWorkflow('./workflow.ir.json');
 
