@@ -8,13 +8,13 @@ import {
   getEdgeStyle,
   isDataTypeAssignable,
 } from '../lib/workflow-converter.js';
-import { NODE_DEFINITIONS } from '@browsermesh/workflow';
+import { NODE_DEFINITIONS } from '@browsermesh/sdk';
 import type {
   WorkflowDefinition,
   WorkflowNode,
   WorkflowEdge,
   DataType,
-} from '@browsermesh/workflow';
+} from '@browsermesh/sdk';
 
 describe('workflowToReactFlow', () => {
   it('converts empty workflow', () => {

@@ -10,7 +10,7 @@ Client applications own authentication, persistence, workflow storage, orchestra
 
 Workflows can be authored through three paths:
 
-1. **TypeScript API** (`@browsermesh/workflow-builder`) — fluent builder pattern with type-safe extraction mapping
+1. **TypeScript API** (`@browsermesh/sdk`) — fluent builder pattern with type-safe extraction mapping
 2. **Visual Editor** (`@browsermesh/ui`) — embeddable React components with drag-drop canvas, browser preview, and selector picker
 3. **Precompiled JSON** — raw `WorkflowIR` files, generated or hand-written
 
@@ -91,10 +91,7 @@ Clients connect to the runtime via:
 |---------|---------------|
 | `apps/runtime` | Runtime process composition, service startup |
 | `apps/dashboard` | Web application for workflow management |
-| `packages/workflow` | Shared `WorkflowIR` types, node definitions, events |
-| `packages/workflow-builder` | Fluent TypeScript API for code-first authoring |
+| `packages/sdk` | Unified SDK — re-exports workflow types, builder, runtime client, and source resolution |
 | `packages/compiler` | Build-time compilation, Vite plugin |
-| `packages/runtime-loader` | Source resolution and IR validation |
-| `packages/sdk` | gRPC client for runtime execution |
 | `packages/ui` | Embeddable React authoring components |
 | `packages/proto` | gRPC wire protocol definitions |

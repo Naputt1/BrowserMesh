@@ -6,7 +6,7 @@ BrowserMesh uses a **build-time compilation** model. TypeScript workflow definit
 
 - **No runtime overhead** — the builder function runs once at build time, not every time the workflow executes
 - **Deterministic output** — the compiled IR is a static JSON file that can be inspected, versioned, and cached
-- **Smaller bundles** — the workflow-builder code is not needed at runtime (only the lightweight loader)
+- **Smaller bundles** — the workflow-builder code is not needed at runtime (only the lightweight loader from `@browsermesh/sdk`)
 - **Portability** — compiled IR files can be served from any CDN, S3 bucket, or file system
 
 ## How It Works
@@ -21,7 +21,7 @@ The `@browsermesh/compiler` package provides a Vite plugin that hooks into the b
 
 ```typescript
 // src/workflows/scrape.ts
-import { createWorkflow } from '@browsermesh/workflow-builder';
+import { createWorkflow } from '@browsermesh/sdk';
 
 export const workflow = createWorkflow<{ title: string }>((wf) => {
   // ... builder logic
@@ -34,7 +34,7 @@ export const workflow = createWorkflow<{ title: string }>((wf) => {
 ```typescript
 // src/workflows/scrape.ts (rewritten)
 import __ir from './scrape.ir.json';
-import { createWorkflowLoader } from '@browsermesh/workflow-builder';
+import { createWorkflowLoader } from '@browsermesh/sdk';
 
 export const workflow = createWorkflowLoader(__ir);
 ```
@@ -77,7 +77,7 @@ import { compileSource, compileFile } from '@browsermesh/compiler';
 
 // Compile from source string
 const result = await compileSource(`
-  import { createWorkflow } from '@browsermesh/workflow-builder';
+import { createWorkflow } from '@browsermesh/sdk';
   const wf = createWorkflow((b) => {
     const p = b.createPage().navigate({ url: 'https://example.com' });
     return {};

@@ -6,7 +6,7 @@ import type {
   NodeType,
   GlobalSettings,
   WorkflowEvent,
-} from '@browsermesh/workflow';
+} from '@browsermesh/sdk';
 import { WorkflowCanvas } from './workflow-canvas';
 import { Toolbar } from './toolbar';
 import { NodeConfigPanel } from './node-config-panel';

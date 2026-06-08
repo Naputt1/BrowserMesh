@@ -7,7 +7,7 @@ BrowserMesh supports three authoring paths. All produce the same `WorkflowIR` fo
 The fluent TypeScript API provides type-safe workflow construction with full IDE support.
 
 ```typescript
-import { createWorkflow } from '@browsermesh/workflow-builder';
+import { createWorkflow } from '@browsermesh/sdk';
 
 const workflow = createWorkflow<{ title: string }>((wf) => {
   const page = wf.createPage().navigate({ url: 'https://example.com' });
@@ -108,7 +108,7 @@ Write raw `WorkflowIR` JSON directly for maximum portability:
 Load with the runtime loader:
 
 ```typescript
-import { resolveWorkflow } from '@browsermesh/runtime-loader';
+import { resolveWorkflow } from '@browsermesh/sdk/node';
 
 const ir = await resolveWorkflow('https://cdn.example.com/workflow.json');
 ```

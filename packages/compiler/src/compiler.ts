@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { writeFile, mkdir, rm, readdir } from 'node:fs/promises';
 import { join, dirname, basename, extname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { WorkflowIR } from '@browsermesh/workflow';
+import type { WorkflowIR } from '@browsermesh/sdk';
 
 export type CompiledWorkflow = {
   exportName: string;
@@ -114,7 +114,7 @@ export async function compileSource(
   const wrapperPath = join(WRAPPER_DIR, `${wrapperId}.mjs`);
 
   const wrapperCode = [
-    `import { createWorkflow } from '@browsermesh/workflow-builder';`,
+    `import { createWorkflow } from '@browsermesh/sdk';`,
     `const __wf__ = createWorkflow(${strippedBody});`,
     `const __ir__ = JSON.parse(JSON.stringify(__wf__.getIR()));`,
     `export { __ir__ };`,
@@ -150,7 +150,7 @@ export function rewriteSource(
 
   const replacement = [
     `import __ir from ${importPath};`,
-    `import { createWorkflowLoader } from '@browsermesh/workflow-builder';`,
+    `import { createWorkflowLoader } from '@browsermesh/sdk';`,
     ``,
     `export const ${compiled.exportName} = createWorkflowLoader(__ir)`,
   ].join('\n');

@@ -1,4 +1,4 @@
-import type { WorkflowIR } from '@browsermesh/workflow';
+import type { WorkflowIR } from '@browsermesh/sdk';
 
 export type WorkflowType = 'visual' | 'compiled';
 

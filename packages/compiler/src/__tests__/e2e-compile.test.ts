@@ -55,7 +55,7 @@ describe('e2e compiler pipeline', () => {
     const flowFromStart = ir.edges.find((e) => e.sourceHandle === 'flow');
     expect(flowFromStart).toBeDefined();
 
-    const rewritten = `import __ir from './workflow.ir.json';\nimport { createWorkflowLoader } from '@browsermesh/workflow-builder';\n\nexport const ${result!.exportName} = createWorkflowLoader(__ir);\n`;
+    const rewritten = `import __ir from './workflow.ir.json';\nimport { createWorkflowLoader } from '@browsermesh/sdk';\n\nexport const ${result!.exportName} = createWorkflowLoader(__ir);\n`;
     expect(rewritten).toContain('createWorkflowLoader');
     expect(rewritten).not.toContain('createWorkflow<');
 

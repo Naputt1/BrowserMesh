@@ -7,6 +7,16 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./node": {
+      "types": "./src/node.ts",
+      "default": "./dist/node.js"
+    }
+  },
   "scripts": {
     "build": "node scripts/copy-proto.mjs && tsc -p tsconfig.json",
     "lint": "tsc -p tsconfig.json --noEmit",
@@ -16,6 +26,8 @@
   },
   "dependencies": {
     "@browsermesh/workflow": "workspace:*",
+    "@browsermesh/runtime-loader": "workspace:*",
+    "@browsermesh/workflow-builder": "workspace:*",
     "@grpc/grpc-js": "^1.13.0",
     "@grpc/proto-loader": "^0.7.0"
   },

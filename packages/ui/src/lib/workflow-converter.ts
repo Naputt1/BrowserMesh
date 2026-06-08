@@ -6,8 +6,8 @@ import type {
   GlobalSettings,
   DataType,
   PinDescriptor,
-} from '@browsermesh/workflow';
-import { NODE_DEFINITIONS } from '@browsermesh/workflow';
+} from '@browsermesh/sdk';
+import { NODE_DEFINITIONS } from '@browsermesh/sdk';
 import type { Node, Edge } from '@xyflow/react';
 
 export type RFNode = Node<{

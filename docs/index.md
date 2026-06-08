@@ -30,11 +30,8 @@ Remote JSON   ──┘
 
 | Package | Description |
 |---------|-------------|
-| `@browsermesh/workflow` | Shared types: `WorkflowIR`, node/edge definitions, events |
-| `@browsermesh/workflow-builder` | Fluent TypeScript API: `createWorkflow()`, `PageBuilder`, loops |
+| `@browsermesh/sdk` | Unified SDK — types, workflow builder, runtime client, source resolution |
 | `@browsermesh/compiler` | Vite plugin + build-time compiler: TS → `.ir.json` sidecar |
-| `@browsermesh/runtime-loader` | Source resolution: URL, S3, inline, local — with IR validation |
-| `@browsermesh/sdk` | gRPC client for runtime execution |
 | `@browsermesh/ui` | Embeddable React components for visual workflow authoring |
 | `apps/runtime` | Standalone gRPC/REST runtime server (Playwright-based) |
 | `apps/dashboard` | Dashboard application |

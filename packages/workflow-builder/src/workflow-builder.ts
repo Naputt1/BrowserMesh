@@ -85,10 +85,16 @@ export class WorkflowBuilder<TState = unknown> {
   }
 }
 
+export type RuntimeClient = {
+  executeWorkflow(options: {
+    taskId: string;
+    workflow: WorkflowIR;
+  }): AsyncIterable<{ type: string; result?: unknown; message?: string }>;
+};
+
 export type WorkflowOptions = {
-  readonly source?: import('@browsermesh/runtime-loader').WorkflowSource;
   readonly taskId?: string;
-  readonly endpoint?: string;
+  readonly client?: RuntimeClient;
 };
 
 export class WorkflowHandle<TOutput = unknown, TState = unknown> {
@@ -119,12 +125,7 @@ export class WorkflowHandle<TOutput = unknown, TState = unknown> {
    *   const result = await wf.run({ endpoint: 'localhost:50051' });
    */
   async run(options?: WorkflowOptions): Promise<TOutput> {
-    let ir = this.ir;
-
-    if (options?.source) {
-      const { resolveWorkflow } = await import('@browsermesh/runtime-loader');
-      ir = await resolveWorkflow(options.source as any);
-    }
+    const ir = this.ir;
 
     if (!ir) {
       throw new Error(
@@ -133,16 +134,21 @@ export class WorkflowHandle<TOutput = unknown, TState = unknown> {
       );
     }
 
-    const { BrowserMeshClient } = await import('@browsermesh/sdk');
-    const endpoint = options?.endpoint ?? 'localhost:50051';
-    const client = new BrowserMeshClient({ endpoint });
+    const client = options?.client;
+    if (!client) {
+      throw new Error(
+        'A runtime client is required to execute the workflow. ' +
+          'Create a BrowserMeshClient from @browsermesh/sdk and pass it as the `client` option.',
+      );
+    }
+
     const taskId = options?.taskId ?? crypto.randomUUID();
 
     let result: unknown;
 
     for await (const event of client.executeWorkflow({
       taskId,
-      workflow: ir as any,
+      workflow: ir,
     })) {
       if (event.type === 'task_completed') {
         result = event.result;
@@ -164,7 +170,7 @@ export class WorkflowHandle<TOutput = unknown, TState = unknown> {
    *   const state = await wf.getState();
    *   console.log(state.page);
    */
-  async getState(options?: { readonly endpoint?: string }): Promise<TState> {
+  async getState(options?: { readonly client?: RuntimeClient }): Promise<TState> {
     const ir = this.ir;
     if (!ir) {
       throw new Error(
@@ -173,26 +179,21 @@ export class WorkflowHandle<TOutput = unknown, TState = unknown> {
       );
     }
 
-    const { BrowserMeshClient } = await import('@browsermesh/sdk');
-    const endpoint = options?.endpoint ?? 'localhost:50051';
-    const client = new BrowserMeshClient({ endpoint });
+    const client = options?.client as RuntimeClient & { getWorkflowState<T>(id: string): Promise<{ state: T }> } | undefined;
+    if (!client) {
+      throw new Error(
+        'A runtime client is required to get workflow state. ' +
+          'Create a BrowserMeshClient from @browsermesh/sdk and pass it as the `client` option.',
+      );
+    }
+
     const result = await client.getWorkflowState<TState>(ir.id);
     return result.state;
   }
 
-  /**
-   * Persist state for this workflow on the runtime server.
-   *
-   * The state value is typed via the `TState` generic on `createWorkflow`.
-   * Use `commit: true` to flush to disk immediately.
-   *
-   * @example
-   *   await wf.save({ page: 2, cursor: 'xyz' });
-   *   await wf.save({ page: 1 }, { commit: true });
-   */
   async save(
     state: TState,
-    options?: { readonly endpoint?: string; readonly commit?: boolean },
+    options?: { readonly client?: RuntimeClient & { setWorkflowState<T>(id: string, state: T, opts?: { commit?: boolean }): Promise<void> }; readonly commit?: boolean },
   ): Promise<void> {
     const ir = this.ir;
     if (!ir) {
@@ -202,10 +203,15 @@ export class WorkflowHandle<TOutput = unknown, TState = unknown> {
       );
     }
 
-    const { BrowserMeshClient } = await import('@browsermesh/sdk');
-    const endpoint = options?.endpoint ?? 'localhost:50051';
-    const client = new BrowserMeshClient({ endpoint });
-    await client.setWorkflowState(ir.id, state, options);
+    const client = options?.client;
+    if (!client) {
+      throw new Error(
+        'A runtime client is required to save workflow state. ' +
+          'Create a BrowserMeshClient from @browsermesh/sdk and pass it as the `client` option.',
+      );
+    }
+
+    await client.setWorkflowState(ir.id, state, { commit: options?.commit });
   }
 }
 

@@ -1,5 +1,5 @@
-import { loadWorkflowManifest } from '@browsermesh/runtime-loader';
-import type { WorkflowIR } from '@browsermesh/workflow';
+import { loadWorkflowManifest } from '@browsermesh/sdk/node';
+import type { WorkflowIR } from '@browsermesh/sdk';
 
 export function listCompiledWorkflows(): WorkflowIR[] {
   try {

@@ -2,10 +2,12 @@
 
 Universal source resolution for workflow IR files. Loads workflows from URLs, S3, local files, inline JSON, or compiled sidecars — all converging to validated `WorkflowIR`.
 
+This package is re-exported via `@browsermesh/sdk/node` — most consumers should import from there instead.
+
 ## Installation
 
 ```sh
-pnpm add @browsermesh/runtime-loader
+pnpm add @browsermesh/sdk
 ```
 
 ## Exports

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { WorkflowEvent } from '@browsermesh/workflow';
+import type { WorkflowEvent } from '@browsermesh/sdk';
 
 export type DevtoolsPanelProps = {
   readonly logs?: readonly WorkflowEvent[];

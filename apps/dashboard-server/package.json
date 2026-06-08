@@ -13,9 +13,7 @@
   },
   "dependencies": {
     "@browsermesh/compiler": "workspace:*",
-    "@browsermesh/runtime-loader": "workspace:*",
-    "@browsermesh/workflow": "workspace:*",
-    "@browsermesh/workflow-builder": "workspace:*",
+    "@browsermesh/sdk": "workspace:*",
     "hono": "^4.7.0",
     "@hono/node-server": "^1.13.0"
   },

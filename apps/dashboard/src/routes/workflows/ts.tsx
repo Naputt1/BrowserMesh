@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import { compileWorkflow } from '../../lib/api';
 import type { WorkflowRecord } from '../../lib/api';
 
-const DEFAULT_SOURCE = `import { createWorkflow } from '@browsermesh/workflow-builder';
+const DEFAULT_SOURCE = `import { createWorkflow } from '@browsermesh/sdk';
 
 const workflow = createWorkflow('my-workflow', async ({ page }) => {
   await page.goto('https://example.com');

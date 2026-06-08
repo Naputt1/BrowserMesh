@@ -11,20 +11,11 @@ Add BrowserMesh packages to an existing pnpm monorepo.
 ## 1. Add Packages
 
 ```sh
-# Core types
-pnpm add @browsermesh/workflow
-
-# Code-first authoring (dev dependency — compiled away at build time)
-pnpm add -D @browsermesh/workflow-builder
+# Unified SDK — workflow builder, types, runtime client, source resolution
+pnpm add @browsermesh/sdk
 
 # Build-time compiler (dev dependency)
 pnpm add -D @browsermesh/compiler
-
-# Runtime source resolution
-pnpm add @browsermesh/runtime-loader
-
-# gRPC client SDK
-pnpm add @browsermesh/sdk
 ```
 
 ## 2. Configure the Vite Plugin
@@ -49,7 +40,7 @@ export default defineConfig({
 
 ```typescript
 // src/workflows/example.ts
-import { createWorkflow } from '@browsermesh/workflow-builder';
+import { createWorkflow } from '@browsermesh/sdk';
 
 export const workflow = createWorkflow<{ message: string }>((wf) => {
   const page = wf.createPage().navigate({ url: 'https://example.com' });
@@ -73,9 +64,11 @@ The compiler will:
 ## 5. Execute
 
 ```typescript
+import { BrowserMeshClient } from '@browsermesh/sdk/node';
 import { workflow } from './src/workflows/example';
 
-const result = await workflow.run({ endpoint: 'localhost:50051' });
+const client = new BrowserMeshClient({ endpoint: 'localhost:50051' });
+const result = await workflow.run({ client });
 console.log(result);
 ```
 

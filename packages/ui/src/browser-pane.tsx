@@ -1,4 +1,4 @@
-import type { WorkflowEvent } from '@browsermesh/workflow';
+import type { WorkflowEvent } from '@browsermesh/sdk';
 
 export type BrowserPaneProps = {
   readonly previewUrl?: string;

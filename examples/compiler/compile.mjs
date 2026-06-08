@@ -17,7 +17,7 @@ if (result) {
   console.log(`  Edges: ${result.ir.edges.length}`);
   console.log(`  Export: ${result.exportName}`);
 
-  const rewritten = `import __ir from './compiled.ir.json';\nimport { createWorkflowLoader } from '@browsermesh/workflow-builder';\n\nexport const ${result.exportName} = createWorkflowLoader(__ir);\n`;
+  const rewritten = `import __ir from './compiled.ir.json';\nimport { createWorkflowLoader } from '@browsermesh/sdk';\n\nexport const ${result.exportName} = createWorkflowLoader(__ir);\n`;
   const outPath = join(__dirname, 'output.mjs');
   writeFileSync(outPath, rewritten);
   console.log(`Rewritten output → ${outPath}`);

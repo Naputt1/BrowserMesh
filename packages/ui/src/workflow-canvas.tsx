@@ -21,9 +21,10 @@ import {
   getPinDataType,
   getEdgeStyle,
 } from './lib/workflow-converter';
-import type { WorkflowDefinition, NodeType } from '@browsermesh/workflow';
-import { NODE_DEFINITIONS, CATEGORIES } from '@browsermesh/workflow';
+import type { WorkflowDefinition, NodeType } from '@browsermesh/sdk';
+import { NODE_DEFINITIONS, CATEGORIES } from '@browsermesh/sdk';
 import type { RFNode, RFEdge } from './lib/workflow-converter';
+
 import { ContextMenu } from './components/ui/context-menu';
 
 const nodeTypes = { workflowNode: WorkflowNode };
@@ -197,8 +198,8 @@ export function WorkflowCanvas({
     [readonly],
   );
 
-  const onNodeDragStop = useCallback(
-    (_event: React.MouseEvent, _node: RFNode) => {
+  const onNodeDragStop: Exclude<React.ComponentProps<typeof ReactFlow>['onNodeDragStop'], undefined> = useCallback(
+    (_event, _node) => {
       if (readonly || !instanceRef.current) return;
       emitChange(instanceRef.current.getNodes(), instanceRef.current.getEdges());
     },

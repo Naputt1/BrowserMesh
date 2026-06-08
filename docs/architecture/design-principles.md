@@ -57,7 +57,7 @@ The runtime engine has no knowledge of how a workflow was authored. It only know
 **Why:** The runtime should be a pure execution engine. If it depended on any authoring path, changing the authoring experience would require changing the runtime, and vice versa.
 
 **What this means:**
-- The `@browsermesh/workflow` package (the IR contract) is the only shared dependency between authoring and execution
+- The `@browsermesh/sdk` package (the IR contract and runtime client) is the only shared dependency between authoring and execution
 - The compiler, visual editor, and JSON sources are completely independent of the runtime
 - New authoring paths can be added without modifying the runtime
 - The runtime can be developed and deployed independently of the authoring tools

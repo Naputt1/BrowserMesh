@@ -26,7 +26,7 @@ const runtime = new BrowserMeshRuntime({
 ## 2. Define the Workflow
 
 ```typescript
-import { createWorkflow } from '@browsermesh/workflow-builder';
+import { createWorkflow } from '@browsermesh/sdk';
 
 interface Product {
   name: string;
@@ -61,8 +61,7 @@ Compile the workflow with the Vite plugin, then execute against a runtime with t
 For simpler cases, run the workflow and insert results in application code:
 
 ```typescript
-import { resolveWorkflow } from '@browsermesh/runtime-loader';
-import { BrowserMeshClient } from '@browsermesh/sdk';
+import { BrowserMeshClient, resolveWorkflow } from '@browsermesh/sdk/node';
 import { db } from './your-database-client';
 
 const workflow = await resolveWorkflow('./scrape.ir.json');

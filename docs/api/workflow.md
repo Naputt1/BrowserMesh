@@ -1,11 +1,11 @@
 # @browsermesh/workflow
 
-The `@browsermesh/workflow` package defines the core types and contracts shared across all packages. It is the single source of truth for the `WorkflowIR` format, node definitions, and event types.
+The `@browsermesh/workflow` package defines the core types and contracts shared across all packages. It is the single source of truth for the `WorkflowIR` format, node definitions, and event types. These types are re-exported through `@browsermesh/sdk`.
 
 ## Installation
 
 ```sh
-pnpm add @browsermesh/workflow
+pnpm add @browsermesh/sdk
 ```
 
 ## Types
