@@ -1,10 +1,5 @@
 import { X } from 'lucide-react';
-import type {
-  GlobalSettings,
-  TimingControls,
-  DataType,
-  DataTypeField,
-} from '@browsermesh/sdk';
+import type { GlobalSettings, TimingControls, DataType } from '@browsermesh/sdk';
 
 export type GlobalSettingsPanelProps = {
   settings?: GlobalSettings;

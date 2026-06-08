@@ -9,12 +9,7 @@ import {
   isDataTypeAssignable,
 } from '../lib/workflow-converter.js';
 import { NODE_DEFINITIONS } from '@browsermesh/sdk';
-import type {
-  WorkflowDefinition,
-  WorkflowNode,
-  WorkflowEdge,
-  DataType,
-} from '@browsermesh/sdk';
+import type { WorkflowDefinition, DataType } from '@browsermesh/sdk';
 
 describe('workflowToReactFlow', () => {
   it('converts empty workflow', () => {

@@ -179,7 +179,9 @@ export class WorkflowHandle<TOutput = unknown, TState = unknown> {
       );
     }
 
-    const client = options?.client as RuntimeClient & { getWorkflowState<T>(id: string): Promise<{ state: T }> } | undefined;
+    const client = options?.client as
+      | (RuntimeClient & { getWorkflowState<T>(id: string): Promise<{ state: T }> })
+      | undefined;
     if (!client) {
       throw new Error(
         'A runtime client is required to get workflow state. ' +
@@ -193,7 +195,12 @@ export class WorkflowHandle<TOutput = unknown, TState = unknown> {
 
   async save(
     state: TState,
-    options?: { readonly client?: RuntimeClient & { setWorkflowState<T>(id: string, state: T, opts?: { commit?: boolean }): Promise<void> }; readonly commit?: boolean },
+    options?: {
+      readonly client?: RuntimeClient & {
+        setWorkflowState<T>(id: string, state: T, opts?: { commit?: boolean }): Promise<void>;
+      };
+      readonly commit?: boolean;
+    },
   ): Promise<void> {
     const ir = this.ir;
     if (!ir) {
