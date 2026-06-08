@@ -1,7 +1,9 @@
 {
   "name": "@browsermesh/proto",
   "version": "0.0.0",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "scripts": {
     "build": "node scripts/validate-proto.mjs",
