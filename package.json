@@ -14,9 +14,14 @@
     "typecheck": "turbo run typecheck",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
+    "@changesets/config": "^3.1.4",
     "prettier": "^3.8.3",
     "turbo": "^2.5.0",
     "typescript": "^5.8.0",
