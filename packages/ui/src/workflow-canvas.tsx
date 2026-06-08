@@ -198,7 +198,10 @@ export function WorkflowCanvas({
     [readonly],
   );
 
-  const onNodeDragStop: Exclude<React.ComponentProps<typeof ReactFlow>['onNodeDragStop'], undefined> = useCallback(
+  const onNodeDragStop: Exclude<
+    React.ComponentProps<typeof ReactFlow>['onNodeDragStop'],
+    undefined
+  > = useCallback(
     (_event, _node) => {
       if (readonly || !instanceRef.current) return;
       emitChange(instanceRef.current.getNodes(), instanceRef.current.getEdges());
